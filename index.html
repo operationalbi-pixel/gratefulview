@@ -5540,12 +5540,50 @@
     </div>
 
     <div class="search-content">
-      <div class="search-header">
-        <h2>Cari Customer</h2>
-        <p>Temukan customer untuk pengalaman pelayanan personal</p>
-      </div>
+      <div class="customer-search-layout">
+        <section class="visit-trend-card" aria-labelledby="visit-trend-title">
+          <div class="visit-trend-head">
+            <div>
+              <div class="visit-trend-eyebrow">CUSTOMER TRAFFIC</div>
+              <h2 id="visit-trend-title">Grafik Kunjungan</h2>
+              <p>Jumlah customer berdasarkan tanggal</p>
+            </div>
+            <div class="visit-trend-controls">
+              <select id="visit-range-mode" aria-label="Pilih periode grafik">
+                <option value="7d">7 Hari Terakhir</option>
+                <option value="month">Bulan Ini</option>
+                <option value="custom">Custom Range</option>
+              </select>
+              <div id="visit-outlet-filter-wrap" class="visit-outlet-filter" hidden>
+                <select id="visit-outlet-filter" aria-label="Filter outlet">
+                  <option value="">Semua Outlet</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div id="visit-custom-range" class="visit-custom-range" hidden>
+            <label>Dari <input type="date" id="visit-start-date"></label>
+            <label>Sampai <input type="date" id="visit-end-date"></label>
+            <button type="button" id="visit-apply-range">Terapkan</button>
+          </div>
+          <div class="visit-trend-summary">
+            <div><strong id="visit-chart-total">—</strong><span>Total kunjungan</span></div>
+            <span id="visit-chart-period">7 hari terakhir</span>
+          </div>
+          <div class="visit-chart-wrap">
+            <div id="visit-chart-state" class="visit-chart-state">Memuat grafik kunjungan...</div>
+            <svg id="visit-line-chart" viewBox="0 0 640 270" role="img" aria-label="Grafik garis kunjungan customer" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+          <div class="visit-chart-source"><span class="material-icons-round">database</span> Sumber: Berkunjung Hari Ini</div>
+        </section>
 
-      <div class="customer-search-card">
+        <div class="customer-search-main">
+          <div class="search-header">
+            <h2>Cari Customer</h2>
+            <p>Temukan customer untuk pengalaman pelayanan personal</p>
+          </div>
+
+          <div class="customer-search-card">
       <button class="member-scan-hero" type="button" onclick="openMemberScanModal()" aria-label="Scan QR Member">
         <div class="member-scan-hero-left">
           <div class="member-scan-hero-icon">
@@ -5613,13 +5651,15 @@
           <div class="suggestion-dropdown" id="dropdown-member"></div>
         </div>
       </div>
-      </div>
+          </div>
 
-      <div class="search-actions">
-        <button class="btn btn-review-gold" onclick="openReviewModal()">
-          <span class="material-icons-round" style="font-size:20px">rate_review</span>
-          Give Review
-        </button>
+          <div class="search-actions">
+            <button class="btn btn-review-gold" onclick="openReviewModal()">
+              <span class="material-icons-round" style="font-size:20px">rate_review</span>
+              Give Review
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -11830,6 +11870,159 @@
     }
   }
 
+  /* Visit chart — always starts at the top on mobile, left column on desktop. */
+  #page-search .search-content {
+    width: 100%;
+    max-width: none !important;
+    box-sizing: border-box;
+    justify-content: flex-start !important;
+    overflow-y: auto;
+  }
+
+  #page-search .customer-search-layout {
+    width: min(100%, 1180px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    align-content: start;
+  }
+
+  #page-search .customer-search-main,
+  #page-search .visit-trend-card { min-width: 0; }
+  #page-search .customer-search-main .search-header,
+  #page-search .customer-search-main .customer-search-card {
+    width: 100%;
+    max-width: 520px;
+  }
+
+  #page-search .visit-trend-card {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 22px;
+    border: 1px solid rgba(32,117,138,.14);
+    border-radius: 26px;
+    background: radial-gradient(circle at 100% 0%, rgba(77,189,196,.13), transparent 34%), #fff;
+    box-shadow: 0 20px 48px rgba(25,78,91,.12), 0 4px 14px rgba(25,78,91,.06);
+    overflow: hidden;
+  }
+
+  #page-search .visit-trend-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  #page-search .visit-trend-eyebrow {
+    margin-bottom: 5px;
+    color: #2b8798;
+    font-size: .64rem;
+    font-weight: 850;
+    letter-spacing: .13em;
+  }
+  #page-search .visit-trend-head h2 { margin: 0; color: #15353c; font-size: clamp(1.08rem,2vw,1.38rem); }
+  #page-search .visit-trend-head p { margin: 6px 0 0; color: #829296; font-size: .76rem; }
+  #page-search .visit-trend-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 7px;
+    max-width: 58%;
+  }
+  #page-search .visit-trend-controls select,
+  #page-search .visit-custom-range input {
+    box-sizing: border-box;
+    height: 36px;
+    border: 1px solid #d7e4e6;
+    border-radius: 11px;
+    padding: 0 10px;
+    color: #31545b;
+    background: #f7fafb;
+    font: inherit;
+    font-size: .72rem;
+  }
+  #page-search .visit-outlet-filter select { max-width: 160px; }
+  #page-search .visit-custom-range {
+    margin-top: 14px;
+    padding: 11px;
+    border: 1px solid #e3ecee;
+    border-radius: 14px;
+    display: grid;
+    grid-template-columns: repeat(2,minmax(0,1fr)) auto;
+    gap: 8px;
+    align-items: end;
+    background: #f8fbfb;
+  }
+  #page-search .visit-custom-range[hidden] { display: none !important; }
+  #page-search .visit-custom-range label { min-width: 0; color: #6f858a; font-size: .65rem; font-weight: 700; }
+  #page-search .visit-custom-range input { width: 100%; margin-top: 5px; }
+  #page-search .visit-custom-range button {
+    height: 36px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 11px;
+    color: #fff;
+    background: #217c8e;
+    font-size: .71rem;
+    font-weight: 750;
+  }
+  #page-search .visit-trend-summary {
+    margin: 18px 2px 4px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  #page-search .visit-trend-summary > div { display: flex; align-items: baseline; gap: 8px; }
+  #page-search .visit-trend-summary strong { color: #123f48; font-size: 1.55rem; line-height: 1; }
+  #page-search .visit-trend-summary span { color: #7b8e92; font-size: .68rem; }
+  #page-search .visit-chart-wrap { position: relative; width: 100%; min-height: 235px; }
+  #page-search #visit-line-chart { display: block; width: 100%; height: auto; min-height: 235px; }
+  #page-search .visit-chart-state {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    color: #819397;
+    font-size: .78rem;
+    text-align: center;
+    pointer-events: none;
+  }
+  #page-search .visit-chart-state:empty { display: none; }
+  #page-search .visit-chart-source {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 5px;
+    color: #9aa8ab;
+    font-size: .62rem;
+  }
+  #page-search .visit-chart-source .material-icons-round { font-size: 13px; }
+
+  @media (min-width: 900px) {
+    #page-search .customer-search-layout {
+      grid-template-columns: minmax(0,1.16fr) minmax(390px,.84fr);
+      gap: 26px;
+      align-items: center;
+    }
+    #page-search .visit-trend-card { padding: 26px; }
+    #page-search .visit-chart-wrap,
+    #page-search #visit-line-chart { min-height: 270px; }
+  }
+  @media (max-width: 620px) {
+    #page-search .visit-trend-card { padding: 17px 14px; border-radius: 22px; }
+    #page-search .visit-trend-head { display: block; }
+    #page-search .visit-trend-controls { max-width: none; margin-top: 13px; justify-content: flex-start; }
+    #page-search .visit-trend-controls > select,
+    #page-search .visit-outlet-filter,
+    #page-search .visit-outlet-filter select { flex: 1 1 145px; width: 100%; max-width: none; }
+    #page-search .visit-custom-range { grid-template-columns: repeat(2,minmax(0,1fr)); }
+    #page-search .visit-custom-range button { grid-column: 1 / -1; }
+    #page-search .visit-chart-wrap,
+    #page-search #visit-line-chart { min-height: 210px; }
+  }
+
   .customer-cheers-popup {
     position: relative;
     box-sizing: border-box !important;
@@ -12554,6 +12747,145 @@
   };
   try { tryPersistentAutoLogin = window.tryPersistentAutoLogin; } catch (e) {}
 
+  var visitTrendRequestId = 0;
+  var visitTrendBound = false;
+
+  function visitIsoDate(date) {
+    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+  }
+
+  function visitShortDate(iso) {
+    var p = String(iso || '').split('-');
+    if (p.length !== 3) return iso || '';
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  }
+
+  function setupVisitTrendControls() {
+    if (visitTrendBound) return;
+    visitTrendBound = true;
+    var mode = document.getElementById('visit-range-mode');
+    var outlet = document.getElementById('visit-outlet-filter');
+    var apply = document.getElementById('visit-apply-range');
+    if (mode) mode.addEventListener('change', function () {
+      var custom = document.getElementById('visit-custom-range');
+      if (custom) custom.hidden = mode.value !== 'custom';
+      if (mode.value !== 'custom') loadVisitTrend();
+    });
+    if (outlet) outlet.addEventListener('change', loadVisitTrend);
+    if (apply) apply.addEventListener('click', function () {
+      var start = document.getElementById('visit-start-date');
+      var end = document.getElementById('visit-end-date');
+      if (!start || !end || !start.value || !end.value) {
+        showToast('Pilih tanggal awal dan akhir terlebih dahulu.', 'error');
+        return;
+      }
+      loadVisitTrend();
+    });
+  }
+
+  function initVisitTrend(force) {
+    setupVisitTrendControls();
+    var outletWrap = document.getElementById('visit-outlet-filter-wrap');
+    if (outletWrap) outletWrap.hidden = !AppState.isBIHQ;
+    var end = new Date();
+    var start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 6);
+    var startInput = document.getElementById('visit-start-date');
+    var endInput = document.getElementById('visit-end-date');
+    if (startInput && (!startInput.value || force)) startInput.value = visitIsoDate(start);
+    if (endInput && (!endInput.value || force)) endInput.value = visitIsoDate(end);
+    loadVisitTrend();
+  }
+
+  function loadVisitTrend() {
+    var state = document.getElementById('visit-chart-state');
+    var svg = document.getElementById('visit-line-chart');
+    var modeEl = document.getElementById('visit-range-mode');
+    if (!state || !svg || !modeEl) return;
+    if (!hasBackend()) {
+      state.textContent = 'Grafik tersedia setelah aplikasi terhubung ke data.';
+      return;
+    }
+    var mode = modeEl.value || '7d';
+    var outletSelect = document.getElementById('visit-outlet-filter');
+    var params = { mode: mode, outlet: AppState.isBIHQ ? ((outletSelect && outletSelect.value) || '') : (AppState.outlet || '') };
+    if (mode === 'custom') {
+      params.startDate = (document.getElementById('visit-start-date') || {}).value || '';
+      params.endDate = (document.getElementById('visit-end-date') || {}).value || '';
+    }
+    var requestId = ++visitTrendRequestId;
+    state.textContent = 'Memuat grafik kunjungan...';
+    svg.innerHTML = '';
+    google.script.run
+      .withSuccessHandler(function (result) {
+        if (requestId !== visitTrendRequestId) return;
+        if (!result || !result.success) {
+          state.textContent = (result && result.message) || 'Grafik kunjungan belum dapat dimuat.';
+          return;
+        }
+        renderVisitTrend(result);
+      })
+      .withFailureHandler(function () {
+        if (requestId === visitTrendRequestId) state.textContent = 'Grafik gagal dimuat. Silakan coba lagi.';
+      })
+      .getVisitTrend(params);
+  }
+
+  function populateVisitOutlets(outlets) {
+    var select = document.getElementById('visit-outlet-filter');
+    if (!select || !AppState.isBIHQ) return;
+    var current = select.value;
+    select.innerHTML = '<option value="">Semua Outlet</option>';
+    (Array.isArray(outlets) ? outlets : []).forEach(function (name) {
+      var option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      select.appendChild(option);
+    });
+    select.value = Array.from(select.options).some(function (o) { return o.value === current; }) ? current : '';
+  }
+
+  function renderVisitTrend(result) {
+    var svg = document.getElementById('visit-line-chart');
+    var state = document.getElementById('visit-chart-state');
+    var total = document.getElementById('visit-chart-total');
+    var period = document.getElementById('visit-chart-period');
+    if (!svg || !state) return;
+    populateVisitOutlets(result.outlets);
+    if (total) total.textContent = Number(result.total || 0).toLocaleString('id-ID');
+    if (period) period.textContent = visitShortDate(result.startDate) + ' – ' + visitShortDate(result.endDate);
+    var points = Array.isArray(result.points) ? result.points : [];
+    if (!points.length) {
+      svg.innerHTML = '';
+      state.textContent = 'Belum ada data kunjungan pada periode ini.';
+      return;
+    }
+    state.textContent = '';
+    var W = 640, H = 270, left = 44, right = 18, top = 18, bottom = 42;
+    var innerW = W - left - right, innerH = H - top - bottom;
+    var maxValue = Math.max.apply(null, points.map(function (p) { return Number(p.count) || 0; }));
+    var axisMax = Math.max(1, Math.ceil(maxValue / 4) * 4);
+    var x = function (i) { return left + (points.length === 1 ? innerW / 2 : i * innerW / (points.length - 1)); };
+    var y = function (v) { return top + innerH - (Number(v) || 0) / axisMax * innerH; };
+    var markup = '';
+    for (var tick = 0; tick <= 4; tick++) {
+      var value = axisMax * tick / 4, py = y(value);
+      markup += '<line x1="' + left + '" y1="' + py + '" x2="' + (W-right) + '" y2="' + py + '" stroke="#e4edef"/>';
+      markup += '<text x="' + (left-10) + '" y="' + (py+4) + '" text-anchor="end" fill="#91a1a5" font-size="11">' + Math.round(value) + '</text>';
+    }
+    var path = points.map(function (p,i) { return (i ? 'L' : 'M') + x(i).toFixed(2) + ' ' + y(p.count).toFixed(2); }).join(' ');
+    markup += '<path d="' + path + '" fill="none" stroke="#1d8798" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
+    var labelEvery = Math.max(1, Math.ceil(points.length / 6));
+    points.forEach(function (p,i) {
+      markup += '<circle cx="' + x(i) + '" cy="' + y(p.count) + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ': ' + Number(p.count || 0) + ' kunjungan</title></circle>';
+      if (i % labelEvery === 0 || i === points.length - 1) markup += '<text x="' + x(i) + '" y="' + (H-15) + '" text-anchor="middle" fill="#71878c" font-size="11">' + visitShortDate(p.date) + '</text>';
+    });
+    svg.innerHTML = markup;
+  }
+
+  window.initVisitTrend = initVisitTrend;
+  window.loadVisitTrend = loadVisitTrend;
+  window.renderVisitTrend = renderVisitTrend;
+
   function finishLogin(result, code) {
     var isBIHQ = code.toUpperCase() === 'BIHQ';
     if (isBIHQ) {
@@ -12562,6 +12894,7 @@
       AppState.isBIHQ = true;
       setOutletLabels('Semua Outlet');
       showPage('page-search');
+      initVisitTrend(true);
       updateTabBadges();
       resetRealtimeBaseline();
       if (hasBackend()) {
@@ -12574,6 +12907,7 @@
 
     AppState.isBIHQ = false;
     originalApplyLoggedInOutlet(result.outlet, result.outletCode || code, false);
+    initVisitTrend(true);
     showToast((result.message || 'Login berhasil.') + ' Akses outlet aktif.', 'success');
   }
 
