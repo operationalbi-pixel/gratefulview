@@ -7387,38 +7387,72 @@
       const card = document.getElementById('visit-today-toggle');
       const checkbox = document.getElementById('visit-checkbox');
       if (card) card.classList.toggle('checked', !!checked);
+      if (card) card.setAttribute('aria-checked', checked ? 'true' : 'false');
 
       if (!checked) return; // only persist on tick; no untick action
-      if (!AppState.dashboardData || !AppState.dashboardData.profile) return;
+      if (!AppState.dashboardData || !AppState.dashboardData.profile) {
+        if (checkbox) checkbox.checked = false;
+        if (card) card.classList.remove('checked');
+        if (card) card.setAttribute('aria-checked', 'false');
+        showToast('Data customer belum siap. Silakan buka ulang dashboard.', 'error');
+        return;
+      }
 
       const profile = AppState.dashboardData.profile;
+      const outletFilter = document.getElementById('visit-outlet-filter');
+      const selectedCustomer = AppState.selectedCustomer || {};
+      const lastVisit = AppState.dashboardData.lastVisit || {};
+      const visitOutlet = (AppState.outlet ||
+        (outletFilter && outletFilter.value) ||
+        selectedCustomer.outlet ||
+        profile.outlet ||
+        lastVisit.branch || '').toString().trim();
+
+      if (!visitOutlet) {
+        if (checkbox) checkbox.checked = false;
+        if (card) card.classList.remove('checked');
+        if (card) card.setAttribute('aria-checked', 'false');
+        showToast('Pilih outlet terlebih dahulu agar kunjungan dapat dicatat.', 'error');
+        return;
+      }
+
+      if (checkbox) checkbox.disabled = true;
+      if (card) card.classList.add('saving');
 
       google.script.run
         .withSuccessHandler(function(result) {
+          if (checkbox) checkbox.disabled = false;
+          if (card) card.classList.remove('saving');
           if (result && result.success) {
             AppState.dashboardData.todayVisit = {
               visited: true,
               reviewStatus: 'Pending',
               row: result.row || null,
-              outlet: AppState.outlet || ''
+              outlet: visitOutlet
             };
             writeDashboardCacheFromResult(AppState.dashboardData, AppState.selectedCustomer, profile.mobile);
+            showToast((result && result.message) || 'Kunjungan berhasil dicatat.', 'success');
+            if (typeof loadVisitTrend === 'function') loadVisitTrend();
           } else {
             if (checkbox) checkbox.checked = false;
             if (card) card.classList.remove('checked');
+            if (card) card.setAttribute('aria-checked', 'false');
             showToast((result && result.message) || 'Gagal mencatat kunjungan.', 'error');
           }
         })
         .withFailureHandler(function(error) {
+          if (checkbox) checkbox.disabled = false;
+          if (card) card.classList.remove('saving');
           if (checkbox) checkbox.checked = false;
           if (card) card.classList.remove('checked');
+          if (card) card.setAttribute('aria-checked', 'false');
           showToast('Gagal mencatat kunjungan: ' + ((error && error.message) || error), 'error');
         })
         .saveVisit({
           name: profile.name,
           memberId: profile.memberId,
           mobile: profile.mobile,
-          outlet: AppState.outlet
+          outlet: visitOutlet
         });
     }
 
@@ -10144,8 +10178,30 @@
     font-size:.58rem!important;color:#185e70!important;font-weight:900!important;letter-spacing:.06em!important;
   }
   #page-dashboard .full-dashboard-v46 .custom-checkbox{width:19px!important;height:19px!important;flex-shrink:0!important}
+  #page-dashboard .full-dashboard-v46 .custom-checkbox input {
+    inset:0!important;
+    margin:0!important;
+    padding:0!important;
+  }
   #page-dashboard .full-dashboard-v46 .custom-checkbox .checkmark{
     width:19px!important;height:19px!important;border-radius:6px!important;background:#fff!important;border:2px solid rgba(32,117,138,.28)!important;
+    pointer-events:none!important;
+  }
+  #page-dashboard .full-dashboard-v46 .visit-today-card.checked {
+    background:rgba(42,157,103,.12)!important;
+    border-color:rgba(42,157,103,.42)!important;
+  }
+  #page-dashboard .full-dashboard-v46 .visit-today-card.checked .visit-label {
+    color:#237a54!important;
+  }
+  #page-dashboard .full-dashboard-v46 .visit-today-card.checked .custom-checkbox input:checked + .checkmark {
+    background:#2a9d67!important;
+    border-color:#2a9d67!important;
+    box-shadow:0 0 0 3px rgba(42,157,103,.12)!important;
+  }
+  #page-dashboard .full-dashboard-v46 .visit-today-card.saving {
+    opacity:.62!important;
+    cursor:wait!important;
   }
 
   .v46-detail-grid{
@@ -12668,6 +12724,14 @@
     var container = document.getElementById('dashboard-content');
     if (!container) return;
 
+    var visitCard = container.querySelector('.visit-today-card');
+    if (visitCard) {
+      visitCard.setAttribute('role', 'checkbox');
+      visitCard.setAttribute('tabindex', '0');
+      visitCard.setAttribute('aria-label', 'Catat kunjungan hari ini');
+      visitCard.setAttribute('aria-checked', visitCard.classList.contains('checked') ? 'true' : 'false');
+    }
+
     var phone = document.getElementById('phone-display-value');
     if (phone && data && data.profile) phone.textContent = maskCustomerPhone(data.profile.mobile);
 
@@ -12730,6 +12794,24 @@
     return false;
   };
   try { tryPersistentAutoLogin = window.tryPersistentAutoLogin; } catch (e) {}
+
+  /* Make the whole "Hari Ini" pill clickable, not only the tiny checkbox. */
+  if (!window.__visitTodayDelegated) {
+    window.__visitTodayDelegated = true;
+    document.addEventListener('click', function (event) {
+      var card = event.target && event.target.closest ? event.target.closest('.visit-today-card') : null;
+      if (!card || event.target.matches('input[type="checkbox"]')) return;
+      var checkbox = card.querySelector('input[type="checkbox"]');
+      if (checkbox && !checkbox.disabled) checkbox.click();
+    });
+    document.addEventListener('keydown', function (event) {
+      var card = event.target && event.target.closest ? event.target.closest('.visit-today-card') : null;
+      if (!card || (event.key !== 'Enter' && event.key !== ' ')) return;
+      event.preventDefault();
+      var checkbox = card.querySelector('input[type="checkbox"]');
+      if (checkbox && !checkbox.disabled) checkbox.click();
+    });
+  }
 
   var visitTrendRequestId = 0;
   var visitTrendBound = false;
