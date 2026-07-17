@@ -6258,7 +6258,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbznxdkOOZzKTDSPanEIf6QvU7kmrNfkmM3LiqINit5Uvvn9wn0MM74j1TG4JM8me0SzlQ/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbymw7ZPc-uwLJl4PA6i7kMmwlYzt_zE13ga24aAzZ5HMmKUwPuG5SmCLSYfYQ2ySVYBog/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -6759,7 +6759,12 @@
             hideLoading();
 
             if (result && result.success) {
-              setMemberScanStatus('Data customer ditemukan. Membuka dashboard...', 'task_alt');
+              setMemberScanStatus(
+                result.scannedUnknown || result.welcomeOnly
+                  ? 'Nomor member belum tercatat. Menampilkan Welcome Back Moment...'
+                  : 'Data customer ditemukan. Membuka dashboard...',
+                result.scannedUnknown || result.welcomeOnly ? 'person_off' : 'task_alt'
+              );
               const profile = result.profile || {};
               AppState.selectedCustomer = {
                 name: profile.name || 'Customer Bakerzin',
@@ -6769,15 +6774,17 @@
                 source: profile.source || 'MEMBER'
               };
               AppState.dashboardData = result;
-              writeDashboardCacheFromResult(result, AppState.selectedCustomer, profile.mobile);
+              if (!result.scannedUnknown && !result.welcomeOnly) {
+                writeDashboardCacheFromResult(result, AppState.selectedCustomer, profile.mobile);
+              }
               renderDashboard(result);
               setTimeout(function() {
                 closeMemberScanModal();
                 showPage('page-dashboard');
               }, 320);
 
-              if (result.scannedUnknown) {
-                showToast('Customer ditemukan. Welcome Back Moment ditampilkan.', 'info');
+              if (result.scannedUnknown || result.welcomeOnly) {
+                showToast('Nomor member tidak ditemukan. Welcome Back Moment ditampilkan.', 'info');
               } else {
                 showToast('Customer ditemukan. Dashboard berhasil disiapkan.', 'success');
               }
@@ -12125,6 +12132,25 @@
     animation: cheers-popup-in .34s ease-out both;
   }
 
+  /* Kunjungan dicatat otomatis saat dashboard customer valid terbuka. */
+  #page-dashboard .visit-today-card {
+    display: none !important;
+  }
+
+  .customer-welcome-only {
+    width: 100%;
+    min-height: min(62vh, 560px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 0;
+  }
+
+  .customer-welcome-only .v46-nohistory-hero {
+    width: 100%;
+    margin: 0;
+  }
+
   .customer-cheers-popup::before {
     content: '';
     position: absolute;
@@ -12648,16 +12674,23 @@
     data = data || {};
     var rec = data.recommendations || {};
     var favorites = [].concat(data.favoriteMenu || [], rec.customerFavorite || []);
-    var offers = [].concat(rec.premiumRecommendation || [], rec.recommendedPromo || [], rec.promoRecommendation || [], rec.addOnRecommendation || []);
+    var offers = [].concat(rec.smartRecommendation || [], rec.premiumRecommendation || [], rec.recommendedPromo || [], rec.promoRecommendation || [], rec.addOnRecommendation || []);
+    var history = [].concat(data.lastOrderedItems || [], data.orderHistory || [], data.lastOrders || []);
     var food = favorites.filter(function (x) { return !isDrink(x); })[0] || favorites[0];
     var drink = favorites.concat(offers).filter(isDrink)[0];
-    var ai = offers.filter(function (x) { return itemName(x) && itemName(x) !== itemName(drink); })[0];
+    var usedNames = [itemName(food), itemName(drink)].filter(Boolean).map(function(name) { return name.toLowerCase(); });
+    var actualCandidates = offers.concat(favorites, history).filter(function (item) {
+      var name = itemName(item);
+      return name && usedNames.indexOf(name.toLowerCase()) < 0;
+    });
+    var ai = actualCandidates[0] || offers[0] || favorites[0] || history[0] || drink;
     return {
       food: itemName(food) || 'menu makanan favoritnya',
       drink: itemName(drink) || 'minuman favoritnya',
-      ai: itemName(ai) || 'menu pilihan chef',
+      ai: itemName(ai) || 'belum ada menu yang dapat direkomendasikan',
       foodItem: food || null,
-      drinkItem: drink || null
+      drinkItem: drink || null,
+      aiItem: ai || null
     };
   }
 
@@ -12757,12 +12790,15 @@
   function smartRecommendationCopy(data, offer) {
     data = data || {};
     var types = (data.customerTypes || []).map(function (type) { return (type && type.code) || ''; });
-    var reason = 'paling selaras dengan kombinasi menu favorit customer';
-    if (types.indexOf('GROUP_VISITOR') >= 0) reason = 'cocok melengkapi pesanan saat customer datang bersama grup';
-    else if (types.indexOf('HIGH_SPENDER') >= 0) reason = 'memberikan opsi premium yang tetap dekat dengan preferensi customer';
-    else if (types.indexOf('WEEKDAY_VISITOR') >= 0) reason = 'sesuai dengan pola kunjungan weekday dan menu yang paling sering dipesan';
-    else if (types.indexOf('WEEKEND_VISITOR') >= 0) reason = 'sesuai untuk pengalaman bersantap santai saat weekend';
-    else if (types.indexOf('SINGLE_VISITOR') >= 0) reason = 'memiliki porsi dan karakter yang nyaman untuk kunjungan personal';
+    var reason = firstUsefulText([offer && offer.aiItem && offer.aiItem.reason]);
+    if (!reason) {
+      reason = 'paling selaras dengan kombinasi menu favorit customer';
+      if (types.indexOf('GROUP_VISITOR') >= 0) reason = 'cocok melengkapi pesanan saat customer datang bersama grup';
+      else if (types.indexOf('HIGH_SPENDER') >= 0) reason = 'memberikan opsi premium yang tetap dekat dengan preferensi customer';
+      else if (types.indexOf('WEEKDAY_VISITOR') >= 0) reason = 'sesuai dengan pola kunjungan weekday dan menu yang paling sering dipesan';
+      else if (types.indexOf('WEEKEND_VISITOR') >= 0) reason = 'sesuai untuk pengalaman bersantap santai saat weekend';
+      else if (types.indexOf('SINGLE_VISITOR') >= 0) reason = 'memiliki porsi dan karakter yang nyaman untuk kunjungan personal';
+    }
     return '<span class="customer-cheers-menu-name">' + safeHtml(offer.ai) + '</span> direkomendasikan karena ' + safeHtml(reason) + '.';
   }
 
@@ -12837,17 +12873,97 @@
   }
   window.closeCheersPopup = closeCheersPopup;
 
+  var autoVisitRequests = {};
+
+  function renderWelcomeBackOnly() {
+    var container = document.getElementById('dashboard-content');
+    if (!container) return;
+    closeCheersPopup();
+    container.innerHTML =
+      '<div class="customer-welcome-only">' +
+        '<div class="v46-nohistory-hero">' +
+          '<div class="v46-nohistory-icon"><span class="material-icons-round">volunteer_activism</span></div>' +
+          '<div class="v46-pill" style="margin-bottom:10px"><span class="material-icons-round" style="font-size:12px">auto_awesome</span>Welcome Back Moment</div>' +
+          '<div class="v46-nohistory-title">Customer ini sudah lama sekali tidak berkunjung ke Bakerzin.</div>' +
+          '<div class="v46-nohistory-message">Layanilah dengan baik, berikan pengalaman yang tak akan terlupakan!</div>' +
+          '<div class="v46-nohistory-closing"><span class="material-icons-round" style="font-size:16px">favorite</span>Semangat! We Still &amp; Always Love You.</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function resolveAutomaticVisitOutlet(data) {
+    data = data || {};
+    var profile = data.profile || {};
+    var selectedCustomer = AppState.selectedCustomer || {};
+    var lastVisit = data.lastVisit || {};
+    var outletFilter = document.getElementById('visit-outlet-filter');
+    var filteredOutlet = outletFilter && outletFilter.value ? outletFilter.value.toString().trim() : '';
+    function physicalOutlet(value) {
+      var text = firstUsefulText([value]);
+      if (!text || /^(all|all outlet|all outlets|semua outlet|bihq|hq|head office)$/i.test(text)) return '';
+      return text;
+    }
+
+    if (AppState.isBIHQ) {
+      return physicalOutlet(filteredOutlet) || physicalOutlet(selectedCustomer.outlet) || physicalOutlet(profile.outlet);
+    }
+
+    return physicalOutlet(AppState.outlet) || physicalOutlet(selectedCustomer.outlet) ||
+      physicalOutlet(profile.outlet) || physicalOutlet(lastVisit.branch);
+  }
+
+  function autoRecordDashboardVisit(data) {
+    if (!data || !data.success || data.scannedUnknown || data.welcomeOnly || data.recordVisit === false) return;
+    if (!data.profile || !hasBackend()) return;
+
+    var profile = data.profile;
+    var selectedCustomer = AppState.selectedCustomer || {};
+    var memberId = firstUsefulText([profile.memberId, selectedCustomer.memberId]);
+    var mobile = firstUsefulText([profile.mobile, selectedCustomer.mobile]);
+    var outlet = resolveAutomaticVisitOutlet(data);
+    if ((!memberId && !mobile) || !outlet) return;
+
+    var todayKey = new Date().toISOString().slice(0, 10);
+    var requestKey = [todayKey, memberId || mobile, outlet].join('|').toLowerCase();
+    if (autoVisitRequests[requestKey]) return;
+    autoVisitRequests[requestKey] = 'sending';
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success) {
+          autoVisitRequests[requestKey] = 'done';
+          data.todayVisit = {
+            visited: true,
+            reviewStatus: 'Pending',
+            row: result.row || null,
+            outlet: outlet,
+            automatic: true
+          };
+          AppState.dashboardData = data;
+          writeDashboardCacheFromResult(data, AppState.selectedCustomer, mobile);
+          if (typeof loadVisitTrend === 'function') loadVisitTrend();
+        } else {
+          delete autoVisitRequests[requestKey];
+          console.warn((result && result.message) || 'Kunjungan otomatis belum dapat dicatat.');
+        }
+      })
+      .withFailureHandler(function(error) {
+        delete autoVisitRequests[requestKey];
+        console.warn('Kunjungan otomatis gagal:', error && error.message ? error.message : error);
+      })
+      .saveVisit({
+        name: profile.name || '',
+        memberId: memberId,
+        mobile: mobile,
+        outlet: outlet
+      });
+  }
+
   function addDashboardCheers(data) {
     var container = document.getElementById('dashboard-content');
     if (!container) return;
 
-    var visitCard = container.querySelector('.visit-today-card');
-    if (visitCard) {
-      visitCard.setAttribute('role', 'checkbox');
-      visitCard.setAttribute('tabindex', '0');
-      visitCard.setAttribute('aria-label', 'Catat kunjungan hari ini');
-      visitCard.setAttribute('aria-checked', visitCard.classList.contains('checked') ? 'true' : 'false');
-    }
+    container.querySelectorAll('.visit-today-card').forEach(function(card) { card.remove(); });
 
     var phone = document.getElementById('phone-display-value');
     if (phone && data && data.profile) phone.textContent = maskCustomerPhone(data.profile.mobile);
@@ -12901,8 +13017,13 @@
   }
 
   window.renderDashboard = function (data) {
+    if (data && (data.scannedUnknown || data.welcomeOnly)) {
+      renderWelcomeBackOnly();
+      return;
+    }
     originalRenderDashboard(data);
     addDashboardCheers(data);
+    autoRecordDashboardVisit(data);
   };
 
   /* Password must be entered on every fresh login; old auto-login is disabled. */
@@ -13178,33 +13299,8 @@
         customer.memberId,
         AppState.isBIHQ ? '' : (AppState.outlet || ''),
         result.favoriteMenu || [],
-        result.lastPax || null
-      );
-  }
-
-  function loadDeferredTodayVisit(result, customer) {
-    if (!result || !result.todayVisit || !result.todayVisit.deferred || !hasBackend()) return;
-    google.script.run
-      .withSuccessHandler(function (todayVisit) {
-        var active = AppState.selectedCustomer || {};
-        if (String(active.memberId || '') !== String((customer && customer.memberId) || '')) return;
-        result.todayVisit = todayVisit || { visited: false, reviewStatus: '' };
-        AppState.dashboardData = result;
-        writeDashboardCacheFromResult(result, customer);
-        var checkbox = document.getElementById('visit-checkbox');
-        var card = document.getElementById('visit-today-toggle');
-        var visited = !!(todayVisit && todayVisit.visited);
-        if (checkbox) checkbox.checked = visited;
-        if (card) {
-          card.classList.toggle('checked', visited);
-          card.setAttribute('aria-checked', visited ? 'true' : 'false');
-        }
-      })
-      .withFailureHandler(function () {})
-      .getTodayVisitStatus(
-        customer.memberId,
-        AppState.isBIHQ ? '' : (AppState.outlet || ''),
-        (result.profile && result.profile.mobile) || customer.mobile || ''
+        result.lastPax || null,
+        result.customerTypes || []
       );
   }
 
@@ -13223,7 +13319,6 @@
           AppState.dashboardData = result;
           writeDashboardCacheFromResult(result, customer);
           window.renderDashboard(result);
-          loadDeferredTodayVisit(result, customer);
           loadDeferredDashboardRecommendations(result, customer);
           console.info('Dashboard ready in ' + (Date.now() - requestStartedAt) + ' ms; mode=' + (result.performanceMode || 'unknown') + '; backend=' + (result.loadMs || '-') + ' ms');
         } else {
