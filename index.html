@@ -5583,7 +5583,6 @@
 
         <!-- Nomor HP -->
         <div class="search-field-wrapper">
-          <label>Cari dengan Nomor HP</label>
           <div class="search-input-wrap">
             <input type="text" id="search-mobile" placeholder="Cari dengan no HP..." autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="tel">
             <button class="clear-btn" id="clear-mobile" onclick="clearSearchField('mobile')">
@@ -6223,7 +6222,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbzsWXYxW1DVXDgluLOTdm32pLEje1kfJMLQMnHZDh0ha8kNu39SLlmUEW4hBVRGrx3lGQ/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbycn0LX4RpTmLGMOchQJ8SxaOgspwvNyFbA5aSa7FipFg8qu8rNt3H5BgcfhmmSs2XuaQ/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
