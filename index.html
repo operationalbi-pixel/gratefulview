@@ -5544,9 +5544,7 @@
         <section class="visit-trend-card" aria-labelledby="visit-trend-title">
           <div class="visit-trend-head">
             <div>
-              <div class="visit-trend-eyebrow">CUSTOMER TRAFFIC</div>
-              <h2 id="visit-trend-title">Grafik Kunjungan</h2>
-              <p>Jumlah customer berdasarkan tanggal</p>
+              <h2 id="visit-trend-title">MEMBER CUSTOMER TRAFFIC</h2>
             </div>
             <div class="visit-trend-controls">
               <select id="visit-range-mode" aria-label="Pilih periode grafik">
@@ -5567,14 +5565,12 @@
             <button type="button" id="visit-apply-range">Terapkan</button>
           </div>
           <div class="visit-trend-summary">
-            <div><strong id="visit-chart-total">—</strong><span>Total kunjungan</span></div>
             <span id="visit-chart-period">7 hari terakhir</span>
           </div>
           <div class="visit-chart-wrap">
             <div id="visit-chart-state" class="visit-chart-state">Memuat grafik kunjungan...</div>
             <svg id="visit-line-chart" viewBox="0 0 640 270" role="img" aria-label="Grafik garis kunjungan customer" preserveAspectRatio="xMidYMid meet"></svg>
           </div>
-          <div class="visit-chart-source"><span class="material-icons-round">database</span> Sumber: Berkunjung Hari Ini</div>
         </section>
 
         <div class="customer-search-main">
@@ -11913,21 +11909,20 @@
     justify-content: space-between;
     gap: 16px;
   }
-  #page-search .visit-trend-eyebrow {
-    margin-bottom: 5px;
-    color: #2b8798;
-    font-size: .64rem;
-    font-weight: 850;
-    letter-spacing: .13em;
+  #page-search .visit-trend-head h2 {
+    margin: 8px 0 0;
+    color: #1f7f90;
+    font-size: clamp(.84rem,1.55vw,1.05rem);
+    font-weight: 900;
+    letter-spacing: .075em;
+    white-space: nowrap;
   }
-  #page-search .visit-trend-head h2 { margin: 0; color: #15353c; font-size: clamp(1.08rem,2vw,1.38rem); }
-  #page-search .visit-trend-head p { margin: 6px 0 0; color: #829296; font-size: .76rem; }
   #page-search .visit-trend-controls {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
     gap: 7px;
-    max-width: 58%;
+    max-width: 70%;
   }
   #page-search .visit-trend-controls select,
   #page-search .visit-custom-range input {
@@ -11941,7 +11936,10 @@
     font: inherit;
     font-size: .72rem;
   }
-  #page-search .visit-outlet-filter select { max-width: 160px; }
+  #page-search .visit-outlet-filter select {
+    width: 240px;
+    max-width: 240px;
+  }
   #page-search .visit-custom-range {
     margin-top: 14px;
     padding: 11px;
@@ -11967,14 +11965,10 @@
     font-weight: 750;
   }
   #page-search .visit-trend-summary {
-    margin: 18px 2px 4px;
+    margin: 14px 2px 2px;
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 12px;
+    justify-content: flex-end;
   }
-  #page-search .visit-trend-summary > div { display: flex; align-items: baseline; gap: 8px; }
-  #page-search .visit-trend-summary strong { color: #123f48; font-size: 1.55rem; line-height: 1; }
   #page-search .visit-trend-summary span { color: #7b8e92; font-size: .68rem; }
   #page-search .visit-chart-wrap { position: relative; width: 100%; min-height: 235px; }
   #page-search #visit-line-chart { display: block; width: 100%; height: auto; min-height: 235px; }
@@ -11990,16 +11984,6 @@
     pointer-events: none;
   }
   #page-search .visit-chart-state:empty { display: none; }
-  #page-search .visit-chart-source {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 5px;
-    color: #9aa8ab;
-    font-size: .62rem;
-  }
-  #page-search .visit-chart-source .material-icons-round { font-size: 13px; }
-
   @media (min-width: 900px) {
     #page-search .customer-search-layout {
       grid-template-columns: minmax(0,1.16fr) minmax(390px,.84fr);
@@ -12847,11 +12831,9 @@
   function renderVisitTrend(result) {
     var svg = document.getElementById('visit-line-chart');
     var state = document.getElementById('visit-chart-state');
-    var total = document.getElementById('visit-chart-total');
     var period = document.getElementById('visit-chart-period');
     if (!svg || !state) return;
     populateVisitOutlets(result.outlets);
-    if (total) total.textContent = Number(result.total || 0).toLocaleString('id-ID');
     if (period) period.textContent = visitShortDate(result.startDate) + ' – ' + visitShortDate(result.endDate);
     var points = Array.isArray(result.points) ? result.points : [];
     if (!points.length) {
@@ -12876,7 +12858,10 @@
     markup += '<path d="' + path + '" fill="none" stroke="#1d8798" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
     var labelEvery = Math.max(1, Math.ceil(points.length / 6));
     points.forEach(function (p,i) {
-      markup += '<circle cx="' + x(i) + '" cy="' + y(p.count) + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ': ' + Number(p.count || 0) + ' kunjungan</title></circle>';
+      var pointX = x(i), pointY = y(p.count), count = Number(p.count || 0);
+      var valueY = pointY < 34 ? pointY + 20 : pointY - 11;
+      markup += '<circle cx="' + pointX + '" cy="' + pointY + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ': ' + count + ' kunjungan</title></circle>';
+      markup += '<text x="' + pointX + '" y="' + valueY + '" text-anchor="middle" fill="#174b55" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="11" font-weight="800">' + count + '</text>';
       if (i % labelEvery === 0 || i === points.length - 1) markup += '<text x="' + x(i) + '" y="' + (H-15) + '" text-anchor="middle" fill="#71878c" font-size="11">' + visitShortDate(p.date) + '</text>';
     });
     svg.innerHTML = markup;
