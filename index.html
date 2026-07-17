@@ -6258,7 +6258,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbx3XLKk4or6nTmv6qr3mHazspAYfMvJTLNSq8t14jIBz39xK3usZvrTx3Et0Pm8evW_fQ/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbyk011NtaF9PKC2ESpincyIt3JcWv42TgcGEm7SLLl76P7uNMnW4QelOtyJTerBCQmYzQ/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -12063,6 +12063,47 @@
     #page-search #visit-line-chart { min-height: 210px; }
   }
 
+  .dashboard-fast-shell {
+    width:min(100%,760px);
+    margin:0 auto;
+    display:grid;
+    gap:14px;
+    animation:fast-shell-in .22s ease-out both;
+  }
+  .dashboard-fast-profile,
+  .dashboard-fast-panel {
+    box-sizing:border-box;
+    border:1px solid rgba(32,117,138,.12);
+    border-radius:22px;
+    background:#fff;
+    box-shadow:0 14px 34px rgba(25,78,91,.09);
+  }
+  .dashboard-fast-profile {
+    padding:18px;
+    display:flex;
+    align-items:center;
+    gap:13px;
+  }
+  .dashboard-fast-avatar {
+    width:48px;height:48px;border-radius:15px;
+    display:grid;place-items:center;flex:0 0 auto;
+    color:#fff;background:linear-gradient(135deg,#20758a,#3aa4ad);
+    font-size:.82rem;font-weight:900;letter-spacing:.04em;
+  }
+  .dashboard-fast-profile h2 { margin:0;color:#17373e;font-size:1rem;line-height:1.2; }
+  .dashboard-fast-profile p { margin:5px 0 0;color:#7f9296;font-size:.73rem; }
+  .dashboard-fast-panel { padding:18px; }
+  .dashboard-fast-line {
+    height:11px;margin:9px 0;border-radius:99px;
+    background:linear-gradient(90deg,#edf4f5 20%,#dcebed 42%,#edf4f5 65%);
+    background-size:220% 100%;animation:fast-shell-shimmer 1.25s linear infinite;
+  }
+  .dashboard-fast-line.short { width:46%; }
+  .dashboard-fast-line.medium { width:72%; }
+  .dashboard-fast-error { color:#a84135!important; }
+  @keyframes fast-shell-shimmer { to { background-position:-220% 0; } }
+  @keyframes fast-shell-in { from { opacity:0;transform:translateY(5px); } to { opacity:1;transform:none; } }
+
   .customer-cheers-popup {
     position: relative;
     box-sizing: border-box !important;
@@ -13020,21 +13061,111 @@
   };
   try { handleLogin = window.handleLogin; } catch (e) {}
 
+  function showFastDashboardShell(customer) {
+    var container = document.getElementById('dashboard-content');
+    if (!container) return;
+    var name = (customer && customer.name) || 'Customer';
+    var initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(function (part) { return part.charAt(0).toUpperCase(); }).join('') || 'C';
+    container.innerHTML =
+      '<div class="dashboard-fast-shell">' +
+        '<section class="dashboard-fast-profile">' +
+          '<div class="dashboard-fast-avatar">' + safeHtml(initials) + '</div>' +
+          '<div><h2>' + safeHtml(name) + '</h2><p id="dashboard-fast-status">Menyiapkan insight customer...</p></div>' +
+        '</section>' +
+        '<section class="dashboard-fast-panel" aria-hidden="true">' +
+          '<div class="dashboard-fast-line medium"></div>' +
+          '<div class="dashboard-fast-line"></div>' +
+          '<div class="dashboard-fast-line short"></div>' +
+        '</section>' +
+      '</div>';
+    showPage('page-dashboard');
+  }
+
+  function loadDeferredDashboardRecommendations(result, customer) {
+    if (!result || !result.recommendationsDeferred || !hasBackend()) return;
+    google.script.run
+      .withSuccessHandler(function (detail) {
+        if (!detail || !detail.success || !detail.recommendations) return;
+        var active = AppState.selectedCustomer || {};
+        if (String(active.memberId || '') !== String((customer && customer.memberId) || '')) return;
+        result.recommendations = Object.assign({}, result.recommendations || {}, detail.recommendations);
+        result.recommendationsDeferred = false;
+        result.recommendationSheetsLoaded = true;
+        AppState.dashboardData = result;
+        writeDashboardCacheFromResult(result, customer);
+        window.renderDashboard(result);
+      })
+      .withFailureHandler(function () {
+        /* Core dashboard is already usable; keep recommendation failure silent. */
+      })
+      .loadDashboardRecommendations(
+        customer.memberId,
+        AppState.isBIHQ ? '' : (AppState.outlet || ''),
+        result.favoriteMenu || [],
+        result.lastPax || null
+      );
+  }
+
+  function loadDeferredTodayVisit(result, customer) {
+    if (!result || !result.todayVisit || !result.todayVisit.deferred || !hasBackend()) return;
+    google.script.run
+      .withSuccessHandler(function (todayVisit) {
+        var active = AppState.selectedCustomer || {};
+        if (String(active.memberId || '') !== String((customer && customer.memberId) || '')) return;
+        result.todayVisit = todayVisit || { visited: false, reviewStatus: '' };
+        AppState.dashboardData = result;
+        writeDashboardCacheFromResult(result, customer);
+        var checkbox = document.getElementById('visit-checkbox');
+        var card = document.getElementById('visit-today-toggle');
+        var visited = !!(todayVisit && todayVisit.visited);
+        if (checkbox) checkbox.checked = visited;
+        if (card) {
+          card.classList.toggle('checked', visited);
+          card.setAttribute('aria-checked', visited ? 'true' : 'false');
+        }
+      })
+      .withFailureHandler(function () {})
+      .getTodayVisitStatus(
+        customer.memberId,
+        AppState.isBIHQ ? '' : (AppState.outlet || ''),
+        (result.profile && result.profile.mobile) || customer.mobile || ''
+      );
+  }
+
   function loadCustomer(customer) {
     AppState.selectedCustomer = customer;
-    showLoading('Memuat dashboard customer...');
+    var requestStartedAt = Date.now();
+    showFastDashboardShell(customer);
+    var slowMessageTimer = setTimeout(function () {
+      var status = document.getElementById('dashboard-fast-status');
+      if (status) status.textContent = 'Menyusun rekomendasi dan catatan favorit...';
+    }, 2500);
     google.script.run
       .withSuccessHandler(function (result) {
-        hideLoading();
+        clearTimeout(slowMessageTimer);
         if (result && result.success) {
           AppState.dashboardData = result;
           writeDashboardCacheFromResult(result, customer);
           window.renderDashboard(result);
-          showPage('page-dashboard');
-        } else showToast((result && result.message) || 'Gagal memuat dashboard.', 'error');
+          loadDeferredTodayVisit(result, customer);
+          loadDeferredDashboardRecommendations(result, customer);
+          console.info('Dashboard ready in ' + (Date.now() - requestStartedAt) + ' ms; mode=' + (result.performanceMode || 'unknown') + '; backend=' + (result.loadMs || '-') + ' ms');
+        } else {
+          var status = document.getElementById('dashboard-fast-status');
+          if (status) {
+            status.classList.add('dashboard-fast-error');
+            status.textContent = (result && result.message) || 'Dashboard belum dapat dimuat.';
+          }
+          showToast((result && result.message) || 'Gagal memuat dashboard.', 'error');
+        }
       })
       .withFailureHandler(function (error) {
-        hideLoading();
+        clearTimeout(slowMessageTimer);
+        var status = document.getElementById('dashboard-fast-status');
+        if (status) {
+          status.classList.add('dashboard-fast-error');
+          status.textContent = 'Koneksi data terputus. Silakan kembali dan coba lagi.';
+        }
         showToast('Error: ' + ((error && error.message) || error), 'error');
       })
       .loadCustomerDashboard(customer.memberId, customer.source, AppState.isBIHQ ? '' : (AppState.outlet || ''));
