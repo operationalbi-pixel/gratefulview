@@ -5545,6 +5545,7 @@
         <p>Temukan customer untuk pengalaman pelayanan personal</p>
       </div>
 
+      <div class="customer-search-card">
       <button class="member-scan-hero" type="button" onclick="openMemberScanModal()" aria-label="Scan QR Member">
         <div class="member-scan-hero-left">
           <div class="member-scan-hero-icon">
@@ -5582,15 +5583,18 @@
 
         <!-- Nomor HP -->
         <div class="search-field-wrapper">
-          <label>Nomor HP</label>
+          <label>Cari dengan Nomor HP</label>
           <div class="search-input-wrap">
-            <input type="text" id="search-mobile" placeholder="Ketik nomor HP..." autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="tel">
+            <input type="text" id="search-mobile" placeholder="Cari dengan no HP..." autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="tel">
             <button class="clear-btn" id="clear-mobile" onclick="clearSearchField('mobile')">
               <span class="material-icons-round" style="font-size:16px">close</span>
             </button>
             <div class="search-spinner" id="spinner-mobile">
               <div class="spinner spinner-dark" style="width:18px;height:18px"></div>
             </div>
+            <button class="phone-search-submit" id="btn-search" type="button" onclick="handleSearchCustomer()" disabled aria-label="Cari customer">
+              <span class="material-icons-round">search</span>
+            </button>
           </div>
           <div class="suggestion-dropdown" id="dropdown-mobile"></div>
         </div>
@@ -5610,12 +5614,9 @@
           <div class="suggestion-dropdown" id="dropdown-member"></div>
         </div>
       </div>
+      </div>
 
       <div class="search-actions">
-        <button class="btn btn-primary" id="btn-search" onclick="handleSearchCustomer()" disabled>
-          <span class="material-icons-round" style="font-size:20px">person_search</span>
-          Search Customer
-        </button>
         <button class="btn btn-review-gold" onclick="openReviewModal()">
           <span class="material-icons-round" style="font-size:20px">rate_review</span>
           Give Review
@@ -11658,6 +11659,176 @@
   @media (prefers-reduced-motion: reduce) {
     #page-search .member-scan-hero,
     #page-search .member-scan-hero::after { animation: none !important; }
+  }
+
+  /* Centered customer-search card: phone search first, QR scan second. */
+  #page-search .search-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+    padding-top: 24px;
+    padding-bottom: 24px !important;
+  }
+
+  #page-search .search-header {
+    width: min(100%, 520px);
+    margin: 0 auto 16px;
+  }
+
+  #page-search .customer-search-card {
+    width: min(100%, 520px);
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid rgba(32, 117, 138, .13);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 20px 48px rgba(25, 78, 91, .12), 0 4px 14px rgba(25, 78, 91, .07);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  #page-search .customer-search-card .search-fields {
+    order: 1;
+    width: 100%;
+    margin: 0;
+    gap: 0;
+  }
+
+  #page-search .customer-search-card .member-scan-hero {
+    order: 2;
+    min-height: 112px !important;
+    margin: 18px 0 0 !important;
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+  #page-search .customer-search-card .member-scan-hero-title {
+    font-size: clamp(1.12rem, 4.5vw, 1.38rem) !important;
+  }
+
+  #page-search .customer-search-card .member-scan-hero-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 15px;
+  }
+
+  #page-search .customer-search-card .member-scan-hero-icon .material-icons-round {
+    font-size: 29px;
+  }
+
+  #page-search .search-field-wrapper:has(#search-mobile) label {
+    margin-bottom: 8px;
+    color: #5f7479;
+    font-size: .70rem;
+    letter-spacing: .09em;
+  }
+
+  #page-search .search-input-wrap:has(#search-mobile) input {
+    height: 56px;
+    padding: 0 92px 0 17px;
+    border: 1.5px solid #d8e3e5;
+    border-radius: 18px;
+    background: #f8fbfb;
+    color: #17343b;
+    font-size: .94rem;
+    box-shadow: inset 0 1px 2px rgba(25, 78, 91, .025);
+  }
+
+  #page-search .search-input-wrap:has(#search-mobile) input::placeholder {
+    color: #aab7ba;
+    opacity: 1;
+  }
+
+  #page-search .search-input-wrap:has(#search-mobile) input:focus {
+    border-color: #3893a5;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(56, 147, 165, .12);
+  }
+
+  #page-search .search-input-wrap:has(#search-mobile) .clear-btn {
+    right: 52px;
+    z-index: 2;
+    background: transparent;
+  }
+
+  #page-search .search-input-wrap:has(#search-mobile) .search-spinner {
+    right: 58px;
+    z-index: 3;
+  }
+
+  #page-search .phone-search-submit {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(135deg, #20758a, #3298aa);
+    box-shadow: 0 7px 16px rgba(32, 117, 138, .24);
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+  }
+
+  #page-search .phone-search-submit .material-icons-round {
+    font-size: 23px;
+  }
+
+  #page-search .phone-search-submit:active:not(:disabled) {
+    transform: translateY(-50%) scale(.94);
+  }
+
+  #page-search .phone-search-submit:disabled {
+    color: #9aa9ac;
+    background: #e6edef;
+    box-shadow: none;
+    cursor: default;
+  }
+
+  #page-search .search-actions {
+    display: none !important;
+  }
+
+  @media (max-width: 420px) {
+    #page-search .search-content {
+      padding: 18px 14px;
+      padding-bottom: 18px !important;
+    }
+
+    #page-search .search-header {
+      margin-bottom: 14px;
+    }
+
+    #page-search .customer-search-card {
+      padding: 16px;
+      border-radius: 22px;
+    }
+
+    #page-search .customer-search-card .member-scan-hero {
+      min-height: 104px !important;
+      padding: 15px 13px !important;
+      margin-top: 16px !important;
+    }
+
+    #page-search .customer-search-card .member-scan-hero-left {
+      gap: 11px;
+    }
+
+    #page-search .customer-search-card .member-scan-hero-title {
+      font-size: 1.06rem !important;
+    }
+
+    #page-search .customer-search-card .member-scan-hero-desc {
+      font-size: .69rem !important;
+    }
   }
 
   .customer-cheers-popup {
