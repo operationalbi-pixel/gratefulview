@@ -6223,7 +6223,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbwtbVNdmQOkH_Q9BRkiLYJqY6zPzingG8FYVACyAMWW-uG5x9swZsrmHTAsU-YSu7EUKQ/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbzsWXYxW1DVXDgluLOTdm32pLEje1kfJMLQMnHZDh0ha8kNu39SLlmUEW4hBVRGrx3lGQ/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -11990,6 +11990,79 @@
     text-shadow: 0 1px 10px rgba(255, 205, 92, .24);
   }
 
+  /* Dashboard pricing is intentionally hidden from every customer view. */
+  #page-dashboard .recommendation-card-price,
+  #page-dashboard .v46-rec-price,
+  #page-dashboard .v47-list-price,
+  #page-dashboard .spending-panel,
+  #page-dashboard .spending-panel-value,
+  #page-dashboard [class*="price"] {
+    display: none !important;
+  }
+
+  .dashboard-details-divider {
+    width: 100%;
+    margin: 16px 0 8px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+  }
+
+  .dashboard-details-divider::before,
+  .dashboard-details-divider::after {
+    content: '';
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(32, 117, 138, .30));
+  }
+
+  .dashboard-details-divider::after {
+    background: linear-gradient(90deg, rgba(32, 117, 138, .30), transparent);
+  }
+
+  .dashboard-details-toggle {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid rgba(32, 117, 138, .28);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #176a7d;
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(32, 117, 138, .14);
+    cursor: pointer;
+    transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
+  }
+
+  .dashboard-details-toggle .material-icons-round {
+    font-size: 22px;
+    transition: transform .24s ease;
+  }
+
+  .dashboard-details-toggle[aria-expanded="true"] .material-icons-round {
+    transform: rotate(180deg);
+  }
+
+  .dashboard-details-toggle:active {
+    transform: scale(.94);
+  }
+
+  .dashboard-details-collapsible[hidden] {
+    display: none !important;
+  }
+
+  .dashboard-details-collapsible {
+    width: 100%;
+    animation: dashboard-details-open .24s ease both;
+  }
+
+  @keyframes dashboard-details-open {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .customer-cheers-food {
     color: #ffe2a7;
     font-weight: 900;
@@ -12344,6 +12417,71 @@
     return '<span class="customer-cheers-menu-name">' + safeHtml(offer.ai) + '</span> direkomendasikan karena ' + safeHtml(reason) + '.';
   }
 
+  function hideDashboardPrices(container) {
+    if (!container) return;
+    container.querySelectorAll('.recommendation-card-price, .v46-rec-price, .v47-list-price, .spending-panel, .spending-panel-value, [class*="price"]').forEach(function (node) {
+      node.style.display = 'none';
+      node.setAttribute('aria-hidden', 'true');
+    });
+
+    container.querySelectorAll('.v46-stat, .insight-card, .v48-insight-card').forEach(function (card) {
+      if (/total\s*belanja/i.test(card.textContent || '')) {
+        card.style.display = 'none';
+        card.setAttribute('aria-hidden', 'true');
+      }
+    });
+
+    container.querySelectorAll('*').forEach(function (node) {
+      if (!node.children.length && /^\s*Rp\b/i.test(node.textContent || '')) {
+        node.style.display = 'none';
+        node.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
+  function setupDashboardDetailsToggle(container) {
+    if (!container) return;
+    var titles = container.querySelectorAll('.v46-section-title, .section-title');
+    var insightTitle = null;
+    for (var i = 0; i < titles.length; i++) {
+      if (/Customer\s+Insight/i.test(titles[i].textContent || '')) {
+        insightTitle = titles[i];
+        break;
+      }
+    }
+    if (!insightTitle) return;
+
+    var firstSection = insightTitle;
+    var sectionHost = insightTitle.parentNode;
+    if (!sectionHost) return;
+
+    var divider = document.createElement('div');
+    divider.className = 'dashboard-details-divider';
+    divider.innerHTML = '<button class="dashboard-details-toggle" type="button" aria-expanded="false" aria-controls="dashboard-details-content" aria-label="Tampilkan informasi lengkap"><span class="material-icons-round">expand_more</span></button>';
+
+    var collapsible = document.createElement('div');
+    collapsible.id = 'dashboard-details-content';
+    collapsible.className = 'dashboard-details-collapsible';
+    collapsible.hidden = true;
+
+    sectionHost.insertBefore(divider, firstSection);
+    sectionHost.insertBefore(collapsible, firstSection);
+    var node = firstSection;
+    while (node) {
+      var next = node.nextSibling;
+      collapsible.appendChild(node);
+      node = next;
+    }
+
+    var toggle = divider.querySelector('.dashboard-details-toggle');
+    toggle.addEventListener('click', function () {
+      var willExpand = toggle.getAttribute('aria-expanded') !== 'true';
+      toggle.setAttribute('aria-expanded', willExpand ? 'true' : 'false');
+      toggle.setAttribute('aria-label', willExpand ? 'Sembunyikan informasi lengkap' : 'Tampilkan informasi lengkap');
+      collapsible.hidden = !willExpand;
+    });
+  }
+
   function closeCheersPopup() {
     var popup = document.getElementById('customer-cheers-popup');
     if (popup) popup.remove();
@@ -12383,7 +12521,7 @@
         '<span class="material-icons-round" style="font-size:19px">close</span>' +
       '</button>' +
       '<div class="customer-cheers-popup-title"><span class="material-icons-round" style="font-size:17px">record_voice_over</span>SCRIPT</div>' +
-      '<div class="customer-script-quote">“Bapak/Ibu, sebelumnya pernah memesan <span class="customer-cheers-food">' + safeHtml(offer.food) +
+      '<div class="customer-script-quote">“ ..., sebelumnya pernah memesan <span class="customer-cheers-food">' + safeHtml(offer.food) +
       '</span> dan <span class="customer-cheers-drink">' + safeHtml(offer.drink) +
       '</span>. Apakah hari ini ingin memesan menu yang sama?”</div>' +
       '<div class="customer-cheers-meta-grid">' +
@@ -12400,6 +12538,9 @@
     var profile = container.querySelector('.v46-profile, .profile-card');
     if (profile && profile.parentNode) profile.insertAdjacentElement('afterend', popup);
     else container.insertAdjacentElement('afterbegin', popup);
+
+    hideDashboardPrices(container);
+    setupDashboardDetailsToggle(container);
   }
 
   window.renderDashboard = function (data) {
@@ -12508,10 +12649,6 @@
       return;
     }
 
-    var national = wanted.charAt(0) === '0' ? wanted.slice(1) : wanted;
-    var variants = [value, wanted, national, '62' + national, '+62' + national]
-      .filter(function (query, index, list) { return query && list.indexOf(query) === index; });
-
     /* Fastest path: dashboards saved after a previous scan/search. */
     try {
       var cachedDashboard = readDashboardCacheByPhone(wanted);
@@ -12560,58 +12697,32 @@
       showToast(message, 'error');
     }
 
-    function fallbackDetailedSearch() {
-      showLoading('Mencari pada detail transaksi customer...');
-      var timeoutId = setTimeout(function () {
-        finishWithoutCustomer('Database belum mengembalikan data customer. Nomor belum terindeks pada pencarian Detail Transaksi.');
-      }, 18000);
-
-      google.script.run
-        .withSuccessHandler(function (result) {
-          if (settled) return;
-          clearTimeout(timeoutId);
-          var rows = (result && result.results) || [];
-          var exact = rows.filter(function (row) { return normalizedPhone(row && row.mobile) === wanted; })[0];
-          var match = exact || (rows.length === 1 ? rows[0] : null);
-          if (match) finishWithCustomer(match);
-          else finishWithoutCustomer('Customer belum ditemukan pada indeks nomor telepon database.');
-        })
-        .withFailureHandler(function () {
-          if (settled) return;
-          clearTimeout(timeoutId);
-          finishWithoutCustomer('Pencarian Detail Transaksi gagal diakses. Silakan coba kembali.');
-        })
-        .searchCustomers('mobile', wanted);
-    }
-
+    /* One direct lookup is faster and avoids the former multi-query batch timeout. */
+    var timeoutId = setTimeout(function () {
+      finishWithoutCustomer('Database belum mengembalikan data customer. Silakan coba kembali.');
+    }, 25000);
     google.script.run
       .withSuccessHandler(function (result) {
-        var map = (result && result.results) || {};
-        var info = null;
-        variants.some(function (variant) {
-          var candidate = map[variant] || map[normalizedPhone(variant)];
-          if (candidate && candidate.exists) {
-            info = candidate;
-            return true;
-          }
-          return false;
-        });
-
-        if (info && info.memberId) {
-          finishWithCustomer({
-            name: info.name || '',
-            memberId: info.memberId,
-            mobile: info.mobile || wanted,
-            source: info.source || 'MEMBER'
-          });
-        } else {
-          fallbackDetailedSearch();
-        }
+        if (settled) return;
+        clearTimeout(timeoutId);
+        var rows = (result && result.results) || [];
+        var wantedTail = wanted.slice(-8);
+        var exact = rows.filter(function (row) {
+          return normalizedPhone(row && row.mobile) === wanted;
+        })[0];
+        var suffixMatch = rows.filter(function (row) {
+          return normalizedPhone(row && row.mobile).slice(-8) === wantedTail;
+        })[0];
+        var match = exact || suffixMatch || rows[0];
+        if (match && match.memberId) finishWithCustomer(match);
+        else finishWithoutCustomer((result && result.error) || 'Customer belum ditemukan pada nomor HP tersebut.');
       })
       .withFailureHandler(function () {
-        fallbackDetailedSearch();
+        if (settled) return;
+        clearTimeout(timeoutId);
+        finishWithoutCustomer('Pencarian nomor HP gagal diakses. Silakan coba kembali.');
       })
-      .checkPhonesAvailabilityBatch(variants);
+      .searchCustomers('mobile', value);
   };
   try { handleSearchCustomer = window.handleSearchCustomer; } catch (e) {}
 
