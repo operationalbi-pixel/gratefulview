@@ -6258,7 +6258,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbyk011NtaF9PKC2ESpincyIt3JcWv42TgcGEm7SLLl76P7uNMnW4QelOtyJTerBCQmYzQ/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbznxdkOOZzKTDSPanEIf6QvU7kmrNfkmM3LiqINit5Uvvn9wn0MM74j1TG4JM8me0SzlQ/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -12263,6 +12263,24 @@
     text-shadow: 0 1px 10px rgba(255, 205, 92, .24);
   }
 
+  .customer-cheers-note-menu {
+    color: #ffd36a;
+    font-size: 1.08em;
+    font-weight: 950;
+    letter-spacing: .015em;
+    text-shadow: 0 1px 10px rgba(255, 190, 70, .22);
+  }
+
+  .customer-cheers-note-separator {
+    color: rgba(255, 226, 167, .72);
+    font-weight: 800;
+  }
+
+  .customer-cheers-note-text {
+    color: rgba(255,255,255,.94);
+    font-weight: 650;
+  }
+
   /* Dashboard pricing is intentionally hidden from every customer view. */
   #page-dashboard .recommendation-card-price,
   #page-dashboard .v46-rec-price,
@@ -12658,24 +12676,79 @@
     ]);
   }
 
+  function menuNameFromItem(item) {
+    if (!item || typeof item !== 'object') return '';
+    return firstUsefulText([
+      item.menu, item.menuName, item.menu_name, item.Menu,
+      item.name, item.itemName, item.item_name
+    ]);
+  }
+
+  function formatMenuNote(menu, note) {
+    var cleanMenu = firstUsefulText([menu]);
+    var cleanNote = firstUsefulText([note]);
+    if (!cleanNote) return '';
+    if (!cleanMenu) return cleanNote;
+
+    // Hindari nama menu ganda bila backend lama sudah mengirim "Menu - Note".
+    var normalizedNote = cleanNote.toLowerCase();
+    var normalizedPrefix = cleanMenu.toLowerCase() + ' -';
+    return normalizedNote.indexOf(normalizedPrefix) === 0
+      ? cleanNote
+      : cleanMenu + ' - ' + cleanNote;
+  }
+
   function pickMenuNote(data, offer) {
     data = data || {};
+    var rows = [].concat(data.favoriteMenu || [], data.lastOrderedItems || [], data.orderHistory || [], data.lastOrders || []);
     var direct = firstUsefulText([
       data.menuNote, data.menu_note, data.MenuNote, data['Menu Note'],
       data.lastMenuNote, data.lastOrderNote, data.lastTransactionNote,
       data.favoriteOrderNote, data.orderNote
     ]);
-    if (direct) return direct;
+    if (direct) {
+      var directMenu = firstUsefulText([
+        data.menuNoteMenu, data.menu_note_menu, data.lastMenuNoteMenu,
+        data.favoriteMenuNoteMenu
+      ]);
+      if (!directMenu) {
+        for (var d = 0; d < rows.length; d++) {
+          if (noteFromItem(rows[d]) === direct) {
+            directMenu = menuNameFromItem(rows[d]);
+            break;
+          }
+        }
+      }
+      return formatMenuNote(directMenu, direct);
+    }
 
-    var preferred = noteFromItem(offer && offer.foodItem) || noteFromItem(offer && offer.drinkItem);
-    if (preferred) return preferred;
+    var preferredItems = [offer && offer.foodItem, offer && offer.drinkItem];
+    for (var p = 0; p < preferredItems.length; p++) {
+      var preferred = noteFromItem(preferredItems[p]);
+      if (preferred) return formatMenuNote(menuNameFromItem(preferredItems[p]), preferred);
+    }
 
-    var rows = [].concat(data.favoriteMenu || [], data.lastOrderedItems || [], data.orderHistory || [], data.lastOrders || []);
     for (var i = 0; i < rows.length; i++) {
       var note = noteFromItem(rows[i]);
-      if (note) return note;
+      if (note) return formatMenuNote(menuNameFromItem(rows[i]), note);
     }
     return 'Belum ada note pada pesanan favorit terakhir.';
+  }
+
+  function menuNoteHtml(value) {
+    var text = firstUsefulText([value]);
+    if (!text) return '';
+
+    var separatorIndex = text.indexOf(' - ');
+    if (separatorIndex <= 0) return safeHtml(text);
+
+    var menu = text.slice(0, separatorIndex).trim();
+    var note = text.slice(separatorIndex + 3).trim();
+    if (!menu || !note) return safeHtml(text);
+
+    return '<span class="customer-cheers-note-menu">' + safeHtml(menu) + '</span>' +
+      '<span class="customer-cheers-note-separator"> - </span>' +
+      '<span class="customer-cheers-note-text">' + safeHtml(note) + '</span>';
   }
 
   function smartRecommendationCopy(data, offer) {
@@ -12812,7 +12885,7 @@
         '</div>' +
         '<div class="customer-cheers-meta-card customer-cheers-note">' +
           '<div class="customer-cheers-meta-label"><span class="material-icons-round" style="font-size:15px">sticky_note_2</span>Note</div>' +
-          '<div class="customer-cheers-meta-copy">' + safeHtml(menuNote) + '</div>' +
+          '<div class="customer-cheers-meta-copy">' + menuNoteHtml(menuNote) + '</div>' +
         '</div>' +
       '</div>';
 
