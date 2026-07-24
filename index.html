@@ -2769,6 +2769,30 @@
       font-weight: 500;
     }
     .list-card-phone .material-icons-round { font-size: 14px; color: var(--text-tertiary); }
+    .list-card-outlet {
+      display: flex;
+      align-items: flex-start;
+      gap: 5px;
+      width: fit-content;
+      max-width: 100%;
+      margin-top: 7px;
+      padding: 5px 9px;
+      background: var(--cyan-glow-soft);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-full);
+      color: var(--cyan-300);
+      font-size: 0.6875rem;
+      font-weight: 750;
+      line-height: 1.3;
+      letter-spacing: 0.02em;
+    }
+    .list-card-outlet .material-icons-round {
+      flex: 0 0 auto;
+      margin-top: 1px;
+      color: var(--cyan-400);
+      font-size: 13px;
+    }
+    .list-card-outlet-name { min-width: 0; overflow-wrap: anywhere; }
     .list-card-pax {
       flex-shrink: 0;
       display: flex;
@@ -2895,6 +2919,26 @@
       color: var(--text-tertiary);
       cursor: not-allowed;
       opacity: 0.7;
+    }
+    .action-btn.history-availability-btn.data-available {
+      background: linear-gradient(135deg, #2e8b57, #247347);
+      border-color: rgba(113, 214, 151, 0.72);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(46, 139, 87, 0.22);
+    }
+    .action-btn.history-availability-btn.data-available:hover {
+      background: linear-gradient(135deg, #35a164, #287e4d);
+      border-color: rgba(159, 235, 187, 0.9);
+      color: #ffffff;
+    }
+    .action-btn.history-availability-btn.data-unavailable,
+    .action-btn.history-availability-btn.data-unavailable:disabled {
+      background: rgba(148, 163, 184, 0.12);
+      border-color: rgba(148, 163, 184, 0.28);
+      color: var(--text-tertiary);
+      cursor: not-allowed;
+      opacity: 1;
+      box-shadow: none;
     }
     .action-btn.action-confirm {
       background: linear-gradient(135deg, rgba(0, 188, 212, 0.18), rgba(0, 188, 212, 0.06));
@@ -8672,6 +8716,7 @@
                 ${highlightMatch(r.name, term)}
                 ${r.member ? '<span class="source-tag"><span class="material-icons-round">verified</span>Member</span>' : ''}
               </div>
+              ${renderBIHQOutlet(r.outlet)}
               <div class="list-card-phone">
                 <span class="material-icons-round">phone</span>
                 ${highlightMatch(formatPhoneDisplay(r.phone), term)}
@@ -8697,7 +8742,7 @@
             </div>
           </div>
           <div class="list-card-actions">
-            <button class="action-btn data-available-btn reservasi-only-data-btn" data-phone="${escapeAttr(r.phone)}" data-name="${escapeAttr(r.name)}">
+            <button class="action-btn data-available-btn history-availability-btn reservasi-only-data-btn" data-phone="${escapeAttr(r.phone)}" data-name="${escapeAttr(r.name)}">
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
             </button>
@@ -8830,6 +8875,7 @@
                 ${highlightMatch(w.name, term)}
                 ${fromRes ? '<span class="source-tag"><span class="material-icons-round">event_available</span>Reservasi</span>' : ''}
               </div>
+              ${renderBIHQOutlet(w.outlet)}
               <div class="list-card-phone">
                 <span class="material-icons-round">phone</span>
                 ${highlightMatch(formatPhoneDisplay(w.phone), term)}
@@ -8868,7 +8914,7 @@
             </label>
           </div>
           <div class="list-card-actions">
-            <button class="action-btn data-available-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
+            <button class="action-btn data-available-btn history-availability-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
             </button>
@@ -8881,6 +8927,17 @@
               Cancel
             </button>
           </div>
+        </div>
+      `;
+    }
+
+    function renderBIHQOutlet(outlet) {
+      if (!AppState.isBIHQ) return '';
+      const outletName = String(outlet || '').trim() || 'Outlet tidak tersedia';
+      return `
+        <div class="list-card-outlet" title="Outlet: ${escapeAttr(outletName)}">
+          <span class="material-icons-round" aria-hidden="true">storefront</span>
+          <span class="list-card-outlet-name">${escapeHtml(outletName)}</span>
         </div>
       `;
     }
@@ -8957,9 +9014,10 @@
     }
 
     function _paintDataAvailable(btn, exists, name, phone, info) {
+      const isHistoryStatus = btn.classList.contains('history-availability-btn');
       btn.innerHTML = exists
-        ? '<span class="material-icons-round">database</span>Data Tersedia'
-        : '<span class="material-icons-round">visibility_off</span>Data Tersedia';
+        ? '<span class="material-icons-round">database</span>' + (isHistoryStatus ? 'DATA HISTORY TERSEDIA' : 'Data Tersedia')
+        : '<span class="material-icons-round">visibility_off</span>' + (isHistoryStatus ? 'DATA HISTORY TIDAK TERSEDIA' : 'Data Tidak Tersedia');
       btn.classList.remove('data-available', 'data-unavailable');
       btn.classList.add(exists ? 'data-available' : 'data-unavailable');
       btn.dataset.available = exists ? 'true' : 'false';
@@ -8969,7 +9027,13 @@
       if (info && info.memberId) btn.dataset.memberId = info.memberId;
       if (info && info.source) btn.dataset.source = info.source;
       if (exists) {
+        btn.disabled = false;
+        btn.removeAttribute('aria-disabled');
         btn.onclick = function() { openCustomerDashboardByPhone(phone, name); };
+      } else if (isHistoryStatus) {
+        btn.disabled = true;
+        btn.setAttribute('aria-disabled', 'true');
+        btn.onclick = null;
       } else {
         btn.onclick = function(e) {
           e.preventDefault();
