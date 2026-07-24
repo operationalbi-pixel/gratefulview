@@ -2794,15 +2794,18 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
-      width: fit-content;
+      flex: 1 1 100%;
+      width: 100%;
       max-width: 100%;
-      margin-top: 7px;
-      padding: 5px 9px;
+      height: 40px;
+      min-height: 40px;
+      margin-top: 0;
+      padding: 0 12px;
       flex-wrap: nowrap;
       overflow: hidden;
       background: var(--cyan-glow-soft);
       border: 1px solid var(--border-accent);
-      border-radius: var(--radius-full);
+      border-radius: var(--radius-sm);
     }
     .list-card-context-row .list-card-outlet,
     .list-card-context-row .list-card-reservation-time {
@@ -8796,16 +8799,6 @@
               <div class="list-card-pax-label">Pax</div>
             </div>
           </div>
-          <div class="list-card-context-row">
-            ${renderBIHQOutlet(r.outlet)}
-            <div class="list-card-context-time">
-              ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
-              <div class="list-card-reservation-time">
-                <span class="material-icons-round">event</span>
-                ${formatHumanDate(r.date)}${r.time ? ' · ' + escapeHtml(r.time) : ''}
-              </div>
-            </div>
-          </div>
           <div class="list-card-meta">
             <div class="list-card-meta-row">
               <div class="list-card-meta-label">Special</div>
@@ -8817,6 +8810,16 @@
             </div>
           </div>
           <div class="list-card-actions">
+            <div class="list-card-context-row">
+              ${renderBIHQOutlet(r.outlet)}
+              <div class="list-card-context-time">
+                ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
+                <div class="list-card-reservation-time">
+                  <span class="material-icons-round">event</span>
+                  ${formatHumanDate(r.date)}${r.time ? ' · ' + escapeHtml(r.time) : ''}
+                </div>
+              </div>
+            </div>
             <button class="action-btn data-available-btn history-availability-btn reservasi-only-data-btn" data-phone="${escapeAttr(r.phone)}" data-name="${escapeAttr(r.name)}">
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
@@ -8960,20 +8963,6 @@
               <div class="list-card-pax-label">Pax</div>
             </div>
           </div>
-          <div class="list-card-context-row">
-            ${renderBIHQOutlet(w.outlet)}
-            <div class="list-card-context-time">
-              ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
-              ${w.time ? `
-                <div class="list-card-reservation-time">
-                  <span class="material-icons-round">schedule</span>
-                  ${escapeHtml(w.time)}
-                </div>
-              ` : `
-                <div class="list-card-timestamp">Ditambahkan ${timeAgo(w.createdAt)}</div>
-              `}
-            </div>
-          </div>
           <div class="list-card-meta">
             <div class="list-card-meta-row">
               <div class="list-card-meta-label">Special</div>
@@ -8994,6 +8983,20 @@
             </label>
           </div>
           <div class="list-card-actions">
+            <div class="list-card-context-row">
+              ${renderBIHQOutlet(w.outlet)}
+              <div class="list-card-context-time">
+                ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
+                ${w.time ? `
+                  <div class="list-card-reservation-time">
+                    <span class="material-icons-round">schedule</span>
+                    ${escapeHtml(w.time)}
+                  </div>
+                ` : `
+                  <div class="list-card-timestamp">Ditambahkan ${timeAgo(w.createdAt)}</div>
+                `}
+              </div>
+            </div>
             <button class="action-btn data-available-btn history-availability-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
@@ -9832,16 +9835,6 @@
               <div class="list-card-pax-label">Qty</div>
             </div>
           </div>
-          <div class="list-card-context-row">
-            ${renderBIHQOutlet(o.outlet)}
-            <div class="list-card-context-time">
-              ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
-              <div class="list-card-reservation-time">
-                <span class="material-icons-round">event</span>
-                ${formatHumanDate(o.date)}${o.time ? ' · ' + escapeHtml(o.time) : ''}
-              </div>
-            </div>
-          </div>
           ${o.address ? `<div class="list-card-timestamp"><span class="material-icons-round" style="font-size:14px;vertical-align:-2px">location_on</span> ${escapeHtml(o.address)}</div>` : ''}
           <div class="order-total">${formatPrice(o.total || 0)}</div>
           ${(firstItems || o.note) ? `
@@ -9850,6 +9843,16 @@
               ${o.note ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Note</div><div class="list-card-meta-value">${escapeHtml(o.note)}</div></div>` : ''}
             </div>` : ''}
           <div class="list-card-actions">
+            <div class="list-card-context-row">
+              ${renderBIHQOutlet(o.outlet)}
+              <div class="list-card-context-time">
+                ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
+                <div class="list-card-reservation-time">
+                  <span class="material-icons-round">event</span>
+                  ${formatHumanDate(o.date)}${o.time ? ' · ' + escapeHtml(o.time) : ''}
+                </div>
+              </div>
+            </div>
             <button class="action-btn data-available" onclick="openOrderDetailModal('${escapeAttr(o.id)}')">
               <span class="material-icons-round">receipt_long</span>
               Detail Pesanan
