@@ -2769,6 +2769,33 @@
       font-weight: 500;
     }
     .list-card-phone .material-icons-round { font-size: 14px; color: var(--text-tertiary); }
+    .list-card-phone.list-card-phone-stacked {
+      display: flex;
+      width: fit-content;
+      margin-top: 6px;
+    }
+    .list-card-context-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      margin-top: 7px;
+      flex-wrap: wrap;
+    }
+    .list-card-context-row .list-card-outlet,
+    .list-card-context-row .list-card-reservation-time { margin-top: 0; }
+    .list-card-context-time {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .list-card-context-separator {
+      flex: 0 0 auto;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
     .list-card-outlet {
       display: flex;
       align-items: flex-start;
@@ -8716,14 +8743,19 @@
                 ${highlightMatch(r.name, term)}
                 ${r.member ? '<span class="source-tag"><span class="material-icons-round">verified</span>Member</span>' : ''}
               </div>
-              ${renderBIHQOutlet(r.outlet)}
-              <div class="list-card-phone">
+              <div class="list-card-phone list-card-phone-stacked">
                 <span class="material-icons-round">phone</span>
                 ${highlightMatch(formatPhoneDisplay(r.phone), term)}
               </div>
-              <div class="list-card-reservation-time">
-                <span class="material-icons-round">event</span>
-                ${formatHumanDate(r.date)}${r.time ? ' · ' + escapeHtml(r.time) : ''}
+              <div class="list-card-context-row">
+                ${renderBIHQOutlet(r.outlet)}
+                <div class="list-card-context-time">
+                  ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
+                  <div class="list-card-reservation-time">
+                    <span class="material-icons-round">event</span>
+                    ${formatHumanDate(r.date)}${r.time ? ' · ' + escapeHtml(r.time) : ''}
+                  </div>
+                </div>
               </div>
             </div>
             <div class="list-card-pax">
@@ -8875,19 +8907,24 @@
                 ${highlightMatch(w.name, term)}
                 ${fromRes ? '<span class="source-tag"><span class="material-icons-round">event_available</span>Reservasi</span>' : ''}
               </div>
-              ${renderBIHQOutlet(w.outlet)}
-              <div class="list-card-phone">
+              <div class="list-card-phone list-card-phone-stacked">
                 <span class="material-icons-round">phone</span>
                 ${highlightMatch(formatPhoneDisplay(w.phone), term)}
               </div>
-              ${w.time ? `
-                <div class="list-card-reservation-time">
-                  <span class="material-icons-round">schedule</span>
-                  ${w.time}
+              <div class="list-card-context-row">
+                ${renderBIHQOutlet(w.outlet)}
+                <div class="list-card-context-time">
+                  ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
+                  ${w.time ? `
+                    <div class="list-card-reservation-time">
+                      <span class="material-icons-round">schedule</span>
+                      ${escapeHtml(w.time)}
+                    </div>
+                  ` : `
+                    <div class="list-card-timestamp">Ditambahkan ${timeAgo(w.createdAt)}</div>
+                  `}
                 </div>
-              ` : `
-                <div class="list-card-timestamp">Ditambahkan ${timeAgo(w.createdAt)}</div>
-              `}
+              </div>
             </div>
             <div class="list-card-pax">
               <div class="list-card-pax-num">${w.pax}</div>
