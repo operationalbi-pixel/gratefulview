@@ -9779,8 +9779,20 @@
                 ${escapeHtml(o.name || '-')}
                 <span class="order-type-pill"><span class="material-icons-round" style="font-size:13px">${typeIcon}</span>${escapeHtml(o.typeLabel || o.type || '-')}</span>
               </div>
-              <div class="list-card-phone"><span class="material-icons-round">phone</span>${escapeHtml(formatPhoneDisplay(o.phone || '-'))}</div>
-              <div class="list-card-timestamp">${formatHumanDate(o.date)}${o.time ? ' · ' + escapeHtml(o.time) : ''}</div>
+              <div class="list-card-phone list-card-phone-stacked">
+                <span class="material-icons-round">phone</span>
+                ${escapeHtml(formatPhoneDisplay(o.phone || '-'))}
+              </div>
+              <div class="list-card-context-row">
+                ${renderBIHQOutlet(o.outlet)}
+                <div class="list-card-context-time">
+                  ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
+                  <div class="list-card-reservation-time">
+                    <span class="material-icons-round">event</span>
+                    ${formatHumanDate(o.date)}${o.time ? ' · ' + escapeHtml(o.time) : ''}
+                  </div>
+                </div>
+              </div>
               ${o.address ? `<div class="list-card-timestamp"><span class="material-icons-round" style="font-size:14px;vertical-align:-2px">location_on</span> ${escapeHtml(o.address)}</div>` : ''}
               <div class="order-total">${formatPrice(o.total || 0)}</div>
             </div>
