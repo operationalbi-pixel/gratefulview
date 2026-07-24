@@ -5924,7 +5924,7 @@
       <div class="list-page-header">
         <div>
           <h2>Pemesanan</h2>
-          <p>List pesanan customer Delivery dan Pickup / Take Away</p>
+          <p>List pesanan Delivery, Pickup / Take Away, dan Pre-order Reservasi</p>
         </div>
       </div>
 
@@ -6258,7 +6258,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbymw7ZPc-uwLJl4PA6i7kMmwlYzt_zE13ga24aAzZ5HMmKUwPuG5SmCLSYfYQ2ySVYBog/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbw58_NR6-GisW8K9gsjFD8febMJpN7wnMi_-OjtMiHiLjUkEQ9OT5bS2qPVsTa2E0iehA/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -9643,9 +9643,7 @@
       const container = document.getElementById('pemesanan-list');
       if (!container) return;
       const term = ListState.ordersSearch || '';
-      let items = [...(ListState.orders || [])].filter(function(o) {
-        return (o.type || '').toString().toUpperCase() !== 'RESERVASI_PREORDER';
-      });
+      let items = [...(ListState.orders || [])];
       const totalCount = items.length;
       if (term) items = items.filter(o => orderMatchesSearch(o, term));
       items.sort(function(a, b) {
@@ -13026,10 +13024,45 @@
     autoRecordDashboardVisit(data);
   };
 
-  /* Password must be entered on every fresh login; old auto-login is disabled. */
+  /* Login persists on this browser until the user explicitly logs out. */
   window.tryPersistentAutoLogin = function () {
-    try { clearPersistentLogin(); } catch (e) {}
-    return false;
+    if (!hasBackend()) return false;
+
+    var saved = readPersistentLogin();
+    if (!saved || !saved.outlet || !saved.outletCode) return false;
+
+    var savedCode = saved.outletCode.toString().trim();
+    finishLogin({
+      success: true,
+      outlet: saved.outlet,
+      outletCode: savedCode,
+      message: 'Login tersimpan.'
+    }, savedCode, true);
+
+    /* BIHQ is validated by its dedicated all-outlet login rule. */
+    if (savedCode.toUpperCase() === 'BIHQ') return true;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success) {
+          savePersistentLogin(result.outletCode || savedCode, result.outlet || saved.outlet);
+          AppState.outlet = result.outlet || saved.outlet;
+          AppState.outletCode = result.outletCode || savedCode;
+          AppState.isBIHQ = false;
+          setOutletLabels(AppState.outlet);
+        } else {
+          clearPersistentLogin();
+          stopRealtimeSync();
+          showPage('page-login');
+          showToast('Kode outlet tersimpan sudah tidak valid. Silakan login ulang.', 'error');
+        }
+      })
+      .withFailureHandler(function() {
+        /* Gangguan sementara tidak menghapus sesi yang sudah tersimpan. */
+      })
+      .validateLogin(savedCode);
+
+    return true;
   };
   try { tryPersistentAutoLogin = window.tryPersistentAutoLogin; } catch (e) {}
 
@@ -13191,8 +13224,10 @@
   window.loadVisitTrend = loadVisitTrend;
   window.renderVisitTrend = renderVisitTrend;
 
-  function finishLogin(result, code) {
+  function finishLogin(result, code, fromCache) {
     var isBIHQ = code.toUpperCase() === 'BIHQ';
+    savePersistentLogin(result.outletCode || code, result.outlet || (isBIHQ ? 'Semua Outlet' : ''));
+
     if (isBIHQ) {
       AppState.outlet = '';
       AppState.outletCode = 'BIHQ';
@@ -13206,14 +13241,14 @@
         refreshFromBackend(true);
         refreshOrdersFromBackend(true);
       }
-      showToast('Login BIHQ berhasil. Akses: Semua Outlet.', 'success');
+      showToast(fromCache ? 'Login BIHQ tersimpan. Masuk otomatis.' : 'Login BIHQ berhasil. Akses: Semua Outlet.', 'success');
       return;
     }
 
     AppState.isBIHQ = false;
-    originalApplyLoggedInOutlet(result.outlet, result.outletCode || code, false);
+    originalApplyLoggedInOutlet(result.outlet, result.outletCode || code, !!fromCache);
     initVisitTrend(true);
-    showToast((result.message || 'Login berhasil.') + ' Akses outlet aktif.', 'success');
+    if (!fromCache) showToast((result.message || 'Login berhasil.') + ' Akses outlet aktif.', 'success');
   }
 
   window.handleLogin = function () {
@@ -13429,8 +13464,6 @@
   try { handleSearchCustomer = window.handleSearchCustomer; } catch (e) {}
 
   document.addEventListener('DOMContentLoaded', function () {
-    try { clearPersistentLogin(); } catch (e) {}
-
     var password = document.getElementById('login-password');
     if (password) password.addEventListener('keydown', function (event) {
       if (event.key === 'Enter') window.handleLogin();
