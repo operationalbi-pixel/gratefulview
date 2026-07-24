@@ -6418,7 +6418,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbwP7S1aU56whWx3W-CfPY4JbtTCtGHIx8vcybJP6qLADlwSVMOQhd9XiU3wix7qlZk0_g/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbw_-z4be23NWG3SRmFWvSt3nlIbDlDh97Desa8GuPyuK5pWTolsx9QaQk5O_2Hhpl5pcA/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -13553,14 +13553,27 @@
       markup += '<line x1="' + left + '" y1="' + py + '" x2="' + (W-right) + '" y2="' + py + '" stroke="#e4edef"/>';
       markup += '<text x="' + (left-10) + '" y="' + (py+4) + '" text-anchor="end" fill="#91a1a5" font-size="11">' + Math.round(value) + '</text>';
     }
-    var repeatPath = points.map(function (p,i) { return (i ? 'L' : 'M') + x(i).toFixed(2) + ' ' + y(p.repeatCount).toFixed(2); }).join(' ');
-    var welcomePath = points.map(function (p,i) { return (i ? 'L' : 'M') + x(i).toFixed(2) + ' ' + y(p.welcomeCount).toFixed(2); }).join(' ');
+    function buildPositiveSeriesPath(key) {
+      var drawing = false;
+      return points.reduce(function (path, point, index) {
+        var value = Number(point[key]) || 0;
+        if (value <= 0) {
+          drawing = false;
+          return path;
+        }
+        path.push((drawing ? 'L' : 'M') + x(index).toFixed(2) + ' ' + y(value).toFixed(2));
+        drawing = true;
+        return path;
+      }, []).join(' ');
+    }
+    var repeatPath = buildPositiveSeriesPath('repeatCount');
+    var welcomePath = buildPositiveSeriesPath('welcomeCount');
     var selectedIndex = availableDates.indexOf(visitTrendSelectedDate);
     if (selectedIndex >= 0) {
       markup += '<line x1="' + x(selectedIndex) + '" y1="' + top + '" x2="' + x(selectedIndex) + '" y2="' + (top + innerH) + '" stroke="#b7dfe5" stroke-width="2" stroke-dasharray="4 5"/>';
     }
-    markup += '<path d="' + repeatPath + '" fill="none" stroke="#1d8798" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
-    markup += '<path d="' + welcomePath + '" fill="none" stroke="#e2aa24" stroke-width="3.5" stroke-dasharray="8 7" stroke-linecap="round" stroke-linejoin="round"/>';
+    if (repeatPath) markup += '<path d="' + repeatPath + '" fill="none" stroke="#1d8798" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
+    if (welcomePath) markup += '<path d="' + welcomePath + '" fill="none" stroke="#e2aa24" stroke-width="3.5" stroke-dasharray="8 7" stroke-linecap="round" stroke-linejoin="round"/>';
     var labelEvery = Math.max(1, Math.ceil(points.length / 6));
     points.forEach(function (p,i) {
       var pointX = x(i);
@@ -13576,10 +13589,14 @@
       var selectedClass = p.date === visitTrendSelectedDate ? ' is-selected' : '';
       markup += '<g class="visit-line-point' + selectedClass + '" data-date="' + p.date + '" tabindex="0" role="button" aria-label="' + visitShortDate(p.date) + ', Repeat ' + repeatCount + ', Welcome Back ' + welcomeCount + '. Tampilkan rincian outlet">';
       markup += '<rect class="visit-point-hit" x="' + (pointX - 14) + '" y="' + top + '" width="28" height="' + innerH + '"/>';
-      markup += '<circle class="visit-point-dot visit-repeat-dot" cx="' + pointX + '" cy="' + repeatY + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ' — Repeat: ' + repeatCount + '</title></circle>';
-      markup += '<circle class="visit-point-dot visit-welcome-dot" cx="' + pointX + '" cy="' + welcomeY + '" r="5" fill="#fff" stroke="#e2aa24" stroke-width="3"><title>' + visitShortDate(p.date) + ' — Welcome Back: ' + welcomeCount + '</title></circle>';
-      markup += '<text x="' + pointX + '" y="' + repeatLabelY + '" text-anchor="middle" fill="#174b55" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="10.5" font-weight="800" pointer-events="none">' + repeatCount + '</text>';
-      markup += '<text x="' + pointX + '" y="' + welcomeLabelY + '" text-anchor="middle" fill="#9a6a00" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="10.5" font-weight="800" pointer-events="none">' + welcomeCount + '</text>';
+      if (repeatCount > 0) {
+        markup += '<circle class="visit-point-dot visit-repeat-dot" cx="' + pointX + '" cy="' + repeatY + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ' — Repeat: ' + repeatCount + '</title></circle>';
+        markup += '<text x="' + pointX + '" y="' + repeatLabelY + '" text-anchor="middle" fill="#174b55" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="10.5" font-weight="800" pointer-events="none">' + repeatCount + '</text>';
+      }
+      if (welcomeCount > 0) {
+        markup += '<circle class="visit-point-dot visit-welcome-dot" cx="' + pointX + '" cy="' + welcomeY + '" r="5" fill="#fff" stroke="#e2aa24" stroke-width="3"><title>' + visitShortDate(p.date) + ' — Welcome Back: ' + welcomeCount + '</title></circle>';
+        markup += '<text x="' + pointX + '" y="' + welcomeLabelY + '" text-anchor="middle" fill="#9a6a00" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="10.5" font-weight="800" pointer-events="none">' + welcomeCount + '</text>';
+      }
       markup += '</g>';
       if (i % labelEvery === 0 || i === points.length - 1) markup += '<text x="' + x(i) + '" y="' + (H-15) + '" text-anchor="middle" fill="#71878c" font-size="11">' + visitShortDate(p.date) + '</text>';
     });
