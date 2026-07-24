@@ -5704,6 +5704,10 @@
             <button type="button" id="visit-apply-range">Terapkan</button>
           </div>
           <div class="visit-trend-summary">
+            <div class="visit-chart-legend" aria-label="Keterangan grafik">
+              <span><i class="visit-legend-line repeat"></i>Repeat</span>
+              <span><i class="visit-legend-line welcome"></i>Welcome Back</span>
+            </div>
             <span id="visit-chart-period">7 hari terakhir</span>
           </div>
           <div class="visit-chart-wrap">
@@ -5715,6 +5719,10 @@
               <div>
                 <h3 id="visit-outlet-chart-title">KUNJUNGAN PER OUTLET</h3>
                 <p id="visit-outlet-chart-date">Hari ini</p>
+                <div class="visit-chart-legend visit-outlet-legend" aria-label="Keterangan grafik outlet">
+                  <span><i class="visit-legend-box repeat"></i>Repeat</span>
+                  <span><i class="visit-legend-box welcome"></i>Welcome Back</span>
+                </div>
               </div>
               <span class="visit-outlet-chart-hint"><span class="material-icons-round">touch_app</span>Pilih tanggal pada grafik garis</span>
             </div>
@@ -6410,7 +6418,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbzkEPosP8P2MaKV__Fwm0qM44tgvHtvplIh8cxq1vnX9Jyz9Eb-fXAkgTeERlm11ICYcQ/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbwP7S1aU56whWx3W-CfPY4JbtTCtGHIx8vcybJP6qLADlwSVMOQhd9XiU3wix7qlZk0_g/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -12222,9 +12230,19 @@
   #page-search .visit-trend-summary {
     margin: 14px 2px 2px;
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: space-between;
   }
   #page-search .visit-trend-summary span { color: #7b8e92; font-size: .68rem; }
+  #page-search .visit-chart-legend { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  #page-search .visit-chart-legend span { display: inline-flex; align-items: center; gap: 5px; color: #5f777c; font-size: .65rem; font-weight: 750; }
+  #page-search .visit-legend-line { width: 22px; height: 0; border-top: 3px solid #1d8798; border-radius: 999px; }
+  #page-search .visit-legend-line.welcome { border-top-color: #e2aa24; border-top-style: dashed; }
+  #page-search .visit-legend-box { width: 10px; height: 10px; border-radius: 3px; background: #1d8798; }
+  #page-search .visit-legend-box.welcome { background: #e2aa24; }
+  #page-search .visit-outlet-legend { margin-top: 8px; }
   #page-search .visit-chart-wrap { position: relative; width: 100%; min-height: 235px; }
   #page-search #visit-line-chart { display: block; width: 100%; height: auto; min-height: 235px; }
   #page-search .visit-chart-state {
@@ -12242,8 +12260,9 @@
   #page-search .visit-line-point { cursor: pointer; outline: none; }
   #page-search .visit-line-point .visit-point-hit { fill: transparent; }
   #page-search .visit-line-point:focus .visit-point-dot,
-  #page-search .visit-line-point:hover .visit-point-dot { fill: #dff4f7; stroke-width: 4; }
-  #page-search .visit-line-point.is-selected .visit-point-dot { fill: #1d8798; stroke: #fff; stroke-width: 4; }
+  #page-search .visit-line-point:hover .visit-point-dot { stroke-width: 4; }
+  #page-search .visit-line-point.is-selected .visit-repeat-dot { fill: #1d8798; stroke: #fff; stroke-width: 4; }
+  #page-search .visit-line-point.is-selected .visit-welcome-dot { fill: #e2aa24; stroke: #fff; stroke-width: 4; }
 
   #page-search .visit-outlet-breakdown {
     margin-top: 18px;
@@ -13183,7 +13202,7 @@
     if ((!memberId && !mobile) || !outlet) return;
 
     var todayKey = new Date().toISOString().slice(0, 10);
-    var requestKey = [todayKey, memberId || mobile, outlet].join('|').toLowerCase();
+    var requestKey = [todayKey, memberId || mobile, outlet, 'REPEAT'].join('|').toLowerCase();
     if (autoVisitRequests[requestKey]) return;
     autoVisitRequests[requestKey] = 'sending';
 
@@ -13214,7 +13233,47 @@
         name: profile.name || '',
         memberId: memberId,
         mobile: mobile,
-        outlet: outlet
+        outlet: outlet,
+        visitType: 'REPEAT'
+      });
+  }
+
+  function autoRecordWelcomeBackVisit(data) {
+    if (!data || !data.success || (!data.scannedUnknown && !data.welcomeOnly) || data.recordVisit === false || !hasBackend()) return;
+
+    var profile = data.profile || {};
+    var selectedCustomer = AppState.selectedCustomer || {};
+    var memberId = firstUsefulText([profile.memberId, selectedCustomer.memberId, data.scannedCode, data.memberId]);
+    var mobile = firstUsefulText([profile.mobile, selectedCustomer.mobile]);
+    if (/^data tidak tersedia$/i.test(mobile)) mobile = '';
+    var outlet = resolveAutomaticVisitOutlet(data);
+    if ((!memberId && !mobile) || !outlet) return;
+
+    var todayKey = new Date().toISOString().slice(0, 10);
+    var requestKey = [todayKey, memberId || mobile, outlet, 'WELCOME_BACK'].join('|').toLowerCase();
+    if (autoVisitRequests[requestKey]) return;
+    autoVisitRequests[requestKey] = 'sending';
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success) {
+          autoVisitRequests[requestKey] = 'done';
+          if (typeof loadVisitTrend === 'function') loadVisitTrend();
+        } else {
+          delete autoVisitRequests[requestKey];
+          console.warn((result && result.message) || 'Welcome Back Moment belum dapat dicatat.');
+        }
+      })
+      .withFailureHandler(function(error) {
+        delete autoVisitRequests[requestKey];
+        console.warn('Pencatatan Welcome Back Moment gagal:', error && error.message ? error.message : error);
+      })
+      .saveVisit({
+        name: firstUsefulText([profile.name, selectedCustomer.name]) || 'Customer Bakerzin',
+        memberId: memberId,
+        mobile: mobile,
+        outlet: outlet,
+        visitType: 'WELCOME_BACK'
       });
   }
 
@@ -13278,6 +13337,7 @@
   window.renderDashboard = function (data) {
     if (data && (data.scannedUnknown || data.welcomeOnly)) {
       renderWelcomeBackOnly();
+      autoRecordWelcomeBackVisit(data);
       return;
     }
     originalRenderDashboard(data);
@@ -13480,7 +13540,10 @@
     }
     var W = 640, H = 270, left = 44, right = 18, top = 18, bottom = 42;
     var innerW = W - left - right, innerH = H - top - bottom;
-    var maxValue = Math.max.apply(null, points.map(function (p) { return Number(p.count) || 0; }));
+    var maxValue = Math.max.apply(null, points.reduce(function (values, p) {
+      values.push(Number(p.repeatCount) || 0, Number(p.welcomeCount) || 0);
+      return values;
+    }, [0]));
     var axisMax = Math.max(1, Math.ceil(maxValue / 4) * 4);
     var x = function (i) { return left + (points.length === 1 ? innerW / 2 : i * innerW / (points.length - 1)); };
     var y = function (v) { return top + innerH - (Number(v) || 0) / axisMax * innerH; };
@@ -13490,21 +13553,33 @@
       markup += '<line x1="' + left + '" y1="' + py + '" x2="' + (W-right) + '" y2="' + py + '" stroke="#e4edef"/>';
       markup += '<text x="' + (left-10) + '" y="' + (py+4) + '" text-anchor="end" fill="#91a1a5" font-size="11">' + Math.round(value) + '</text>';
     }
-    var path = points.map(function (p,i) { return (i ? 'L' : 'M') + x(i).toFixed(2) + ' ' + y(p.count).toFixed(2); }).join(' ');
+    var repeatPath = points.map(function (p,i) { return (i ? 'L' : 'M') + x(i).toFixed(2) + ' ' + y(p.repeatCount).toFixed(2); }).join(' ');
+    var welcomePath = points.map(function (p,i) { return (i ? 'L' : 'M') + x(i).toFixed(2) + ' ' + y(p.welcomeCount).toFixed(2); }).join(' ');
     var selectedIndex = availableDates.indexOf(visitTrendSelectedDate);
     if (selectedIndex >= 0) {
       markup += '<line x1="' + x(selectedIndex) + '" y1="' + top + '" x2="' + x(selectedIndex) + '" y2="' + (top + innerH) + '" stroke="#b7dfe5" stroke-width="2" stroke-dasharray="4 5"/>';
     }
-    markup += '<path d="' + path + '" fill="none" stroke="#1d8798" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
+    markup += '<path d="' + repeatPath + '" fill="none" stroke="#1d8798" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
+    markup += '<path d="' + welcomePath + '" fill="none" stroke="#e2aa24" stroke-width="3.5" stroke-dasharray="8 7" stroke-linecap="round" stroke-linejoin="round"/>';
     var labelEvery = Math.max(1, Math.ceil(points.length / 6));
     points.forEach(function (p,i) {
-      var pointX = x(i), pointY = y(p.count), count = Number(p.count || 0);
-      var valueY = pointY < 34 ? pointY + 20 : pointY - 11;
+      var pointX = x(i);
+      var repeatCount = Number(p.repeatCount) || 0;
+      var welcomeCount = Number(p.welcomeCount) || 0;
+      var repeatY = y(repeatCount), welcomeY = y(welcomeCount);
+      var repeatLabelY = repeatY < 32 ? repeatY + 20 : repeatY - 11;
+      var welcomeLabelY = welcomeY > H - bottom - 20 ? welcomeY - 11 : welcomeY + 20;
+      if (Math.abs(repeatY - welcomeY) < 26) {
+        repeatLabelY = Math.max(13, repeatY - 12);
+        welcomeLabelY = Math.min(H - bottom - 4, welcomeY + 22);
+      }
       var selectedClass = p.date === visitTrendSelectedDate ? ' is-selected' : '';
-      markup += '<g class="visit-line-point' + selectedClass + '" data-date="' + p.date + '" tabindex="0" role="button" aria-label="' + visitShortDate(p.date) + ', ' + count + ' kunjungan. Tampilkan rincian outlet">';
-      markup += '<circle class="visit-point-hit" cx="' + pointX + '" cy="' + pointY + '" r="15"/>';
-      markup += '<circle class="visit-point-dot" cx="' + pointX + '" cy="' + pointY + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ': ' + count + ' kunjungan</title></circle>';
-      markup += '<text x="' + pointX + '" y="' + valueY + '" text-anchor="middle" fill="#174b55" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="11" font-weight="800" pointer-events="none">' + count + '</text>';
+      markup += '<g class="visit-line-point' + selectedClass + '" data-date="' + p.date + '" tabindex="0" role="button" aria-label="' + visitShortDate(p.date) + ', Repeat ' + repeatCount + ', Welcome Back ' + welcomeCount + '. Tampilkan rincian outlet">';
+      markup += '<rect class="visit-point-hit" x="' + (pointX - 14) + '" y="' + top + '" width="28" height="' + innerH + '"/>';
+      markup += '<circle class="visit-point-dot visit-repeat-dot" cx="' + pointX + '" cy="' + repeatY + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ' — Repeat: ' + repeatCount + '</title></circle>';
+      markup += '<circle class="visit-point-dot visit-welcome-dot" cx="' + pointX + '" cy="' + welcomeY + '" r="5" fill="#fff" stroke="#e2aa24" stroke-width="3"><title>' + visitShortDate(p.date) + ' — Welcome Back: ' + welcomeCount + '</title></circle>';
+      markup += '<text x="' + pointX + '" y="' + repeatLabelY + '" text-anchor="middle" fill="#174b55" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="10.5" font-weight="800" pointer-events="none">' + repeatCount + '</text>';
+      markup += '<text x="' + pointX + '" y="' + welcomeLabelY + '" text-anchor="middle" fill="#9a6a00" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="10.5" font-weight="800" pointer-events="none">' + welcomeCount + '</text>';
       markup += '</g>';
       if (i % labelEvery === 0 || i === points.length - 1) markup += '<text x="' + x(i) + '" y="' + (H-15) + '" text-anchor="middle" fill="#71878c" font-size="11">' + visitShortDate(p.date) + '</text>';
     });
@@ -13536,12 +13611,15 @@
 
     selectedDate = selectedDate || visitIsoDate(new Date());
     if (dateLabel) dateLabel.textContent = visitLongDate(selectedDate);
-    var byDate = result && result.outletBreakdownByDate ? result.outletBreakdownByDate : {};
+    var byDate = result && result.outletBreakdownTypeByDate ? result.outletBreakdownTypeByDate : {};
     var counts = byDate[selectedDate] || {};
     var rows = Object.keys(counts).map(function (outlet) {
-      return { outlet: outlet, count: Number(counts[outlet]) || 0 };
-    }).filter(function (row) { return row.count > 0; }).sort(function (a, b) {
-      return b.count - a.count || a.outlet.localeCompare(b.outlet);
+      var item = counts[outlet] || {};
+      var repeatCount = Number(item.repeatCount) || 0;
+      var welcomeCount = Number(item.welcomeCount) || 0;
+      return { outlet: outlet, repeatCount: repeatCount, welcomeCount: welcomeCount, total: repeatCount + welcomeCount };
+    }).filter(function (row) { return row.total > 0; }).sort(function (a, b) {
+      return b.total - a.total || a.outlet.localeCompare(b.outlet);
     });
 
     if (!rows.length) {
@@ -13551,32 +13629,37 @@
     }
 
     state.textContent = '';
-    var W = 640, rowH = 36, top = 24, bottom = 14, left = 96, right = 42;
-    var H = Math.max(150, top + rows.length * rowH + bottom);
-    var innerW = W - left - right;
-    var maxValue = Math.max.apply(null, rows.map(function (row) { return row.count; }));
-    var axisMax = Math.max(1, maxValue);
+    var W = 640, H = 260, top = 25, bottom = 48, left = 42, right = 18;
+    var innerW = W - left - right, innerH = H - top - bottom;
+    var maxValue = Math.max.apply(null, rows.map(function (row) { return row.total; }));
+    var axisMax = Math.max(1, Math.ceil(maxValue / 4) * 4);
+    var slotW = innerW / Math.max(rows.length, 1);
+    var barW = Math.min(42, Math.max(18, slotW * .56));
     var markup = '';
 
     for (var tick = 0; tick <= 4; tick++) {
       var tickValue = axisMax * tick / 4;
-      var tickX = left + innerW * tick / 4;
-      markup += '<line x1="' + tickX + '" y1="' + (top - 8) + '" x2="' + tickX + '" y2="' + (H - bottom) + '" stroke="#e5edef" stroke-width="1"/>';
-      markup += '<text x="' + tickX + '" y="11" text-anchor="middle" fill="#91a1a5" font-size="10">' + Math.round(tickValue) + '</text>';
+      var tickY = top + innerH - innerH * tick / 4;
+      markup += '<line x1="' + left + '" y1="' + tickY + '" x2="' + (W - right) + '" y2="' + tickY + '" stroke="#e5edef" stroke-width="1"/>';
+      markup += '<text x="' + (left - 9) + '" y="' + (tickY + 4) + '" text-anchor="end" fill="#91a1a5" font-size="10">' + Math.round(tickValue) + '</text>';
     }
 
     rows.forEach(function (row, index) {
-      var y = top + index * rowH + 7;
-      var barW = Math.max(3, row.count / axisMax * innerW);
+      var centerX = left + slotW * index + slotW / 2;
+      var welcomeH = row.welcomeCount / axisMax * innerH;
+      var repeatH = row.repeatCount / axisMax * innerH;
+      var baseY = top + innerH;
+      var welcomeY = baseY - welcomeH;
+      var repeatY = welcomeY - repeatH;
       var shortName = row.outlet.length > 12 ? row.outlet.substring(0, 11) + '…' : row.outlet;
-      markup += '<text x="' + (left - 12) + '" y="' + (y + 12) + '" text-anchor="end" fill="#31545b" font-size="11" font-weight="700"><title>' + escapeHtml(row.outlet) + '</title>' + escapeHtml(shortName) + '</text>';
-      markup += '<rect x="' + left + '" y="' + y + '" width="' + barW + '" height="16" rx="8" fill="#2c879a"><title>' + escapeHtml(row.outlet) + ': ' + row.count + ' kunjungan</title></rect>';
-      var inside = barW > innerW - 34;
-      markup += '<text x="' + (inside ? left + barW - 8 : left + barW + 8) + '" y="' + (y + 12) + '" text-anchor="' + (inside ? 'end' : 'start') + '" fill="' + (inside ? '#fff' : '#174b55') + '" font-size="11" font-weight="900">' + row.count + '</text>';
+      markup += '<rect x="' + (centerX - barW / 2) + '" y="' + welcomeY + '" width="' + barW + '" height="' + Math.max(0, welcomeH) + '" rx="4" fill="#e2aa24"><title>' + escapeHtml(row.outlet) + ' — Welcome Back: ' + row.welcomeCount + '</title></rect>';
+      markup += '<rect x="' + (centerX - barW / 2) + '" y="' + repeatY + '" width="' + barW + '" height="' + Math.max(0, repeatH) + '" rx="4" fill="#1d8798"><title>' + escapeHtml(row.outlet) + ' — Repeat: ' + row.repeatCount + '</title></rect>';
+      markup += '<text x="' + centerX + '" y="' + Math.max(12, repeatY - 7) + '" text-anchor="middle" fill="#174b55" font-size="11" font-weight="900">' + row.total + '</text>';
+      markup += '<text x="' + centerX + '" y="' + (H - 22) + '" text-anchor="middle" fill="#31545b" font-size="10.5" font-weight="750"><title>' + escapeHtml(row.outlet) + '</title>' + escapeHtml(row.outlet) + '</text>';
     });
 
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-    svg.setAttribute('aria-label', 'Kunjungan per outlet pada ' + visitLongDate(selectedDate));
+    svg.setAttribute('aria-label', 'Kunjungan Repeat dan Welcome Back per outlet pada ' + visitLongDate(selectedDate));
     svg.innerHTML = markup;
   }
 
