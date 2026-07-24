@@ -72,10 +72,10 @@
       --shadow-lg: 0 8px 30px rgba(0,0,0,0.5);
       --shadow-glow: 0 0 20px rgba(0, 188, 212, 0.2);
 
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 20px;
+      --radius-sm: 13px;
+      --radius-md: 21px;
+      --radius-lg: 28px;
+      --radius-xl: 34px;
       --radius-full: 999px;
 
       --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -2791,9 +2791,11 @@
       margin-top: 6px;
     }
     .list-card-context-row {
-      display: inline-flex;
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
       align-items: center;
-      gap: 5px;
+      gap: 0;
       flex: 1 1 100%;
       width: 100%;
       max-width: 100%;
@@ -2807,6 +2809,9 @@
       border: 1px solid var(--border-accent);
       border-radius: var(--radius-sm);
     }
+    .list-card-context-row.has-outlet {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
     .list-card-context-row .list-card-outlet,
     .list-card-context-row .list-card-reservation-time {
       margin-top: 0;
@@ -2816,23 +2821,38 @@
       border-radius: 0;
     }
     .list-card-context-row .list-card-outlet {
-      flex: 1 1 auto;
+      justify-content: center;
+      width: 100%;
+      max-width: 100%;
       min-width: 0;
       padding: 0;
       background: transparent;
       border: 0;
       border-radius: 0;
+      color: var(--text-secondary);
+      font-size: 0.6875rem;
+      font-weight: 700;
+    }
+    .list-card-context-row .list-card-reservation-time,
+    .list-card-context-row .list-card-timestamp {
+      color: var(--text-secondary);
+      font-size: 0.6875rem;
+      font-weight: 700;
     }
     .list-card-context-row .list-card-timestamp { margin-top: 0; white-space: nowrap; }
     .list-card-context-time {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      flex: 0 0 auto;
+      justify-content: center;
+      gap: 0;
       min-width: 0;
     }
+    .list-card-context-row:not(.has-outlet) .list-card-context-time { grid-column: 1 / -1; }
     .list-card-context-separator {
-      flex: 0 0 auto;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
       color: var(--text-tertiary);
       font-size: 0.75rem;
       font-weight: 700;
@@ -2973,6 +2993,8 @@
     .action-btn .material-icons-round { font-size: 16px; }
     .action-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
     .action-btn.data-available-btn { flex: 1 1 100%; }
+    .list-card-actions > .action-btn { flex: 1 1 0; }
+    .list-card-actions > .action-btn.data-available-btn { flex: 1 1 100%; }
     .action-btn.action-confirm,
     .action-btn.action-cancel { flex: 1 1 calc(50% - 8px); min-width: 118px; }
     .action-btn.data-available {
@@ -5688,6 +5710,19 @@
             <div id="visit-chart-state" class="visit-chart-state">Memuat grafik kunjungan...</div>
             <svg id="visit-line-chart" viewBox="0 0 640 270" role="img" aria-label="Grafik garis kunjungan customer" preserveAspectRatio="xMidYMid meet"></svg>
           </div>
+          <section id="visit-outlet-breakdown" class="visit-outlet-breakdown" aria-labelledby="visit-outlet-chart-title" hidden>
+            <div class="visit-outlet-breakdown-head">
+              <div>
+                <h3 id="visit-outlet-chart-title">KUNJUNGAN PER OUTLET</h3>
+                <p id="visit-outlet-chart-date">Hari ini</p>
+              </div>
+              <span class="visit-outlet-chart-hint"><span class="material-icons-round">touch_app</span>Pilih tanggal pada grafik garis</span>
+            </div>
+            <div class="visit-outlet-chart-scroll">
+              <div id="visit-outlet-chart-state" class="visit-outlet-chart-state">Memuat kunjungan outlet...</div>
+              <svg id="visit-outlet-bar-chart" viewBox="0 0 640 220" role="img" aria-label="Grafik batang kunjungan per outlet" preserveAspectRatio="xMinYMin meet"></svg>
+            </div>
+          </section>
         </section>
 
         <div class="customer-search-main">
@@ -6375,7 +6410,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbw58_NR6-GisW8K9gsjFD8febMJpN7wnMi_-OjtMiHiLjUkEQ9OT5bS2qPVsTa2E0iehA/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbzkEPosP8P2MaKV__Fwm0qM44tgvHtvplIh8cxq1vnX9Jyz9Eb-fXAkgTeERlm11ICYcQ/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -8810,7 +8845,7 @@
             </div>
           </div>
           <div class="list-card-actions">
-            <div class="list-card-context-row">
+            <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
               ${renderBIHQOutlet(r.outlet)}
               <div class="list-card-context-time">
                 ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
@@ -8983,7 +9018,7 @@
             </label>
           </div>
           <div class="list-card-actions">
-            <div class="list-card-context-row">
+            <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
               ${renderBIHQOutlet(w.outlet)}
               <div class="list-card-context-time">
                 ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
@@ -9843,7 +9878,7 @@
               ${o.note ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Note</div><div class="list-card-meta-value">${escapeHtml(o.note)}</div></div>` : ''}
             </div>` : ''}
           <div class="list-card-actions">
-            <div class="list-card-context-row">
+            <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
               ${renderBIHQOutlet(o.outlet)}
               <div class="list-card-context-time">
                 ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
@@ -12204,6 +12239,70 @@
     pointer-events: none;
   }
   #page-search .visit-chart-state:empty { display: none; }
+  #page-search .visit-line-point { cursor: pointer; outline: none; }
+  #page-search .visit-line-point .visit-point-hit { fill: transparent; }
+  #page-search .visit-line-point:focus .visit-point-dot,
+  #page-search .visit-line-point:hover .visit-point-dot { fill: #dff4f7; stroke-width: 4; }
+  #page-search .visit-line-point.is-selected .visit-point-dot { fill: #1d8798; stroke: #fff; stroke-width: 4; }
+
+  #page-search .visit-outlet-breakdown {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid #e3ecee;
+  }
+  #page-search .visit-outlet-breakdown[hidden] { display: none !important; }
+  #page-search .visit-outlet-breakdown-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  #page-search .visit-outlet-breakdown-head h3 {
+    margin: 0;
+    color: #1f7f90;
+    font-size: .78rem;
+    font-weight: 900;
+    letter-spacing: .075em;
+  }
+  #page-search .visit-outlet-breakdown-head p {
+    margin: 5px 0 0;
+    color: #6f858a;
+    font-size: .7rem;
+    font-weight: 650;
+  }
+  #page-search .visit-outlet-chart-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #819397;
+    font-size: .65rem;
+    font-weight: 650;
+    text-align: right;
+  }
+  #page-search .visit-outlet-chart-hint .material-icons-round { font-size: 14px; color: #2c879a; }
+  #page-search .visit-outlet-chart-scroll {
+    position: relative;
+    width: 100%;
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+  }
+  #page-search #visit-outlet-bar-chart { display: block; width: 100%; height: auto; min-height: 150px; }
+  #page-search .visit-outlet-chart-state {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    color: #819397;
+    font-size: .75rem;
+    text-align: center;
+    pointer-events: none;
+  }
+  #page-search .visit-outlet-chart-state:empty { display: none; }
   @media (min-width: 900px) {
     #page-search .customer-search-layout {
       grid-template-columns: minmax(0,1.16fr) minmax(390px,.84fr);
@@ -12225,6 +12324,9 @@
     #page-search .visit-custom-range button { grid-column: 1 / -1; }
     #page-search .visit-chart-wrap,
     #page-search #visit-line-chart { min-height: 210px; }
+    #page-search .visit-outlet-breakdown-head { display: block; }
+    #page-search .visit-outlet-chart-hint { margin-top: 8px; text-align: left; }
+    #page-search .visit-outlet-chart-scroll { max-height: 360px; }
   }
 
   .dashboard-fast-shell {
@@ -13245,6 +13347,8 @@
 
   var visitTrendRequestId = 0;
   var visitTrendBound = false;
+  var visitTrendSelectedDate = '';
+  var visitTrendLastResult = null;
 
   function visitIsoDate(date) {
     return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
@@ -13254,6 +13358,14 @@
     var p = String(iso || '').split('-');
     if (p.length !== 3) return iso || '';
     return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  }
+
+  function visitLongDate(iso) {
+    var p = String(iso || '').split('-');
+    if (p.length !== 3) return iso || '';
+    var date = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    var label = date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    return iso === visitIsoDate(new Date()) ? 'Hari ini · ' + label : label;
   }
 
   function setupVisitTrendControls() {
@@ -13283,12 +13395,15 @@
     setupVisitTrendControls();
     var outletWrap = document.getElementById('visit-outlet-filter-wrap');
     if (outletWrap) outletWrap.hidden = !AppState.isBIHQ;
+    var outletBreakdown = document.getElementById('visit-outlet-breakdown');
+    if (outletBreakdown) outletBreakdown.hidden = !AppState.isBIHQ;
     var end = new Date();
     var start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 6);
     var startInput = document.getElementById('visit-start-date');
     var endInput = document.getElementById('visit-end-date');
     if (startInput && (!startInput.value || force)) startInput.value = visitIsoDate(start);
     if (endInput && (!endInput.value || force)) endInput.value = visitIsoDate(end);
+    if (force) visitTrendSelectedDate = visitIsoDate(end);
     loadVisitTrend();
   }
 
@@ -13311,6 +13426,8 @@
     var requestId = ++visitTrendRequestId;
     state.textContent = 'Memuat grafik kunjungan...';
     svg.innerHTML = '';
+    var outletState = document.getElementById('visit-outlet-chart-state');
+    if (AppState.isBIHQ && outletState) outletState.textContent = 'Memuat kunjungan outlet...';
     google.script.run
       .withSuccessHandler(function (result) {
         if (requestId !== visitTrendRequestId) return;
@@ -13345,15 +13462,22 @@
     var state = document.getElementById('visit-chart-state');
     var period = document.getElementById('visit-chart-period');
     if (!svg || !state) return;
+    visitTrendLastResult = result;
     populateVisitOutlets(result.outlets);
     if (period) period.textContent = visitShortDate(result.startDate) + ' – ' + visitShortDate(result.endDate);
     var points = Array.isArray(result.points) ? result.points : [];
     if (!points.length) {
       svg.innerHTML = '';
       state.textContent = 'Belum ada data kunjungan pada periode ini.';
+      renderVisitOutletBarChart(result, visitTrendSelectedDate || result.endDate);
       return;
     }
     state.textContent = '';
+    var availableDates = points.map(function (point) { return point.date; });
+    var todayIso = visitIsoDate(new Date());
+    if (!visitTrendSelectedDate || availableDates.indexOf(visitTrendSelectedDate) === -1) {
+      visitTrendSelectedDate = availableDates.indexOf(todayIso) >= 0 ? todayIso : points[points.length - 1].date;
+    }
     var W = 640, H = 270, left = 44, right = 18, top = 18, bottom = 42;
     var innerW = W - left - right, innerH = H - top - bottom;
     var maxValue = Math.max.apply(null, points.map(function (p) { return Number(p.count) || 0; }));
@@ -13367,21 +13491,99 @@
       markup += '<text x="' + (left-10) + '" y="' + (py+4) + '" text-anchor="end" fill="#91a1a5" font-size="11">' + Math.round(value) + '</text>';
     }
     var path = points.map(function (p,i) { return (i ? 'L' : 'M') + x(i).toFixed(2) + ' ' + y(p.count).toFixed(2); }).join(' ');
+    var selectedIndex = availableDates.indexOf(visitTrendSelectedDate);
+    if (selectedIndex >= 0) {
+      markup += '<line x1="' + x(selectedIndex) + '" y1="' + top + '" x2="' + x(selectedIndex) + '" y2="' + (top + innerH) + '" stroke="#b7dfe5" stroke-width="2" stroke-dasharray="4 5"/>';
+    }
     markup += '<path d="' + path + '" fill="none" stroke="#1d8798" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
     var labelEvery = Math.max(1, Math.ceil(points.length / 6));
     points.forEach(function (p,i) {
       var pointX = x(i), pointY = y(p.count), count = Number(p.count || 0);
       var valueY = pointY < 34 ? pointY + 20 : pointY - 11;
-      markup += '<circle cx="' + pointX + '" cy="' + pointY + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ': ' + count + ' kunjungan</title></circle>';
-      markup += '<text x="' + pointX + '" y="' + valueY + '" text-anchor="middle" fill="#174b55" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="11" font-weight="800">' + count + '</text>';
+      var selectedClass = p.date === visitTrendSelectedDate ? ' is-selected' : '';
+      markup += '<g class="visit-line-point' + selectedClass + '" data-date="' + p.date + '" tabindex="0" role="button" aria-label="' + visitShortDate(p.date) + ', ' + count + ' kunjungan. Tampilkan rincian outlet">';
+      markup += '<circle class="visit-point-hit" cx="' + pointX + '" cy="' + pointY + '" r="15"/>';
+      markup += '<circle class="visit-point-dot" cx="' + pointX + '" cy="' + pointY + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ': ' + count + ' kunjungan</title></circle>';
+      markup += '<text x="' + pointX + '" y="' + valueY + '" text-anchor="middle" fill="#174b55" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="11" font-weight="800" pointer-events="none">' + count + '</text>';
+      markup += '</g>';
       if (i % labelEvery === 0 || i === points.length - 1) markup += '<text x="' + x(i) + '" y="' + (H-15) + '" text-anchor="middle" fill="#71878c" font-size="11">' + visitShortDate(p.date) + '</text>';
     });
+    svg.innerHTML = markup;
+    Array.prototype.forEach.call(svg.querySelectorAll('.visit-line-point'), function (point) {
+      function chooseDate() {
+        visitTrendSelectedDate = point.getAttribute('data-date') || '';
+        renderVisitTrend(visitTrendLastResult);
+      }
+      point.addEventListener('click', chooseDate);
+      point.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          chooseDate();
+        }
+      });
+    });
+    renderVisitOutletBarChart(result, visitTrendSelectedDate);
+  }
+
+  function renderVisitOutletBarChart(result, selectedDate) {
+    var section = document.getElementById('visit-outlet-breakdown');
+    var svg = document.getElementById('visit-outlet-bar-chart');
+    var state = document.getElementById('visit-outlet-chart-state');
+    var dateLabel = document.getElementById('visit-outlet-chart-date');
+    if (!section || !svg || !state) return;
+    section.hidden = !AppState.isBIHQ;
+    if (!AppState.isBIHQ) return;
+
+    selectedDate = selectedDate || visitIsoDate(new Date());
+    if (dateLabel) dateLabel.textContent = visitLongDate(selectedDate);
+    var byDate = result && result.outletBreakdownByDate ? result.outletBreakdownByDate : {};
+    var counts = byDate[selectedDate] || {};
+    var rows = Object.keys(counts).map(function (outlet) {
+      return { outlet: outlet, count: Number(counts[outlet]) || 0 };
+    }).filter(function (row) { return row.count > 0; }).sort(function (a, b) {
+      return b.count - a.count || a.outlet.localeCompare(b.outlet);
+    });
+
+    if (!rows.length) {
+      svg.innerHTML = '';
+      state.textContent = 'Belum ada kunjungan outlet pada ' + visitLongDate(selectedDate).toLowerCase() + '.';
+      return;
+    }
+
+    state.textContent = '';
+    var W = 640, rowH = 36, top = 24, bottom = 14, left = 96, right = 42;
+    var H = Math.max(150, top + rows.length * rowH + bottom);
+    var innerW = W - left - right;
+    var maxValue = Math.max.apply(null, rows.map(function (row) { return row.count; }));
+    var axisMax = Math.max(1, maxValue);
+    var markup = '';
+
+    for (var tick = 0; tick <= 4; tick++) {
+      var tickValue = axisMax * tick / 4;
+      var tickX = left + innerW * tick / 4;
+      markup += '<line x1="' + tickX + '" y1="' + (top - 8) + '" x2="' + tickX + '" y2="' + (H - bottom) + '" stroke="#e5edef" stroke-width="1"/>';
+      markup += '<text x="' + tickX + '" y="11" text-anchor="middle" fill="#91a1a5" font-size="10">' + Math.round(tickValue) + '</text>';
+    }
+
+    rows.forEach(function (row, index) {
+      var y = top + index * rowH + 7;
+      var barW = Math.max(3, row.count / axisMax * innerW);
+      var shortName = row.outlet.length > 12 ? row.outlet.substring(0, 11) + '…' : row.outlet;
+      markup += '<text x="' + (left - 12) + '" y="' + (y + 12) + '" text-anchor="end" fill="#31545b" font-size="11" font-weight="700"><title>' + escapeHtml(row.outlet) + '</title>' + escapeHtml(shortName) + '</text>';
+      markup += '<rect x="' + left + '" y="' + y + '" width="' + barW + '" height="16" rx="8" fill="#2c879a"><title>' + escapeHtml(row.outlet) + ': ' + row.count + ' kunjungan</title></rect>';
+      var inside = barW > innerW - 34;
+      markup += '<text x="' + (inside ? left + barW - 8 : left + barW + 8) + '" y="' + (y + 12) + '" text-anchor="' + (inside ? 'end' : 'start') + '" fill="' + (inside ? '#fff' : '#174b55') + '" font-size="11" font-weight="900">' + row.count + '</text>';
+    });
+
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('aria-label', 'Kunjungan per outlet pada ' + visitLongDate(selectedDate));
     svg.innerHTML = markup;
   }
 
   window.initVisitTrend = initVisitTrend;
   window.loadVisitTrend = loadVisitTrend;
   window.renderVisitTrend = renderVisitTrend;
+  window.renderVisitOutletBarChart = renderVisitOutletBarChart;
 
   function finishLogin(result, code, fromCache) {
     var isBIHQ = code.toUpperCase() === 'BIHQ';
