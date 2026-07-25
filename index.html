@@ -730,6 +730,17 @@
       box-shadow: 0 0 6px var(--cyan-glow);
     }
 
+    .notification-settings-btn.notification-enabled {
+      color: #238a55;
+      border-color: rgba(35, 138, 85, .24);
+      background: rgba(235, 249, 241, .96);
+    }
+
+    .notification-settings-btn.notification-enabled .notification-status-dot {
+      background: #2ca768;
+      box-shadow: 0 0 0 3px rgba(44, 167, 104, .13);
+    }
+
     /* Search Content */
     .search-content {
       flex: 1;
@@ -5668,6 +5679,10 @@
         <div class="top-bar-outlet">Outlet: <strong id="outlet-name-display">-</strong></div>
       </div>
       <div class="top-bar-right">
+        <button class="icon-btn notification-settings-btn" onclick="configureNotifications()" title="Pengaturan Notifikasi" aria-label="Aktifkan notifikasi">
+          <span class="material-icons-round" style="font-size:20px">notifications</span>
+          <span class="badge-dot notification-status-dot" style="display:block"></span>
+        </button>
         <button class="icon-btn" onclick="openReviewModal()" title="Give Review">
           <span class="material-icons-round" style="font-size:20px">rate_review</span>
           <span class="badge-dot" id="review-badge" style="display:none"></span>
@@ -8087,6 +8102,7 @@
        ============================================================ */
     const LIST_STORAGE_KEY = 'csi_lists_v1';
     const OUTLET_LOGIN_STORAGE_KEY = 'csi_outlet_persistent_login_v14';
+    const NOTIFICATION_STORAGE_KEY = 'csi_notifications_v1';
     const REALTIME_REFRESH_MS = 12000;
     const ListState = {
       reservasi: [],   // {id, name, phone, pax, date, time, special, note, member, createdAt}
@@ -8125,6 +8141,121 @@
       lastOrderIds: '',
       lastSyncAt: 0
     };
+
+    function readNotificationSettings() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(NOTIFICATION_STORAGE_KEY) || '{}');
+        return {
+          enabled: saved.enabled !== false,
+          sound: saved.sound !== false,
+          orders: saved.orders !== false,
+          reservasi: saved.reservasi !== false,
+          waiting: saved.waiting !== false
+        };
+      } catch (e) {
+        return { enabled: true, sound: true, orders: true, reservasi: true, waiting: true };
+      }
+    }
+
+    function saveNotificationSettings(settings) {
+      try { localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(settings)); } catch (e) {}
+      updateNotificationButtons();
+    }
+
+    function updateNotificationButtons() {
+      const settings = readNotificationSettings();
+      const supported = 'Notification' in window;
+      const granted = supported && Notification.permission === 'granted' && settings.enabled;
+      document.querySelectorAll('.notification-settings-btn').forEach(function(button) {
+        button.classList.toggle('notification-enabled', granted);
+        button.setAttribute('title', granted ? 'Notifikasi aktif' : 'Aktifkan notifikasi');
+        button.setAttribute('aria-label', granted ? 'Notifikasi aktif' : 'Aktifkan notifikasi');
+      });
+    }
+
+    async function configureNotifications() {
+      const settings = readNotificationSettings();
+      if (!('Notification' in window)) {
+        settings.enabled = true;
+        saveNotificationSettings(settings);
+        showToast('Notifikasi dalam aplikasi tetap aktif. Browser ini belum mendukung notifikasi sistem.', 'info');
+        return;
+      }
+
+      if (Notification.permission === 'denied') {
+        showToast('Notifikasi diblokir. Buka pengaturan situs browser lalu ubah Notifications menjadi Allow.', 'error');
+        return;
+      }
+
+      let permission = Notification.permission;
+      try {
+        if (permission !== 'granted') permission = await Notification.requestPermission();
+      } catch (e) {
+        showToast('Browser tidak dapat membuka izin notifikasi. Buka website melalui Chrome atau Safari biasa.', 'error');
+        return;
+      }
+      settings.enabled = permission === 'granted';
+      saveNotificationSettings(settings);
+      if (settings.enabled) {
+        playNotificationTone();
+        showToast('Notifikasi Pesanan, Reservasi, dan Waiting List sudah aktif.', 'success');
+      } else {
+        showToast('Izin notifikasi belum diberikan. Notifikasi dalam aplikasi tetap aktif.', 'info');
+      }
+    }
+
+    function playNotificationTone() {
+      const settings = readNotificationSettings();
+      if (!settings.sound) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        const ctx = new AudioContextClass();
+        const oscillator = ctx.createOscillator();
+        const gain = ctx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(720, ctx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(920, ctx.currentTime + .16);
+        gain.gain.setValueAtTime(.0001, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(.12, ctx.currentTime + .025);
+        gain.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + .28);
+        oscillator.connect(gain);
+        gain.connect(ctx.destination);
+        oscillator.start();
+        oscillator.stop(ctx.currentTime + .3);
+        oscillator.addEventListener('ended', function() { ctx.close(); });
+      } catch (e) {}
+    }
+
+    function showLiveBrowserNotification(counts) {
+      counts = counts || {};
+      const settings = readNotificationSettings();
+      const parts = [];
+      if (settings.orders && counts.orders > 0) parts.push(counts.orders + ' pesanan baru');
+      if (settings.reservasi && counts.reservasi > 0) parts.push(counts.reservasi + ' reservasi baru');
+      if (settings.waiting && counts.waiting > 0) parts.push(counts.waiting + ' waiting list baru');
+      if (!parts.length) return;
+
+      const message = parts.join(' • ');
+      showCenterToast(message + '.', 'info', 'Update Baru');
+      playNotificationTone();
+
+      if (!settings.enabled || !('Notification' in window) || Notification.permission !== 'granted') return;
+      try {
+        const notice = new Notification('Bakerzin • Update Baru', {
+          body: message,
+          tag: 'bakerzin-live-update',
+          renotify: true
+        });
+        notice.onclick = function() {
+          window.focus();
+          if (counts.orders > 0) switchTab('page-pemesanan');
+          else if (counts.reservasi > 0) switchTab('page-reservasi');
+          else switchTab('page-waiting');
+          notice.close();
+        };
+      } catch (e) {}
+    }
 
     function setOutletLabels(outlet) {
       const ids = [
@@ -8243,7 +8374,7 @@
     }
 
     function startRealtimeSync(immediate) {
-      if (!hasBackend() || !AppState.outlet) return;
+      if (!hasBackend() || (!AppState.outlet && !AppState.isBIHQ)) return;
       stopRealtimeSync();
       RealtimeState.timer = setInterval(function() {
         refreshLiveSnapshot(true, false);
@@ -8340,17 +8471,15 @@
       }
 
       if (!silent) return;
-      if (newOrderCount > 0) {
-        showCenterToast(newOrderCount + ' pesanan baru masuk.', 'info', 'Update Baru');
-      } else if (newReservasiCount > 0) {
-        showCenterToast(newReservasiCount + ' reservasi baru masuk.', 'info', 'Update Baru');
-      } else if (newWaitingCount > 0) {
-        showCenterToast(newWaitingCount + ' waiting list baru masuk.', 'info', 'Update Baru');
-      }
+      showLiveBrowserNotification({
+        orders: newOrderCount,
+        reservasi: newReservasiCount,
+        waiting: newWaitingCount
+      });
     }
 
     function refreshLiveSnapshot(silent, establishBaseline) {
-      if (!hasBackend() || !AppState.outlet || RealtimeState.syncInProgress) return;
+      if (!hasBackend() || (!AppState.outlet && !AppState.isBIHQ) || RealtimeState.syncInProgress) return;
       RealtimeState.syncInProgress = true;
       google.script.run
         .withSuccessHandler(function(res) {
@@ -8361,7 +8490,7 @@
           RealtimeState.syncInProgress = false;
           if (!silent) showToast('Gagal realtime refresh: ' + ((err && err.message) || err), 'error');
         })
-        .getOutletLiveSnapshot(AppState.outlet);
+        .getOutletLiveSnapshot(AppState.isBIHQ ? 'BIHQ' : AppState.outlet);
     }
 
     function loadLists() {
@@ -10124,6 +10253,7 @@
       // Load lists from localStorage (or seed demo data)
       loadLists();
       updateTabBadges();
+      updateNotificationButtons();
 
       // If no backend (preview mode), bypass login so designs are viewable
       const noBackend = typeof google === 'undefined' || !google.script || !google.script.run;
@@ -13701,6 +13831,7 @@
       if (hasBackend()) {
         refreshFromBackend(true);
         refreshOrdersFromBackend(true);
+        startRealtimeSync(true);
       }
       showToast(fromCache ? 'Login BIHQ tersimpan. Masuk otomatis.' : 'Login BIHQ berhasil. Akses: Semua Outlet.', 'success');
       return;
