@@ -5749,9 +5749,15 @@
         </section>
 
         <div class="customer-search-main">
-          <div class="search-header">
-            <h2>Cari Customer</h2>
-            <p>Temukan customer untuk pengalaman pelayanan personal</p>
+          <div class="search-header visit-search-header">
+            <div>
+              <h2>Cari Customer</h2>
+              <p>Temukan customer untuk pengalaman pelayanan personal</p>
+            </div>
+            <button class="visit-history-open" type="button" onclick="openVisitHistoryModal()">
+              <span class="material-icons-round">history</span>
+              <span>History</span>
+            </button>
           </div>
 
           <div class="customer-search-card">
@@ -6179,6 +6185,42 @@
   </div>
 
   <!-- ============================================================
+       MODAL: VISIT HISTORY
+       ============================================================ -->
+  <div class="modal-overlay" id="modal-visit-history" onclick="handleVisitHistoryBackdrop(event)">
+    <div class="modal-content visit-history-modal-content" role="dialog" aria-modal="true" aria-labelledby="visit-history-title">
+      <div class="modal-handle"></div>
+      <div class="modal-header visit-history-modal-header">
+        <div>
+          <span class="visit-history-eyebrow">CUSTOMER VISIT LOG</span>
+          <h3 id="visit-history-title">History Kunjungan</h3>
+        </div>
+        <button class="modal-close" type="button" onclick="closeVisitHistoryModal()" aria-label="Tutup history">
+          <span class="material-icons-round" style="font-size:18px">close</span>
+        </button>
+      </div>
+      <div class="visit-history-toolbar">
+        <label class="visit-history-date-field">
+          <span>Tanggal Kunjungan</span>
+          <input type="date" id="visit-history-date" onchange="loadVisitHistory()">
+        </label>
+        <button class="visit-history-refresh" type="button" onclick="loadVisitHistory()" aria-label="Muat ulang history">
+          <span class="material-icons-round">refresh</span>
+          <span>Muat Ulang</span>
+        </button>
+      </div>
+      <div class="visit-history-table-wrap">
+        <div class="visit-history-grid visit-history-grid-head" aria-hidden="true">
+          <span>Tanggal</span><span>Jam</span><span>Nama</span><span>No Telp</span><span>No Member</span>
+        </div>
+        <div id="visit-history-list" class="visit-history-list">
+          <div class="visit-history-state">Memuat history hari ini...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
        MODAL: SCAN QR / BARCODE MEMBER
        ============================================================ -->
   <div class="modal-overlay" id="modal-scan-member">
@@ -6433,7 +6475,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycby6kJr-NbmX9YUdpnN6qsSVcBYHWvKV4y-9aAXISqsf1QI0UsBXrikL48HHQ5UO2YN7_Q/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbxxOdIH69K5Aey0n-OrzRT5PNDstB6fOvGJeFg7l9Tby51QDTddb6pR-hFo_mIdH7Oq2A/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -13025,6 +13067,226 @@
       line-height: 1.44;
     }
   }
+
+  /* Visit history on the customer-search page. */
+  #page-search .visit-search-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  #page-search .visit-history-open {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 0 16px;
+    border: 1px solid rgba(38, 143, 160, .24);
+    border-radius: 15px;
+    background: linear-gradient(145deg, #f2fbfc, #e5f4f6);
+    color: #176f7e;
+    box-shadow: 0 8px 22px rgba(27, 99, 111, .10);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font: inherit;
+    font-size: .76rem;
+    font-weight: 850;
+    cursor: pointer;
+  }
+
+  #page-search .visit-history-open .material-icons-round { font-size: 18px; }
+
+  .visit-history-modal-content {
+    width: min(1120px, calc(100vw - 28px));
+    max-width: 1120px;
+    height: min(760px, calc(100dvh - 34px));
+    max-height: calc(100dvh - 34px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 28px;
+  }
+
+  .visit-history-modal-header { flex: 0 0 auto; }
+  .visit-history-modal-header h3 { margin: 3px 0 0; }
+  .visit-history-eyebrow {
+    color: #24889a;
+    font-size: .58rem;
+    font-weight: 900;
+    letter-spacing: .14em;
+  }
+
+  .visit-history-toolbar {
+    flex: 0 0 auto;
+    padding: 13px 20px 16px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid #e6eef0;
+    background: #fbfdfd;
+  }
+
+  .visit-history-date-field { display: grid; gap: 6px; }
+  .visit-history-date-field span {
+    color: #71878c;
+    font-size: .61rem;
+    font-weight: 850;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .visit-history-date-field input {
+    min-height: 42px;
+    padding: 0 13px;
+    border: 1px solid #cedde0;
+    border-radius: 14px;
+    background: #fff;
+    color: #17363c;
+    font: inherit;
+    font-size: .78rem;
+    font-weight: 750;
+  }
+
+  .visit-history-refresh,
+  .visit-history-phone-save {
+    border: 0;
+    border-radius: 13px;
+    background: #258da0;
+    color: #fff;
+    font: inherit;
+    font-weight: 850;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .visit-history-refresh { min-height: 42px; padding: 0 14px; font-size: .7rem; }
+  .visit-history-refresh .material-icons-round { font-size: 17px; }
+
+  .visit-history-table-wrap {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow: auto;
+    padding: 0 20px 20px;
+  }
+
+  .visit-history-grid {
+    display: grid;
+    grid-template-columns: 112px 66px minmax(190px, 1.25fr) minmax(220px, 1fr) minmax(150px, .85fr);
+    gap: 12px;
+    align-items: center;
+  }
+
+  .visit-history-grid-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    min-width: 850px;
+    padding: 14px 14px 10px;
+    background: #fff;
+    color: #73898e;
+    border-bottom: 1px solid #e7eef0;
+    font-size: .6rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .visit-history-list { min-width: 850px; }
+  .visit-history-row {
+    margin-top: 8px;
+    padding: 13px 14px;
+    border: 1px solid #e2ebed;
+    border-radius: 17px;
+    background: #fff;
+    color: #345158;
+    font-size: .75rem;
+    box-shadow: 0 5px 16px rgba(24, 66, 73, .045);
+  }
+  .visit-history-row.is-welcome {
+    border-color: rgba(226, 170, 36, .35);
+    background: linear-gradient(105deg, #fffdf6, #fff);
+  }
+  .visit-history-cell { min-width: 0; overflow-wrap: anywhere; }
+  .visit-history-cell::before { display: none; }
+  .visit-history-name { color: #17383e; font-weight: 850; }
+  .visit-history-member { color: #61787d; font-weight: 750; }
+  .visit-history-type {
+    display: inline-flex;
+    margin-top: 5px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #fff2c7;
+    color: #98700d;
+    font-size: .52rem;
+    font-weight: 900;
+    letter-spacing: .06em;
+  }
+  .visit-history-phone-editor { display: flex; align-items: center; gap: 7px; }
+  .visit-history-phone-input {
+    width: 100%;
+    min-width: 0;
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid #cedde0;
+    border-radius: 12px;
+    background: #f9fcfc;
+    color: #17383e;
+    font: inherit;
+    font-size: .72rem;
+    outline: none;
+  }
+  .visit-history-phone-input:focus { border-color: #2b91a3; box-shadow: 0 0 0 3px rgba(43,145,163,.12); }
+  .visit-history-phone-save { width: 38px; height: 38px; flex: 0 0 38px; }
+  .visit-history-phone-save .material-icons-round { font-size: 17px; }
+  .visit-history-phone-save:disabled,
+  .visit-history-refresh:disabled { opacity: .55; cursor: wait; }
+  .visit-history-state {
+    min-width: 0;
+    padding: 54px 20px;
+    color: #789096;
+    text-align: center;
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  @media (max-width: 620px) {
+    #page-search .visit-search-header { align-items: flex-start; }
+    #page-search .visit-history-open { min-height: 39px; padding: 0 12px; }
+    .visit-history-modal-content {
+      width: 100%;
+      height: min(92dvh, 820px);
+      max-height: 92dvh;
+      margin-top: auto;
+      border-radius: 26px 26px 0 0;
+    }
+    .visit-history-toolbar { padding: 12px 14px 14px; }
+    .visit-history-refresh span:not(.material-icons-round) { display: none; }
+    .visit-history-refresh { width: 42px; padding: 0; }
+    .visit-history-table-wrap { padding: 0 14px 18px; overflow-x: hidden; }
+    .visit-history-grid-head { display: none; }
+    .visit-history-list { min-width: 0; }
+    .visit-history-row {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px 10px;
+      padding: 14px;
+      border-radius: 19px;
+    }
+    .visit-history-cell::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 5px;
+      color: #8a9b9f;
+      font-size: .52rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .visit-history-cell-name,
+    .visit-history-cell-phone { grid-column: 1 / -1; }
+  }
 </style>
 
 <script id="v52-login-search-dashboard-request-script">
@@ -14086,6 +14348,201 @@
       node.innerHTML = '';
       node.classList.remove('visible');
     });
+  });
+})();
+</script>
+
+<script id="visit-history-feature-script">
+(function () {
+  'use strict';
+
+  var visitHistoryRequestId = 0;
+  var visitHistoryRows = {};
+
+  function historyHtml(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function jakartaTodayIso() {
+    try {
+      var parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit'
+      }).formatToParts(new Date());
+      var values = {};
+      parts.forEach(function (part) { if (part.type !== 'literal') values[part.type] = part.value; });
+      return values.year + '-' + values.month + '-' + values.day;
+    } catch (e) {
+      var now = new Date();
+      return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+    }
+  }
+
+  function selectedHistoryOutlet() {
+    if (AppState && AppState.isBIHQ) {
+      var filter = document.getElementById('visit-outlet-filter');
+      return filter ? filter.value.trim() : '';
+    }
+    return (AppState && AppState.outlet) ? AppState.outlet : '';
+  }
+
+  function renderVisitHistory(rows) {
+    var list = document.getElementById('visit-history-list');
+    if (!list) return;
+    rows = Array.isArray(rows) ? rows : [];
+    visitHistoryRows = {};
+
+    if (!rows.length) {
+      list.innerHTML = '<div class="visit-history-state">Belum ada kunjungan pada tanggal tersebut.</div>';
+      return;
+    }
+
+    list.innerHTML = rows.map(function (row) {
+      var key = String(row.sheetRow || '');
+      visitHistoryRows[key] = row;
+      var isWelcome = row.visitType === 'WELCOME_BACK';
+      var phoneHtml = row.mobile
+        ? '<span>' + historyHtml(row.mobile) + '</span>'
+        : (row.canUpdatePhone
+          ? '<div class="visit-history-phone-editor">' +
+              '<input class="visit-history-phone-input" id="visit-history-phone-' + historyHtml(key) + '" type="tel" inputmode="tel" autocomplete="tel" placeholder="Isi No Telp" aria-label="Isi nomor telepon" onkeydown="handleVisitHistoryPhoneKey(event,' + Number(row.sheetRow) + ')">' +
+              '<button class="visit-history-phone-save" id="visit-history-save-' + historyHtml(key) + '" type="button" onclick="saveVisitHistoryPhone(' + Number(row.sheetRow) + ')" aria-label="Simpan nomor telepon"><span class="material-icons-round">send</span></button>' +
+            '</div>'
+          : '<span>-</span>');
+
+      return '<div class="visit-history-grid visit-history-row' + (isWelcome ? ' is-welcome' : '') + '">' +
+        '<div class="visit-history-cell" data-label="Tanggal">' + historyHtml(row.date || '-') + '</div>' +
+        '<div class="visit-history-cell" data-label="Jam">' + historyHtml(row.time || '-') + '</div>' +
+        '<div class="visit-history-cell visit-history-cell-name" data-label="Nama"><div class="visit-history-name">' + historyHtml(isWelcome ? 'Member Tanpa History' : (row.name || 'Customer Bakerzin')) + '</div>' +
+          (isWelcome ? '<span class="visit-history-type">WELCOME BACK</span>' : '') + '</div>' +
+        '<div class="visit-history-cell visit-history-cell-phone" data-label="No Telp">' + phoneHtml + '</div>' +
+        '<div class="visit-history-cell" data-label="No Member"><span class="visit-history-member">' + historyHtml(row.memberId || '-') + '</span></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  window.openVisitHistoryModal = function () {
+    var modal = document.getElementById('modal-visit-history');
+    var dateInput = document.getElementById('visit-history-date');
+    var today = jakartaTodayIso();
+    if (dateInput) {
+      dateInput.max = today;
+      dateInput.value = today;
+    }
+    if (modal) modal.classList.add('visible');
+    window.loadVisitHistory();
+  };
+
+  window.closeVisitHistoryModal = function () {
+    var modal = document.getElementById('modal-visit-history');
+    if (modal) modal.classList.remove('visible');
+  };
+
+  window.handleVisitHistoryBackdrop = function (event) {
+    if (event && event.target && event.target.id === 'modal-visit-history') window.closeVisitHistoryModal();
+  };
+
+  window.loadVisitHistory = function () {
+    var list = document.getElementById('visit-history-list');
+    var dateInput = document.getElementById('visit-history-date');
+    var refresh = document.querySelector('.visit-history-refresh');
+    if (!list || !dateInput) return;
+
+    var today = jakartaTodayIso();
+    if (!dateInput.value) dateInput.value = today;
+    if (dateInput.value > today) dateInput.value = today;
+    dateInput.max = today;
+    list.innerHTML = '<div class="visit-history-state">Memuat history kunjungan...</div>';
+    if (refresh) refresh.disabled = true;
+    var requestId = ++visitHistoryRequestId;
+
+    google.script.run
+      .withSuccessHandler(function (result) {
+        if (requestId !== visitHistoryRequestId) return;
+        if (refresh) refresh.disabled = false;
+        if (!result || !result.success) {
+          list.innerHTML = '<div class="visit-history-state">' + historyHtml((result && result.message) || 'History belum dapat dimuat.') + '</div>';
+          return;
+        }
+        renderVisitHistory(result.rows || []);
+      })
+      .withFailureHandler(function (error) {
+        if (requestId !== visitHistoryRequestId) return;
+        if (refresh) refresh.disabled = false;
+        list.innerHTML = '<div class="visit-history-state">Gagal memuat history. Silakan coba kembali.</div>';
+        console.warn('Visit history failed:', error && error.message ? error.message : error);
+      })
+      .getVisitHistory({ date: dateInput.value, outlet: selectedHistoryOutlet() });
+  };
+
+  window.handleVisitHistoryPhoneKey = function (event, sheetRow) {
+    if (event && event.key === 'Enter') {
+      event.preventDefault();
+      window.saveVisitHistoryPhone(sheetRow);
+    }
+  };
+
+  window.saveVisitHistoryPhone = function (sheetRow) {
+    var key = String(sheetRow || '');
+    var row = visitHistoryRows[key];
+    var input = document.getElementById('visit-history-phone-' + key);
+    var button = document.getElementById('visit-history-save-' + key);
+    var phone = input ? input.value.trim() : '';
+    var digits = phone.replace(/\D/g, '');
+    if (!row || !input) return;
+    if (digits.length < 8) {
+      showToast('Nomor HP harus minimal 8 digit.', 'error');
+      input.focus();
+      return;
+    }
+
+    input.disabled = true;
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = '<span class="spinner" style="width:15px;height:15px"></span>';
+    }
+
+    var dateInput = document.getElementById('visit-history-date');
+    google.script.run
+      .withSuccessHandler(function (result) {
+        if (!result || !result.success) {
+          input.disabled = false;
+          if (button) {
+            button.disabled = false;
+            button.innerHTML = '<span class="material-icons-round">send</span>';
+          }
+          showToast((result && result.message) || 'Nomor HP belum dapat disimpan.', 'error');
+          return;
+        }
+        showToast(result.message || 'Nomor HP berhasil disimpan.', 'success');
+        window.loadVisitHistory();
+      })
+      .withFailureHandler(function (error) {
+        input.disabled = false;
+        if (button) {
+          button.disabled = false;
+          button.innerHTML = '<span class="material-icons-round">send</span>';
+        }
+        showToast('Gagal menyimpan nomor HP: ' + ((error && error.message) || error), 'error');
+      })
+      .updateVisitHistoryPhone({
+        sheetRow: Number(row.sheetRow),
+        date: dateInput ? dateInput.value : '',
+        memberId: row.memberId || '',
+        outlet: row.outlet || '',
+        phone: phone
+      });
+  };
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+      var modal = document.getElementById('modal-visit-history');
+      if (modal && modal.classList.contains('visible')) window.closeVisitHistoryModal();
+    }
   });
 })();
 </script>
