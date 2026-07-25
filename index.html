@@ -6433,7 +6433,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbw_-z4be23NWG3SRmFWvSt3nlIbDlDh97Desa8GuPyuK5pWTolsx9QaQk5O_2Hhpl5pcA/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycby6kJr-NbmX9YUdpnN6qsSVcBYHWvKV4y-9aAXISqsf1QI0UsBXrikL48HHQ5UO2YN7_Q/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -13369,7 +13369,10 @@
   }
 
   function autoRecordWelcomeBackVisit(data) {
-    if (!data || !data.success || (!data.scannedUnknown && !data.welcomeOnly) || data.recordVisit === false || !hasBackend()) return;
+    // Welcome Back selalu dicatat ketika hasil scan/input member tidak
+    // memiliki dashboard. Jangan blokir pencatatan berdasarkan flag lama
+    // recordVisit=false dari deployment backend sebelumnya.
+    if (!data || !data.success || (!data.scannedUnknown && !data.welcomeOnly) || !hasBackend()) return;
 
     var profile = data.profile || {};
     var selectedCustomer = AppState.selectedCustomer || {};
