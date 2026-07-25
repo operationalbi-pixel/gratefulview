@@ -6208,7 +6208,7 @@
       </div>
       <div class="visit-history-table-wrap">
         <div class="visit-history-grid visit-history-grid-head" aria-hidden="true">
-          <span>Tanggal</span><span>Jam</span><span>Nama</span><span>No Telp</span><span>No Member</span>
+          <span>Tanggal</span><span>Jam</span><span>Nama</span><span>No Telp</span><span>No Member</span><span>Outlet</span><span>No Table</span>
         </div>
         <div id="visit-history-list" class="visit-history-list">
           <div class="visit-history-state">Memuat history hari ini...</div>
@@ -6472,7 +6472,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbxxOdIH69K5Aey0n-OrzRT5PNDstB6fOvGJeFg7l9Tby51QDTddb6pR-hFo_mIdH7Oq2A/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycby6b5ZxVme8xBTIJygC0RUIzAeW6yAl6jkSWJ6fENtm7jkhvl10QbnKd1nfGiBfQvD9Gw/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -13143,7 +13143,7 @@
 
   .visit-history-grid {
     display: grid;
-    grid-template-columns: 112px 66px minmax(190px, 1.25fr) minmax(220px, 1fr) minmax(150px, .85fr);
+    grid-template-columns: 104px 58px minmax(180px, 1.15fr) minmax(205px, 1fr) minmax(145px, .8fr) minmax(190px, 1fr) minmax(92px, .55fr);
     gap: 12px;
     align-items: center;
   }
@@ -13152,7 +13152,7 @@
     position: sticky;
     top: 0;
     z-index: 2;
-    min-width: 850px;
+    min-width: 1120px;
     padding: 14px 14px 10px;
     background: #fff;
     color: #73898e;
@@ -13163,7 +13163,7 @@
     text-transform: uppercase;
   }
 
-  .visit-history-list { min-width: 850px; }
+  .visit-history-list { min-width: 1120px; }
   .visit-history-row {
     margin-top: 8px;
     padding: 13px 14px;
@@ -13221,6 +13221,75 @@
     font-weight: 700;
   }
 
+  .dashboard-table-card {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 16px 0;
+    padding: 16px;
+    border: 1px solid rgba(217, 176, 69, .38);
+    border-radius: 20px;
+    background: linear-gradient(135deg, #fff8cf 0%, #fff3b8 100%);
+    box-shadow: 0 10px 28px rgba(164, 126, 31, .11);
+    display: grid;
+    grid-template-columns: minmax(150px, .7fr) minmax(180px, 1fr) auto;
+    align-items: center;
+    gap: 13px;
+  }
+  .dashboard-table-heading { min-width: 0; }
+  .dashboard-table-kicker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #8c6812;
+    font-size: .6rem;
+    font-weight: 900;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+  }
+  .dashboard-table-kicker .material-icons-round { font-size: 16px; }
+  .dashboard-table-heading p {
+    margin: 5px 0 0;
+    color: #8a773e;
+    font-size: .67rem;
+    font-weight: 650;
+  }
+  .dashboard-table-input {
+    width: 100%;
+    min-width: 0;
+    height: 44px;
+    box-sizing: border-box;
+    padding: 0 14px;
+    border: 1px solid rgba(177, 137, 37, .32);
+    border-radius: 14px;
+    background: rgba(255,255,255,.83);
+    color: #4c3a0b;
+    font: inherit;
+    font-size: .8rem;
+    font-weight: 800;
+    outline: none;
+  }
+  .dashboard-table-input:focus { border-color: #c79a29; box-shadow: 0 0 0 3px rgba(199,154,41,.14); }
+  .dashboard-table-save {
+    min-width: 94px;
+    height: 44px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 14px;
+    background: #9b7518;
+    color: #fff;
+    font: inherit;
+    font-size: .72rem;
+    font-weight: 900;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .dashboard-table-save .material-icons-round { font-size: 17px; }
+  .dashboard-table-input:disabled,
+  .dashboard-table-save:disabled { opacity: .55; cursor: wait; }
+
   @media (max-width: 620px) {
     .visit-history-modal-content {
       width: 100%;
@@ -13253,6 +13322,14 @@
     }
     .visit-history-cell-name,
     .visit-history-cell-phone { grid-column: 1 / -1; }
+    .dashboard-table-card {
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 18px;
+    }
+    .dashboard-table-heading { grid-column: 1 / -1; }
+    .dashboard-table-save { min-width: 86px; padding: 0 13px; }
   }
 </style>
 
@@ -13284,7 +13361,7 @@
   function maskCustomerPhone(value) {
     var phone = normalizedPhone(value);
     if (!phone || phone.length < 4) return value || '-';
-    return phone.slice(0, 3) + 'X'.repeat(phone.length - 3);
+    return phone.slice(0, -3) + 'XXX';
   }
 
   function itemName(item) {
@@ -13511,6 +13588,117 @@
   window.closeCheersPopup = closeCheersPopup;
 
   var autoVisitRequests = {};
+  var autoVisitRows = {};
+  var dashboardVisitContext = null;
+
+  function activateDashboardTableNumber(data, rowNumber, outlet, existingTable) {
+    var input = document.getElementById('dashboard-table-input');
+    var button = document.getElementById('dashboard-table-save');
+    var hint = document.getElementById('dashboard-table-hint');
+    if (!input || !button || !rowNumber || !data || !data.profile) return;
+
+    dashboardVisitContext = {
+      sheetRow: Number(rowNumber),
+      memberId: firstUsefulText([data.profile.memberId, AppState.selectedCustomer && AppState.selectedCustomer.memberId]),
+      outlet: outlet || resolveAutomaticVisitOutlet(data),
+      data: data
+    };
+    input.disabled = false;
+    button.disabled = false;
+    if (existingTable && !input.value) input.value = existingTable;
+    if (hint) hint.textContent = 'Opsional · tersimpan pada kunjungan hari ini';
+  }
+
+  function renderDashboardTableNumber(data) {
+    var container = document.getElementById('dashboard-content');
+    if (!container || !data || data.scannedUnknown || data.welcomeOnly) return;
+    var oldCard = container.querySelector('#dashboard-table-card');
+    if (oldCard) oldCard.remove();
+    dashboardVisitContext = null;
+
+    var card = document.createElement('section');
+    card.id = 'dashboard-table-card';
+    card.className = 'dashboard-table-card';
+    card.innerHTML =
+      '<div class="dashboard-table-heading">' +
+        '<div class="dashboard-table-kicker"><span class="material-icons-round">table_restaurant</span>No Table</div>' +
+        '<p id="dashboard-table-hint">Opsional · menyiapkan data kunjungan...</p>' +
+      '</div>' +
+      '<input id="dashboard-table-input" class="dashboard-table-input" type="text" maxlength="24" autocomplete="off" placeholder="Contoh: 12 atau A5" disabled onkeydown="handleDashboardTableKey(event)">' +
+      '<button id="dashboard-table-save" class="dashboard-table-save" type="button" onclick="saveDashboardTableNumber()" disabled>' +
+        '<span class="material-icons-round">save</span><span>Save</span>' +
+      '</button>';
+
+    var popup = container.querySelector('#customer-cheers-popup');
+    var profile = container.querySelector('.v46-profile, .profile-card');
+    if (popup && popup.parentNode) popup.insertAdjacentElement('afterend', card);
+    else if (profile && profile.parentNode) profile.insertAdjacentElement('afterend', card);
+    else container.insertAdjacentElement('afterbegin', card);
+
+    var todayVisit = data.todayVisit || {};
+    if (todayVisit.row) {
+      activateDashboardTableNumber(data, todayVisit.row, todayVisit.outlet, todayVisit.tableNumber || '');
+    }
+  }
+
+  window.handleDashboardTableKey = function (event) {
+    if (event && event.key === 'Enter') {
+      event.preventDefault();
+      window.saveDashboardTableNumber();
+    }
+  };
+
+  window.saveDashboardTableNumber = function () {
+    var input = document.getElementById('dashboard-table-input');
+    var button = document.getElementById('dashboard-table-save');
+    var hint = document.getElementById('dashboard-table-hint');
+    var value = input ? input.value.trim() : '';
+    if (!dashboardVisitContext || !input || !button) {
+      showToast('Data kunjungan masih disiapkan. Silakan tunggu sebentar.', 'info');
+      return;
+    }
+    if (!value) {
+      showToast('Isi No Table terlebih dahulu.', 'error');
+      input.focus();
+      return;
+    }
+
+    input.disabled = true;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner" style="width:15px;height:15px"></span><span>Menyimpan</span>';
+    google.script.run
+      .withSuccessHandler(function (result) {
+        if (!result || !result.success) {
+          input.disabled = false;
+          button.disabled = false;
+          button.innerHTML = '<span class="material-icons-round">save</span><span>Save</span>';
+          showToast((result && result.message) || 'No Table belum dapat disimpan.', 'error');
+          return;
+        }
+        input.value = result.tableNumber || value.toUpperCase();
+        input.disabled = false;
+        button.disabled = false;
+        button.innerHTML = '<span class="material-icons-round">check</span><span>Saved</span>';
+        if (hint) hint.textContent = 'Tersimpan pada kunjungan hari ini';
+        if (dashboardVisitContext.data && dashboardVisitContext.data.todayVisit) {
+          dashboardVisitContext.data.todayVisit.tableNumber = input.value;
+          AppState.dashboardData = dashboardVisitContext.data;
+        }
+        showToast(result.message || 'No Table berhasil disimpan.', 'success');
+      })
+      .withFailureHandler(function (error) {
+        input.disabled = false;
+        button.disabled = false;
+        button.innerHTML = '<span class="material-icons-round">save</span><span>Save</span>';
+        showToast('Gagal menyimpan No Table: ' + ((error && error.message) || error), 'error');
+      })
+      .updateVisitTableNumber({
+        sheetRow: dashboardVisitContext.sheetRow,
+        memberId: dashboardVisitContext.memberId || '',
+        outlet: dashboardVisitContext.outlet || '',
+        tableNumber: value
+      });
+  };
 
   function renderWelcomeBackOnly() {
     var container = document.getElementById('dashboard-content');
@@ -13562,22 +13750,30 @@
 
     var todayKey = new Date().toISOString().slice(0, 10);
     var requestKey = [todayKey, memberId || mobile, outlet, 'REPEAT'].join('|').toLowerCase();
-    if (autoVisitRequests[requestKey]) return;
+    if (autoVisitRequests[requestKey]) {
+      if (autoVisitRows[requestKey]) {
+        activateDashboardTableNumber(data, autoVisitRows[requestKey].row, outlet, autoVisitRows[requestKey].tableNumber || '');
+      }
+      return;
+    }
     autoVisitRequests[requestKey] = 'sending';
 
     google.script.run
       .withSuccessHandler(function(result) {
         if (result && result.success) {
           autoVisitRequests[requestKey] = 'done';
+          autoVisitRows[requestKey] = { row: result.row || null, tableNumber: result.tableNumber || '' };
           data.todayVisit = {
             visited: true,
             reviewStatus: 'Pending',
             row: result.row || null,
             outlet: outlet,
+            tableNumber: result.tableNumber || '',
             automatic: true
           };
           AppState.dashboardData = data;
           writeDashboardCacheFromResult(data, AppState.selectedCustomer, mobile);
+          activateDashboardTableNumber(data, result.row, outlet, result.tableNumber || '');
           if (typeof loadVisitTrend === 'function') loadVisitTrend();
         } else {
           delete autoVisitRequests[requestKey];
@@ -13648,6 +13844,10 @@
     var phone = document.getElementById('phone-display-value');
     if (phone && data && data.profile) phone.textContent = maskCustomerPhone(data.profile.mobile);
 
+    container.querySelectorAll('.v46-name, .profile-name, .customer-name').forEach(function (nameNode) {
+      nameNode.textContent = (nameNode.textContent || '').toUpperCase();
+    });
+
     var memberLabel = container.querySelector('.v46-member-id');
     var noMember = memberLabel && /^(no[\s-]*member|non[\s-]*member|nonmember|data tidak tersedia|-)$/i.test(memberLabel.textContent.trim());
     if (memberLabel) memberLabel.remove();
@@ -13691,6 +13891,8 @@
     var profile = container.querySelector('.v46-profile, .profile-card');
     if (profile && profile.parentNode) profile.insertAdjacentElement('afterend', popup);
     else container.insertAdjacentElement('afterbegin', popup);
+
+    renderDashboardTableNumber(data);
 
     hideDashboardPrices(container);
     setupDashboardDetailsToggle(container);
@@ -14335,6 +14537,13 @@
       .replace(/'/g, '&#039;');
   }
 
+  function maskHistoryPhone(value) {
+    var phone = String(value == null ? '' : value).trim();
+    if (!phone || /XXX$/i.test(phone)) return phone;
+    if (phone.length <= 3) return 'X'.repeat(phone.length);
+    return phone.slice(0, -3) + 'XXX';
+  }
+
   function jakartaTodayIso() {
     try {
       var parts = new Intl.DateTimeFormat('en-CA', {
@@ -14373,7 +14582,7 @@
       visitHistoryRows[key] = row;
       var isWelcome = row.visitType === 'WELCOME_BACK';
       var phoneHtml = row.mobile
-        ? '<span>' + historyHtml(row.mobile) + '</span>'
+        ? '<span>' + historyHtml(maskHistoryPhone(row.mobile)) + '</span>'
         : (row.canUpdatePhone
           ? '<div class="visit-history-phone-editor">' +
               '<input class="visit-history-phone-input" id="visit-history-phone-' + historyHtml(key) + '" type="tel" inputmode="tel" autocomplete="tel" placeholder="Isi No Telp" aria-label="Isi nomor telepon" onkeydown="handleVisitHistoryPhoneKey(event,' + Number(row.sheetRow) + ')">' +
@@ -14384,10 +14593,12 @@
       return '<div class="visit-history-grid visit-history-row' + (isWelcome ? ' is-welcome' : '') + '">' +
         '<div class="visit-history-cell" data-label="Tanggal">' + historyHtml(row.date || '-') + '</div>' +
         '<div class="visit-history-cell" data-label="Jam">' + historyHtml(row.time || '-') + '</div>' +
-        '<div class="visit-history-cell visit-history-cell-name" data-label="Nama"><div class="visit-history-name">' + historyHtml(isWelcome ? 'Member Tanpa History' : (row.name || 'Customer Bakerzin')) + '</div>' +
+        '<div class="visit-history-cell visit-history-cell-name" data-label="Nama"><div class="visit-history-name">' + historyHtml((isWelcome ? 'Member Tanpa History' : (row.name || 'Customer Bakerzin')).toUpperCase()) + '</div>' +
           (isWelcome ? '<span class="visit-history-type">WELCOME BACK</span>' : '') + '</div>' +
         '<div class="visit-history-cell visit-history-cell-phone" data-label="No Telp">' + phoneHtml + '</div>' +
         '<div class="visit-history-cell" data-label="No Member"><span class="visit-history-member">' + historyHtml(row.memberId || '-') + '</span></div>' +
+        '<div class="visit-history-cell" data-label="Outlet">' + historyHtml(row.outlet || '-') + '</div>' +
+        '<div class="visit-history-cell" data-label="No Table"><strong>' + historyHtml(row.tableNumber || '-') + '</strong></div>' +
       '</div>';
     }).join('');
   }
