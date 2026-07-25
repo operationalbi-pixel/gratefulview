@@ -5683,6 +5683,9 @@
           <span class="material-icons-round" style="font-size:20px">notifications</span>
           <span class="badge-dot notification-status-dot" style="display:block"></span>
         </button>
+        <button class="icon-btn" onclick="openVisitHistoryModal()" title="History Kunjungan" aria-label="History Kunjungan">
+          <span class="material-icons-round" style="font-size:20px">history</span>
+        </button>
         <button class="icon-btn" onclick="openReviewModal()" title="Give Review">
           <span class="material-icons-round" style="font-size:20px">rate_review</span>
           <span class="badge-dot" id="review-badge" style="display:none"></span>
@@ -5749,15 +5752,9 @@
         </section>
 
         <div class="customer-search-main">
-          <div class="search-header visit-search-header">
-            <div>
-              <h2>Cari Customer</h2>
-              <p>Temukan customer untuk pengalaman pelayanan personal</p>
-            </div>
-            <button class="visit-history-open" type="button" onclick="openVisitHistoryModal()">
-              <span class="material-icons-round">history</span>
-              <span>History</span>
-            </button>
+          <div class="search-header">
+            <h2>Cari Customer</h2>
+            <p>Temukan customer untuk pengalaman pelayanan personal</p>
           </div>
 
           <div class="customer-search-card">
@@ -13069,34 +13066,6 @@
   }
 
   /* Visit history on the customer-search page. */
-  #page-search .visit-search-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  #page-search .visit-history-open {
-    flex: 0 0 auto;
-    min-height: 42px;
-    padding: 0 16px;
-    border: 1px solid rgba(38, 143, 160, .24);
-    border-radius: 15px;
-    background: linear-gradient(145deg, #f2fbfc, #e5f4f6);
-    color: #176f7e;
-    box-shadow: 0 8px 22px rgba(27, 99, 111, .10);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    font: inherit;
-    font-size: .76rem;
-    font-weight: 850;
-    cursor: pointer;
-  }
-
-  #page-search .visit-history-open .material-icons-round { font-size: 18px; }
-
   .visit-history-modal-content {
     width: min(1120px, calc(100vw - 28px));
     max-width: 1120px;
@@ -13253,8 +13222,6 @@
   }
 
   @media (max-width: 620px) {
-    #page-search .visit-search-header { align-items: flex-start; }
-    #page-search .visit-history-open { min-height: 39px; padding: 0 12px; }
     .visit-history-modal-content {
       width: 100%;
       height: min(92dvh, 820px);
