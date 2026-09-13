@@ -8011,12 +8011,22 @@
     /* ============================================================
        BACKEND BRIDGE — refresh lists from server when available
        ============================================================ */
+    // Invalidate reads started before a list mutation; keep retry IDs stable.
+    let listMutationVersion = 0;
+    let pendingListWrites = 0;
+    let entrySaveInProgress = false;
+    let entryDraftId = null;
+    const pendingEntryStatuses = new Set();
+
     function refreshFromBackend(silent) {
+      if (pendingListWrites) return;
+      const readVersion = listMutationVersion;
       if (!hasBackend()) return;
       const outlet = AppState.outlet || '';
 
       google.script.run
         .withSuccessHandler(function(res) {
+          if (readVersion !== listMutationVersion || pendingListWrites) return;
           if (res && res.success && Array.isArray(res.items)) {
             ListState.reservasi = res.items.map(_normalizeServerEntry);
           }
@@ -8029,6 +8039,7 @@
 
       google.script.run
         .withSuccessHandler(function(res) {
+          if (readVersion !== listMutationVersion || pendingListWrites) return;
           if (res && res.success && Array.isArray(res.items)) {
             ListState.waiting = res.items.map(function(e) {
               const x = _normalizeServerEntry(e);
@@ -8044,6 +8055,8 @@
     }
 
     function refreshReservasiPage(silent) {
+      if (pendingListWrites) return;
+      const readVersion = listMutationVersion;
       if (hasBackend()) {
         const outlet = AppState.outlet || '';
         if (!silent) {
@@ -8052,6 +8065,7 @@
         }
         google.script.run
           .withSuccessHandler(function(res) {
+          if (readVersion !== listMutationVersion || pendingListWrites) return;
             if (res && res.success && Array.isArray(res.items)) {
               ListState.reservasi = res.items.map(_normalizeServerEntry);
             }
@@ -8072,6 +8086,8 @@
     }
 
     function refreshWaitingPage(silent) {
+      if (pendingListWrites) return;
+      const readVersion = listMutationVersion;
       if (hasBackend()) {
         const outlet = AppState.outlet || '';
         if (!silent) {
@@ -8080,6 +8096,7 @@
         }
         google.script.run
           .withSuccessHandler(function(res) {
+          if (readVersion !== listMutationVersion || pendingListWrites) return;
             if (res && res.success && Array.isArray(res.items)) {
               ListState.waiting = res.items.map(function(e) {
                 const x = _normalizeServerEntry(e);
@@ -8518,10 +8535,13 @@
     }
 
     function refreshLiveSnapshot(silent, establishBaseline) {
+      if (pendingListWrites) return;
+      const readVersion = listMutationVersion;
       if (!hasBackend() || (!AppState.outlet && !AppState.isBIHQ) || RealtimeState.syncInProgress) return;
       RealtimeState.syncInProgress = true;
       google.script.run
         .withSuccessHandler(function(res) {
+          if (readVersion !== listMutationVersion || pendingListWrites)  { RealtimeState.syncInProgress = false; return; }
           RealtimeState.syncInProgress = false;
           applyLiveSnapshot(res, silent, establishBaseline);
         })
@@ -9439,6 +9459,8 @@
        ADD ENTRY MODAL
        ============================================================ */
     function openAddModal(mode) {
+      if (entrySaveInProgress) return;
+      entryDraftId = uid();
       ListState.addMode = mode;
       document.getElementById('modal-add-title').textContent =
         mode === 'reservasi' ? 'Tambah Reservasi' : 'Tambah Waiting List';
@@ -9474,11 +9496,13 @@
     }
 
     function closeAddModal() {
+      if (entrySaveInProgress) return;
       document.getElementById('modal-add').classList.remove('visible');
       ListState.addMode = null;
     }
 
     function saveEntry() {
+      if (entrySaveInProgress || !ListState.addMode) return;
       const mode = ListState.addMode;
       const name = document.getElementById('entry-name').value.trim();
       const phone = normalizePhone(document.getElementById('entry-phone').value.trim());
@@ -9496,7 +9520,7 @@
       if (!pax || pax < 1) { showToast('Pax harus minimal 1.', 'error'); return; }
       if (!date) { showToast('Tanggal wajib diisi.', 'error'); return; }
 
-      const id = uid();
+      const id = entryDraftId || (entryDraftId = uid());
       const entry = {
         id: id,
         type: mode === 'reservasi' ? 'RESERVASI' : 'WAITING',
@@ -9506,11 +9530,18 @@
         createdAt: Date.now()
       };
 
+      entrySaveInProgress = true;
+      pendingListWrites++;
+      listMutationVersion++;
       const btn = document.getElementById('btn-save-entry');
       btn.disabled = true;
       btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
 
       const finalize = function(success, message) {
+        if (!entrySaveInProgress) return;
+        entrySaveInProgress = false;
+        pendingListWrites--;
+        listMutationVersion++;
         btn.disabled = false;
         btn.innerHTML = '<span class="material-icons-round" style="font-size:18px">save</span> Simpan';
         if (!success) {
@@ -9540,6 +9571,7 @@
       };
 
       if (hasBackend()) {
+        try {
         google.script.run
           .withSuccessHandler(function(res) {
             if (res && res.success) finalize(true, res.message);
@@ -9549,6 +9581,7 @@
             finalize(false, err && err.message);
           })
           .saveReservationOrWaiting(entry);
+        } catch (err) { finalize(false, err && err.message); }
       } else {
         // Local-only fallback
         finalize(true);
@@ -9559,13 +9592,18 @@
        CONFIRM ENTRY (SUDAH MASUK / CANCEL → HISTORY)
        ============================================================ */
     function confirmEntry(source, id, status) {
+      if (pendingEntryStatuses.has(id)) return;
+      const items = source === 'reservasi' ? ListState.reservasi : ListState.waiting;
+      const selected = items.find(x => x.id === id);
+      if (!selected) return;
+      const finish = function() {
       let entry = null;
 
       if (source === 'reservasi') {
         const idx = ListState.reservasi.findIndex(x => x.id === id);
         if (idx === -1) return;
         entry = { ...ListState.reservasi[idx], origin: 'reservasi' };
-        ListState.reservasi.splice(idx, 1);
+        ListState.reservasi = ListState.reservasi.filter(r => r.id !== id);
         // Remove mirrored waiting entry
         ListState.waiting = ListState.waiting.filter(w => !(w.fromReservation && (w.sourceId === id || w.id === id)));
       } else {
@@ -9573,7 +9611,7 @@
         if (idx === -1) return;
         entry = { ...ListState.waiting[idx], origin: ListState.waiting[idx].fromReservation ? 'reservasi' : 'waiting' };
         const sourceId = ListState.waiting[idx].sourceId || (ListState.waiting[idx].fromReservation ? id : null);
-        ListState.waiting.splice(idx, 1);
+        ListState.waiting = ListState.waiting.filter(w => w.id !== id);
         // Also remove from reservasi if it was a reservasi mirror
         if (sourceId) {
           ListState.reservasi = ListState.reservasi.filter(r => r.id !== sourceId);
@@ -9595,18 +9633,35 @@
 
       renderReservasiList();
       renderWaitingList();
+      updateTabBadges();
+      resetRealtimeBaseline();
 
-      // Persist to backend
-      if (hasBackend()) {
-        const serverStatus = status === 'seated' ? 'Seated' : 'Cancelled';
+
+      };
+      if (!hasBackend()) { finish(); return; }
+      pendingEntryStatuses.add(id);
+      pendingListWrites++;
+      listMutationVersion++;
+      showToast('Menyimpan status customer...', 'info');
+      const settle = function(res, error) {
+        if (!pendingEntryStatuses.delete(id)) return;
+        pendingListWrites--;
+        listMutationVersion++;
+        if (res && res.success === true) {
+          finish();
+          refreshFromBackend(true);
+        } else {
+          showToast((res && res.message) || (error && error.message) || 'Status gagal disimpan. Silakan coba lagi.', 'error');
+        }
+      };
+      try {
         google.script.run
-          .withSuccessHandler(function() {})
-          .withFailureHandler(function(err) {
-            showToast('Backend gagal sinkron: ' + (err && err.message || ''), 'error');
-          })
-          .markEntryStatus({ id: id, status: serverStatus });
-      }
+          .withSuccessHandler(function(res) { settle(res); })
+          .withFailureHandler(function(err) { settle(null, err); })
+          .markEntryStatus({ id: selected.sourceId || id, status: status === 'seated' ? 'Seated' : 'Cancelled' });
+      } catch (err) { settle(null, err); }
     }
+
 
     function autoSaveVisitTodayFromEntry(entry) {
       if (!entry || !hasBackend()) return;
@@ -14727,3 +14782,4 @@
 
 </body>
 </html>
+
