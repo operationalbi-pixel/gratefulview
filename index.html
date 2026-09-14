@@ -1,3 +1,4 @@
+<!-- FAST_STATUS_V20_20260915: optimistic complete + background sync; based on Index(20260914-171816).html -->
 <!-- OUTLET_STATUS_DB_SYNC_V12_20260517 -->
 <!-- PATCH_ORDER_OUTLET_V11_DETAIL_TOTALS_20260517: Detail Pesanan shows Subtotal, PB1, Delivery Fee, and Grand Total when available. -->
 <!DOCTYPE html>
@@ -9639,27 +9640,39 @@
 
       };
       if (!hasBackend()) { finish(); return; }
+
+      // FAST V20:
+      // UI diselesaikan lebih dulu agar tombol terasa instan.
+      // Database disinkronkan di background. Jika gagal, refresh backend
+      // akan mengembalikan kondisi server terbaru.
       pendingEntryStatuses.add(id);
       pendingListWrites++;
       listMutationVersion++;
-      showToast('Menyimpan status customer...', 'info');
+
+      finish();
+
       const settle = function(res, error) {
         if (!pendingEntryStatuses.delete(id)) return;
-        pendingListWrites--;
+        pendingListWrites = Math.max(0, pendingListWrites - 1);
         listMutationVersion++;
         if (res && res.success === true) {
-          finish();
-          refreshFromBackend(true);
+          // Tidak perlu menunggu / render ulang di depan.
+          // Realtime polling berikutnya akan mengonfirmasi state server.
+          resetRealtimeBaseline();
         } else {
-          showToast((res && res.message) || (error && error.message) || 'Status gagal disimpan. Silakan coba lagi.', 'error');
+          showToast((res && res.message) || (error && error.message) || 'Sinkronisasi status gagal. Data akan dimuat ulang.', 'error');
+          refreshFromBackend(true);
         }
       };
+
       try {
         google.script.run
           .withSuccessHandler(function(res) { settle(res); })
           .withFailureHandler(function(err) { settle(null, err); })
           .markEntryStatus({ id: selected.sourceId || id, status: status === 'seated' ? 'Seated' : 'Cancelled' });
-      } catch (err) { settle(null, err); }
+      } catch (err) {
+        settle(null, err);
+      }
     }
 
 
@@ -10218,20 +10231,22 @@
         showCenterToast('Pesanan selesai dan masuk ke History.', 'success', 'Pesanan Selesai');
         return;
       }
-      showLoading('Menyelesaikan pesanan...');
+      // FAST V20: langsung selesaikan di UI, database sinkron di background.
+      removeLocal(true);
+      showCenterToast('Pesanan selesai dan masuk ke History.', 'success', 'Pesanan Selesai');
+
       google.script.run
         .withSuccessHandler(function(res) {
-          hideLoading();
-          if (res && res.success) {
-            removeLocal(false);
-            showCenterToast('Pesanan selesai dan masuk ke History.', 'success', 'Pesanan Selesai');
+          if (!(res && res.success)) {
+            showCenterToast((res && res.message) || 'Sinkronisasi pesanan gagal. Data akan dimuat ulang.', 'error');
+            refreshFromBackend(true);
           } else {
-            showCenterToast((res && res.message) || 'Gagal menyelesaikan pesanan.', 'error');
+            resetRealtimeBaseline();
           }
         })
         .withFailureHandler(function(err) {
-          hideLoading();
-          showCenterToast('Gagal menyelesaikan pesanan: ' + (err && err.message || err), 'error');
+          showCenterToast('Sinkronisasi pesanan gagal: ' + (err && err.message || err), 'error');
+          refreshFromBackend(true);
         })
         .updateOrderStatus({ id: id, status: 'Completed' });
     }
