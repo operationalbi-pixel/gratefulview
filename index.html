@@ -1,6 +1,7 @@
 <!-- OUTLET_STATUS_DB_SYNC_V12_20260517 -->
 <!-- PATCH_ORDER_OUTLET_V11_DETAIL_TOTALS_20260517: Detail Pesanan shows Subtotal, PB1, Delivery Fee, and Grand Total when available. -->
 <!DOCTYPE html>
+<!-- PATCH_FAST_STATUS_HISTORY_V19_20260915 -->
 <!-- PATCH_BANNER_RESERVASI_CLEAN_V4: Hide GAS bottom banner visually and remove Reservasi action buttons. Includes HISTORY_FAST_CACHE_V3. -->
 <!-- PATCH_OUTLET_PERSIST_REALTIME_V14_20260517: persistent login + realtime polling for reservasi/waiting/pemesanan. -->
 <html lang="id">
@@ -72,10 +73,10 @@
       --shadow-lg: 0 8px 30px rgba(0,0,0,0.5);
       --shadow-glow: 0 0 20px rgba(0, 188, 212, 0.2);
 
-      --radius-sm: 13px;
-      --radius-md: 21px;
-      --radius-lg: 28px;
-      --radius-xl: 34px;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
       --radius-full: 999px;
 
       --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -368,22 +369,6 @@
       color: var(--text-secondary);
       line-height: 1.45;
     }
-
-    .center-toast.success {
-      background: rgba(255, 255, 255, 0.84);
-      border-color: rgba(255, 255, 255, 0.94);
-      box-shadow: 0 18px 52px rgba(20, 52, 61, 0.20), 0 0 0 1px rgba(31, 120, 91, 0.08);
-      backdrop-filter: blur(24px) saturate(145%);
-      -webkit-backdrop-filter: blur(24px) saturate(145%);
-    }
-
-    .center-toast.success .material-icons-round {
-      background: rgba(39, 148, 92, 0.13);
-      color: #238a55;
-    }
-
-    .center-toast.success .center-toast-title { color: #17343b; }
-    .center-toast.success .center-toast-message { color: #5b6d73; }
 
     /* ============================================================
        LOGIN PAGE
@@ -728,17 +713,6 @@
       border-radius: 50%;
       background: var(--cyan-400);
       box-shadow: 0 0 6px var(--cyan-glow);
-    }
-
-    .notification-settings-btn.notification-enabled {
-      color: #238a55;
-      border-color: rgba(35, 138, 85, .24);
-      background: rgba(235, 249, 241, .96);
-    }
-
-    .notification-settings-btn.notification-enabled .notification-status-dot {
-      background: #2ca768;
-      box-shadow: 0 0 0 3px rgba(44, 167, 104, .13);
     }
 
     /* Search Content */
@@ -2796,107 +2770,6 @@
       font-weight: 500;
     }
     .list-card-phone .material-icons-round { font-size: 14px; color: var(--text-tertiary); }
-    .list-card-phone.list-card-phone-stacked {
-      display: flex;
-      width: fit-content;
-      margin-top: 6px;
-    }
-    .list-card-context-row {
-      position: relative;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr);
-      align-items: center;
-      gap: 0;
-      flex: 1 1 100%;
-      width: 100%;
-      max-width: 100%;
-      height: 40px;
-      min-height: 40px;
-      margin-top: 0;
-      padding: 0 12px;
-      flex-wrap: nowrap;
-      overflow: hidden;
-      background: var(--cyan-glow-soft);
-      border: 1px solid var(--border-accent);
-      border-radius: var(--radius-sm);
-    }
-    .list-card-context-row.has-outlet {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    }
-    .list-card-context-row .list-card-outlet,
-    .list-card-context-row .list-card-reservation-time {
-      margin-top: 0;
-      padding: 0;
-      background: transparent;
-      border: 0;
-      border-radius: 0;
-    }
-    .list-card-context-row .list-card-outlet {
-      justify-content: center;
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      padding: 0;
-      background: transparent;
-      border: 0;
-      border-radius: 0;
-      color: var(--text-secondary);
-      font-size: 0.6875rem;
-      font-weight: 700;
-    }
-    .list-card-context-row .list-card-reservation-time,
-    .list-card-context-row .list-card-timestamp {
-      color: var(--text-secondary);
-      font-size: 0.6875rem;
-      font-weight: 700;
-    }
-    .list-card-context-row .list-card-timestamp { margin-top: 0; white-space: nowrap; }
-    .list-card-context-time {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      min-width: 0;
-    }
-    .list-card-context-row:not(.has-outlet) .list-card-context-time { grid-column: 1 / -1; }
-    .list-card-context-separator {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      color: var(--text-tertiary);
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-    .list-card-outlet {
-      display: flex;
-      align-items: flex-start;
-      gap: 5px;
-      width: fit-content;
-      max-width: 100%;
-      margin-top: 7px;
-      padding: 5px 9px;
-      background: var(--cyan-glow-soft);
-      border: 1px solid var(--border-accent);
-      border-radius: var(--radius-full);
-      color: var(--cyan-300);
-      font-size: 0.6875rem;
-      font-weight: 750;
-      line-height: 1.3;
-      letter-spacing: 0.02em;
-    }
-    .list-card-outlet .material-icons-round {
-      flex: 0 0 auto;
-      margin-top: 1px;
-      color: var(--cyan-400);
-      font-size: 13px;
-    }
-    .list-card-outlet-name {
-      min-width: 0;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
     .list-card-pax {
       flex-shrink: 0;
       display: flex;
@@ -3004,8 +2877,6 @@
     .action-btn .material-icons-round { font-size: 16px; }
     .action-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); }
     .action-btn.data-available-btn { flex: 1 1 100%; }
-    .list-card-actions > .action-btn { flex: 1 1 0; }
-    .list-card-actions > .action-btn.data-available-btn { flex: 1 1 100%; }
     .action-btn.action-confirm,
     .action-btn.action-cancel { flex: 1 1 calc(50% - 8px); min-width: 118px; }
     .action-btn.data-available {
@@ -3025,26 +2896,6 @@
       color: var(--text-tertiary);
       cursor: not-allowed;
       opacity: 0.7;
-    }
-    .action-btn.history-availability-btn.data-available {
-      background: linear-gradient(135deg, #2e8b57, #247347);
-      border-color: rgba(113, 214, 151, 0.72);
-      color: #ffffff;
-      box-shadow: 0 4px 12px rgba(46, 139, 87, 0.22);
-    }
-    .action-btn.history-availability-btn.data-available:hover {
-      background: linear-gradient(135deg, #35a164, #287e4d);
-      border-color: rgba(159, 235, 187, 0.9);
-      color: #ffffff;
-    }
-    .action-btn.history-availability-btn.data-unavailable,
-    .action-btn.history-availability-btn.data-unavailable:disabled {
-      background: rgba(148, 163, 184, 0.12);
-      border-color: rgba(148, 163, 184, 0.28);
-      color: var(--text-tertiary);
-      cursor: not-allowed;
-      opacity: 1;
-      box-shadow: none;
     }
     .action-btn.action-confirm {
       background: linear-gradient(135deg, rgba(0, 188, 212, 0.18), rgba(0, 188, 212, 0.06));
@@ -5610,6 +5461,66 @@
     }
 
   </style>
+
+<style id="v53-safe-qr-status-style">
+  /* ============================================================
+     V5.3 — SAFE QR STATUS
+     Fix V5.2 freeze:
+     - No MutationObserver
+     - No function auto-wrapping loop
+     - No heavy full-screen overlay before camera opens
+     - Status is inserted directly into original scanner flow
+     ============================================================ */
+
+  .member-scan-status.reading-v53 {
+    background: rgba(32,117,138,.08)!important;
+    border-color: rgba(32,117,138,.22)!important;
+    color: #185e70!important;
+  }
+
+  .member-scan-status.success-v53 {
+    background: rgba(46,125,50,.08)!important;
+    border-color: rgba(46,125,50,.22)!important;
+    color: #2e7d32!important;
+  }
+
+  .member-scan-status.loading-v53 {
+    background: rgba(255,166,32,.10)!important;
+    border-color: rgba(255,166,32,.24)!important;
+    color: #9a5a00!important;
+  }
+
+  .member-scan-status.error-v53 {
+    background: rgba(211,47,47,.08)!important;
+    border-color: rgba(211,47,47,.22)!important;
+    color: #b3261e!important;
+  }
+
+  .member-scan-status .qr-inline-spinner-v53 {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    animation: qrInlineSpinV53 .75s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes qrInlineSpinV53 {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+
+<style id="v54-remove-duplicate-member-id-and-bihq-label-style">
+  /* V5.4: ID Member di bawah nama customer dihilangkan.
+     ID tetap tampil di card detail agar tidak duplicate. */
+  #page-dashboard .profile-info > .profile-member-id,
+  #page-dashboard .v46-profile-top .v46-member-id {
+    display: none !important;
+  }
+</style>
+
 </head>
 <body>
   <div class="main-container" id="app-shell">
@@ -5643,21 +5554,13 @@
 
       <div class="login-card">
         <h2>Selamat Datang</h2>
-        <p class="subtitle">Masukkan kode outlet dan password untuk melanjutkan</p>
+        <p class="subtitle">Masukkan kode outlet untuk melanjutkan</p>
 
         <div class="input-group">
           <label>Kode Outlet</label>
           <div class="input-wrapper">
             <input type="text" id="login-outlet-code" placeholder="Masukkan kode outlet" autocomplete="off" autocapitalize="off" spellcheck="false">
             <span class="material-icons-round input-icon">store</span>
-          </div>
-        </div>
-
-        <div class="input-group">
-          <label>Password</label>
-          <div class="input-wrapper">
-            <input type="password" id="login-password" placeholder="Masukkan password" autocomplete="current-password">
-            <span class="material-icons-round input-icon">lock</span>
           </div>
         </div>
 
@@ -5679,13 +5582,6 @@
         <div class="top-bar-outlet">Outlet: <strong id="outlet-name-display">-</strong></div>
       </div>
       <div class="top-bar-right">
-        <button class="icon-btn notification-settings-btn" onclick="configureNotifications()" title="Pengaturan Notifikasi" aria-label="Aktifkan notifikasi">
-          <span class="material-icons-round" style="font-size:20px">notifications</span>
-          <span class="badge-dot notification-status-dot" style="display:block"></span>
-        </button>
-        <button class="icon-btn" onclick="openVisitHistoryModal()" title="History Kunjungan" aria-label="History Kunjungan">
-          <span class="material-icons-round" style="font-size:20px">history</span>
-        </button>
         <button class="icon-btn" onclick="openReviewModal()" title="Give Review">
           <span class="material-icons-round" style="font-size:20px">rate_review</span>
           <span class="badge-dot" id="review-badge" style="display:none"></span>
@@ -5697,67 +5593,11 @@
     </div>
 
     <div class="search-content">
-      <div class="customer-search-layout">
-        <section class="visit-trend-card" aria-labelledby="visit-trend-title">
-          <div class="visit-trend-head">
-            <div>
-              <h2 id="visit-trend-title">MEMBER CUSTOMER TRAFFIC</h2>
-            </div>
-            <div class="visit-trend-controls">
-              <select id="visit-range-mode" aria-label="Pilih periode grafik">
-                <option value="7d">7 Hari Terakhir</option>
-                <option value="month">Bulan Ini</option>
-                <option value="custom">Custom Range</option>
-              </select>
-              <div id="visit-outlet-filter-wrap" class="visit-outlet-filter" hidden>
-                <select id="visit-outlet-filter" aria-label="Filter outlet">
-                  <option value="">Semua Outlet</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div id="visit-custom-range" class="visit-custom-range" hidden>
-            <label>Dari <input type="date" id="visit-start-date"></label>
-            <label>Sampai <input type="date" id="visit-end-date"></label>
-            <button type="button" id="visit-apply-range">Terapkan</button>
-          </div>
-          <div class="visit-trend-summary">
-            <div class="visit-chart-legend" aria-label="Keterangan grafik">
-              <span><i class="visit-legend-line repeat"></i>Repeat</span>
-              <span><i class="visit-legend-line welcome"></i>Welcome Back</span>
-            </div>
-            <span id="visit-chart-period">7 hari terakhir</span>
-          </div>
-          <div class="visit-chart-wrap">
-            <div id="visit-chart-state" class="visit-chart-state">Memuat grafik kunjungan...</div>
-            <svg id="visit-line-chart" viewBox="0 0 640 270" role="img" aria-label="Grafik garis kunjungan customer" preserveAspectRatio="xMidYMid meet"></svg>
-          </div>
-          <section id="visit-outlet-breakdown" class="visit-outlet-breakdown" aria-labelledby="visit-outlet-chart-title" hidden>
-            <div class="visit-outlet-breakdown-head">
-              <div>
-                <h3 id="visit-outlet-chart-title">KUNJUNGAN PER OUTLET</h3>
-                <p id="visit-outlet-chart-date">Hari ini</p>
-                <div class="visit-chart-legend visit-outlet-legend" aria-label="Keterangan grafik outlet">
-                  <span><i class="visit-legend-box repeat"></i>Repeat</span>
-                  <span><i class="visit-legend-box welcome"></i>Welcome Back</span>
-                </div>
-              </div>
-              <span class="visit-outlet-chart-hint"><span class="material-icons-round">touch_app</span>Pilih tanggal pada grafik garis</span>
-            </div>
-            <div class="visit-outlet-chart-scroll">
-              <div id="visit-outlet-chart-state" class="visit-outlet-chart-state">Memuat kunjungan outlet...</div>
-              <svg id="visit-outlet-bar-chart" viewBox="0 0 640 220" role="img" aria-label="Grafik batang kunjungan per outlet" preserveAspectRatio="xMinYMin meet"></svg>
-            </div>
-          </section>
-        </section>
+      <div class="search-header">
+        <h2>Cari Customer</h2>
+        <p>Temukan customer untuk pengalaman pelayanan personal</p>
+      </div>
 
-        <div class="customer-search-main">
-          <div class="search-header">
-            <h2>Cari Customer</h2>
-            <p>Temukan customer untuk pengalaman pelayanan personal</p>
-          </div>
-
-          <div class="customer-search-card">
       <button class="member-scan-hero" type="button" onclick="openMemberScanModal()" aria-label="Scan QR Member">
         <div class="member-scan-hero-left">
           <div class="member-scan-hero-icon">
@@ -5795,17 +5635,15 @@
 
         <!-- Nomor HP -->
         <div class="search-field-wrapper">
+          <label>Nomor HP</label>
           <div class="search-input-wrap">
-            <input type="text" id="search-mobile" placeholder="Cari dengan no HP..." autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="tel">
+            <input type="text" id="search-mobile" placeholder="Ketik nomor HP..." autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="tel">
             <button class="clear-btn" id="clear-mobile" onclick="clearSearchField('mobile')">
               <span class="material-icons-round" style="font-size:16px">close</span>
             </button>
             <div class="search-spinner" id="spinner-mobile">
               <div class="spinner spinner-dark" style="width:18px;height:18px"></div>
             </div>
-            <button class="phone-search-submit" id="btn-search" type="button" onclick="handleSearchCustomer()" disabled aria-label="Cari customer">
-              <span class="material-icons-round">search</span>
-            </button>
           </div>
           <div class="suggestion-dropdown" id="dropdown-mobile"></div>
         </div>
@@ -5825,15 +5663,16 @@
           <div class="suggestion-dropdown" id="dropdown-member"></div>
         </div>
       </div>
-          </div>
 
-          <div class="search-actions">
-            <button class="btn btn-review-gold" onclick="openReviewModal()">
-              <span class="material-icons-round" style="font-size:20px">rate_review</span>
-              Give Review
-            </button>
-          </div>
-        </div>
+      <div class="search-actions">
+        <button class="btn btn-primary" id="btn-search" onclick="handleSearchCustomer()" disabled>
+          <span class="material-icons-round" style="font-size:20px">person_search</span>
+          Search Customer
+        </button>
+        <button class="btn btn-review-gold" onclick="openReviewModal()">
+          <span class="material-icons-round" style="font-size:20px">rate_review</span>
+          Give Review
+        </button>
       </div>
     </div>
 
@@ -6102,7 +5941,7 @@
       <div class="list-page-header">
         <div>
           <h2>Pemesanan</h2>
-          <p>List pesanan Delivery, Pickup / Take Away, dan Pre-order Reservasi</p>
+          <p>List pesanan customer Delivery dan Pickup / Take Away</p>
         </div>
       </div>
 
@@ -6178,42 +6017,6 @@
 
     <div class="dashboard-content" id="dashboard-content">
       <!-- Dynamically populated -->
-    </div>
-  </div>
-
-  <!-- ============================================================
-       MODAL: VISIT HISTORY
-       ============================================================ -->
-  <div class="modal-overlay" id="modal-visit-history" onclick="handleVisitHistoryBackdrop(event)">
-    <div class="modal-content visit-history-modal-content" role="dialog" aria-modal="true" aria-labelledby="visit-history-title">
-      <div class="modal-handle"></div>
-      <div class="modal-header visit-history-modal-header">
-        <div>
-          <span class="visit-history-eyebrow">CUSTOMER VISIT LOG</span>
-          <h3 id="visit-history-title">History Kunjungan</h3>
-        </div>
-        <button class="modal-close" type="button" onclick="closeVisitHistoryModal()" aria-label="Tutup history">
-          <span class="material-icons-round" style="font-size:18px">close</span>
-        </button>
-      </div>
-      <div class="visit-history-toolbar">
-        <label class="visit-history-date-field">
-          <span>Tanggal Kunjungan</span>
-          <input type="date" id="visit-history-date" onchange="loadVisitHistory()">
-        </label>
-        <button class="visit-history-refresh" type="button" onclick="loadVisitHistory()" aria-label="Muat ulang history">
-          <span class="material-icons-round">refresh</span>
-          <span>Muat Ulang</span>
-        </button>
-      </div>
-      <div class="visit-history-table-wrap">
-        <div class="visit-history-grid visit-history-grid-head" aria-hidden="true">
-          <span>Tanggal</span><span>Jam</span><span>Nama</span><span>No Telp</span><span>No Member</span><span>Outlet</span><span>No Table</span>
-        </div>
-        <div id="visit-history-list" class="visit-history-list">
-          <div class="visit-history-state">Memuat history hari ini...</div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -6472,7 +6275,7 @@
        Saat file di-hosting Netlify, isi URL di bawah dengan URL deployment Web App Apps Script.
        Alternatif: set window.BAKERZIN_API_URL sebelum script ini dijalankan.
     */
-    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycby6b5ZxVme8xBTIJygC0RUIzAeW6yAl6jkSWJ6fENtm7jkhvl10QbnKd1nfGiBfQvD9Gw/exec').trim();
+    const NETLIFY_GAS_WEB_APP_URL = (window.BAKERZIN_API_URL || 'https://script.google.com/macros/s/AKfycbx4LFTHRJMG3QlvFTVagTXzei9277H7OyCWhzTkbr7PpN6pAaUOFln_U2RJ1BoEspzJDg/exec').trim();
 
     (function initNetlifyGoogleScriptRunBridge() {
       const hasNativeGas = typeof google !== 'undefined' && google.script && google.script.run;
@@ -6787,26 +6590,43 @@
     const MemberScanState = {
       scanner: null,
       running: false,
+      starting: false,
       lastCode: '',
       lastAt: 0
     };
 
-    function setMemberScanStatus(message, icon) {
+    function setMemberScanStatus(message, icon, state) {
       const el = document.getElementById('member-scan-status');
       if (!el) return;
-      el.innerHTML = '<span class="material-icons-round">' + (icon || 'info') + '</span><span>' + message + '</span>';
+
+      el.classList.remove('reading-v53', 'success-v53', 'loading-v53', 'error-v53');
+      if (state) el.classList.add(state + '-v53');
+
+      const isLoading = state === 'reading' || state === 'loading';
+      const iconHtml = isLoading
+        ? '<span class="qr-inline-spinner-v53"></span>'
+        : '<span class="material-icons-round">' + (icon || 'info') + '</span>';
+
+      el.innerHTML = iconHtml + '<span>' + message + '</span>';
     }
 
     function openMemberScanModal() {
       const modal = document.getElementById('modal-scan-member');
       if (!modal) return;
+
       modal.classList.add('visible');
+
       const manual = document.getElementById('member-scan-manual-code');
       if (manual) manual.value = '';
-      const status = document.getElementById('member-scan-status');
-      if (status) status.classList.remove('scan-success', 'scan-searching');
-      setMemberScanStatus('Arahkan kamera ke QR / barcode member. Setelah terbaca, dashboard akan langsung dibuka.', 'photo_camera');
-      setTimeout(startMemberScanner, 180);
+
+      const reader = document.getElementById('member-scan-reader');
+      if (reader) reader.innerHTML = '';
+
+      setMemberScanStatus('Sedang Membaca QR. Membuka kamera...', 'qr_code_scanner', 'reading');
+
+      // V5.7: start camera immediately from the user click.
+      // Do not delay with setTimeout because mobile browsers/WebView can lose user activation.
+      startMemberScanner();
     }
 
     function closeMemberScanModal() {
@@ -6820,65 +6640,103 @@
       if (!reader) return;
 
       if (!window.Html5Qrcode) {
-        setMemberScanStatus('Scanner kamera belum tersedia. Gunakan input manual di bawah, atau pastikan koneksi internet dapat memuat library scanner.', 'keyboard');
+        setMemberScanStatus('Scanner kamera belum tersedia. Gunakan input manual di bawah, atau pastikan koneksi internet dapat memuat library scanner.', 'keyboard', 'error');
         return;
       }
 
-      if (MemberScanState.running) return;
+      if (MemberScanState.running || MemberScanState.starting) return;
+
+      MemberScanState.starting = true;
       reader.innerHTML = '';
-      setMemberScanStatus('Meminta akses kamera...', 'photo_camera');
+      setMemberScanStatus('Sedang Membaca QR. Membuka kamera belakang...', 'qr_code_scanner', 'reading');
 
       try {
         const scannerFormats = [];
         if (window.Html5QrcodeSupportedFormats) {
-          [
-            'QR_CODE', 'CODE_128', 'CODE_39', 'EAN_13', 'EAN_8',
-            'UPC_A', 'UPC_E', 'ITF', 'CODABAR'
-          ].forEach(function(key) {
+          // V5.7: prioritize QR and common member barcode formats only.
+          // This keeps scan lighter than enabling every possible format.
+          ['QR_CODE', 'CODE_128', 'CODE_39', 'EAN_13', 'EAN_8'].forEach(function(key) {
             if (Html5QrcodeSupportedFormats[key] !== undefined) scannerFormats.push(Html5QrcodeSupportedFormats[key]);
           });
         }
-        const scannerConfig = scannerFormats.length ? { formatsToSupport: scannerFormats } : {};
+
+        const scannerConfig = scannerFormats.length
+          ? { formatsToSupport: scannerFormats, verbose: false }
+          : { verbose: false };
+
         MemberScanState.scanner = new Html5Qrcode('member-scan-reader', scannerConfig);
-        Html5Qrcode.getCameras().then(function(cameras) {
-          if (!cameras || cameras.length === 0) {
-            setMemberScanStatus('Kamera tidak ditemukan. Gunakan input manual di bawah.', 'videocam_off');
-            return;
+
+        const scanConfig = {
+          fps: 10,
+          qrbox: function(viewfinderWidth, viewfinderHeight) {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const size = Math.max(180, Math.floor(minEdge * 0.72));
+            return { width: size, height: size };
+          },
+          aspectRatio: 1.0,
+          disableFlip: true,
+          rememberLastUsedCamera: true,
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true
           }
+        };
 
-          const backCamera = cameras.find(function(cam) {
-            return /back|rear|environment/i.test(cam.label || '');
-          }) || cameras[cameras.length - 1];
+        // V5.7: start directly with environment camera.
+        // This avoids slow Html5Qrcode.getCameras() enumeration before camera opens.
+        MemberScanState.scanner.start(
+          { facingMode: 'environment' },
+          scanConfig,
+          function(decodedText) {
+            handleMemberScanSuccess(decodedText);
+          },
+          function() {}
+        ).then(function() {
+          MemberScanState.starting = false;
+          MemberScanState.running = true;
+          setMemberScanStatus('Sedang Membaca QR. Posisikan QR / barcode member tepat di dalam frame kotak.', 'center_focus_strong', 'reading');
+        }).catch(function(primaryErr) {
+          console.warn('Environment camera failed, fallback to camera list', primaryErr);
 
-          MemberScanState.scanner.start(
-            { deviceId: { exact: backCamera.id } },
-            {
-              fps: 12,
-              qrbox: function(viewfinderWidth, viewfinderHeight) {
-                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                const size = Math.max(180, Math.floor(minEdge * 0.72));
-                return { width: size, height: size };
+          // Fallback only if direct environment start fails.
+          setMemberScanStatus('Mencari kamera tersedia...', 'photo_camera', 'reading');
+
+          Html5Qrcode.getCameras().then(function(cameras) {
+            if (!cameras || cameras.length === 0) {
+              MemberScanState.starting = false;
+              setMemberScanStatus('Kamera tidak ditemukan. Gunakan input manual di bawah.', 'videocam_off', 'error');
+              return;
+            }
+
+            const backCamera = cameras.find(function(cam) {
+              return /back|rear|environment/i.test(cam.label || '');
+            }) || cameras[cameras.length - 1];
+
+            MemberScanState.scanner.start(
+              { deviceId: { exact: backCamera.id } },
+              scanConfig,
+              function(decodedText) {
+                handleMemberScanSuccess(decodedText);
               },
-              aspectRatio: 1.0
-            },
-            function(decodedText) {
-              handleMemberScanSuccess(decodedText);
-            },
-            function() {}
-          ).then(function() {
-            MemberScanState.running = true;
-            setMemberScanStatus('Scanner aktif. Posisikan QR / barcode member tepat di dalam frame kotak.', 'center_focus_strong');
-          }).catch(function(err) {
-            console.warn(err);
-            setMemberScanStatus('Akses kamera gagal. Izinkan kamera dari browser atau gunakan input manual.', 'videocam_off');
+              function() {}
+            ).then(function() {
+              MemberScanState.starting = false;
+              MemberScanState.running = true;
+              setMemberScanStatus('Sedang Membaca QR. Posisikan QR / barcode member tepat di dalam frame kotak.', 'center_focus_strong', 'reading');
+            }).catch(function(fallbackErr) {
+              console.warn(fallbackErr);
+              MemberScanState.starting = false;
+              setMemberScanStatus('Akses kamera gagal. Izinkan kamera dari browser atau gunakan input manual.', 'videocam_off', 'error');
+            });
+          }).catch(function(listErr) {
+            console.warn(listErr);
+            MemberScanState.starting = false;
+            setMemberScanStatus('Tidak bisa membuka kamera. Gunakan input manual di bawah.', 'keyboard', 'error');
           });
-        }).catch(function(err) {
-          console.warn(err);
-          setMemberScanStatus('Tidak bisa membuka kamera. Gunakan input manual di bawah.', 'keyboard');
         });
       } catch (err) {
         console.warn(err);
-        setMemberScanStatus('Scanner gagal dimulai. Gunakan input manual di bawah.', 'keyboard');
+        MemberScanState.starting = false;
+        setMemberScanStatus('Scanner gagal dimulai. Gunakan input manual di bawah.', 'keyboard', 'error');
       }
     }
 
@@ -6887,6 +6745,7 @@
       const scanner = MemberScanState.scanner;
       MemberScanState.scanner = null;
       MemberScanState.running = false;
+      MemberScanState.starting = false;
       try {
         scanner.stop().then(function() {
           try { scanner.clear(); } catch (e) {}
@@ -6934,7 +6793,10 @@
       if (MemberScanState.lastCode === code && now - MemberScanState.lastAt < 3000) return;
       MemberScanState.lastCode = code;
       MemberScanState.lastAt = now;
-      lookupScannedMember(code);
+      setMemberScanStatus('QR berhasil dibaca. Menyiapkan data customer...', 'check_circle', 'success');
+      setTimeout(function() {
+        lookupScannedMember(code);
+      }, 220);
     }
 
     function submitManualMemberScan() {
@@ -6945,6 +6807,7 @@
         if (input) input.focus();
         return;
       }
+      setMemberScanStatus('Loading Data Customer...', 'hourglass_top', 'loading');
       lookupScannedMember(code);
     }
 
@@ -6955,66 +6818,43 @@
       }
 
       stopMemberScanner();
-      setMemberScanStatus('Scan berhasil. Kode member sudah terbaca.', 'check_circle');
-      const scanStatus = document.getElementById('member-scan-status');
-      if (scanStatus) scanStatus.classList.add('scan-success');
-      showToast('Scan berhasil. Sedang mencari data customer...', 'success');
+      setMemberScanStatus('Loading Data Customer...', 'hourglass_top', 'loading');
+      showLoading('Loading Data Customer...');
 
-      setTimeout(function() {
-        if (scanStatus) {
-          scanStatus.classList.remove('scan-success');
-          scanStatus.classList.add('scan-searching');
-        }
-        setMemberScanStatus('Sedang mencari data customer dan menyiapkan dashboard...', 'manage_search');
-        showLoading('Scan berhasil. Mencari data customer...');
+      google.script.run
+        .withSuccessHandler(function(result) {
+          hideLoading();
+          closeMemberScanModal();
 
-        google.script.run
-          .withSuccessHandler(function(result) {
-            hideLoading();
+          if (result && result.success) {
+            const profile = result.profile || {};
+            AppState.selectedCustomer = {
+              name: profile.name || 'Customer Bakerzin',
+              memberId: profile.memberId || code,
+              mobile: profile.mobile || 'Data tidak tersedia',
+              tier: profile.tier || '',
+              source: profile.source || 'MEMBER'
+            };
+            AppState.dashboardData = result;
+            writeDashboardCacheFromResult(result, AppState.selectedCustomer, profile.mobile);
+            renderDashboard(result);
+            showPage('page-dashboard');
 
-            if (result && result.success) {
-              setMemberScanStatus(
-                result.scannedUnknown || result.welcomeOnly
-                  ? 'Nomor member belum tercatat. Menampilkan Welcome Back Moment...'
-                  : 'Data customer ditemukan. Membuka dashboard...',
-                result.scannedUnknown || result.welcomeOnly ? 'person_off' : 'task_alt'
-              );
-              const profile = result.profile || {};
-              AppState.selectedCustomer = {
-                name: profile.name || 'Customer Bakerzin',
-                memberId: profile.memberId || code,
-                mobile: profile.mobile || 'Data tidak tersedia',
-                tier: profile.tier || '',
-                source: profile.source || 'MEMBER'
-              };
-              AppState.dashboardData = result;
-              if (!result.scannedUnknown && !result.welcomeOnly) {
-                writeDashboardCacheFromResult(result, AppState.selectedCustomer, profile.mobile);
-              }
-              renderDashboard(result);
-              setTimeout(function() {
-                closeMemberScanModal();
-                showPage('page-dashboard');
-              }, 320);
-
-              if (result.scannedUnknown || result.welcomeOnly) {
-                showToast('Nomor member tidak ditemukan. Welcome Back Moment ditampilkan.', 'info');
-              } else {
-                showToast('Customer ditemukan. Dashboard berhasil disiapkan.', 'success');
-              }
+            if (result.scannedUnknown) {
+              showToast('Welcome Back Moment ditampilkan untuk customer ini.', 'info');
             } else {
-              setMemberScanStatus((result && result.message) || 'Data customer tidak ditemukan.', 'person_off');
-              showToast((result && result.message) || 'Barcode member tidak ditemukan.', 'error');
+              showToast('Member ditemukan. Dashboard berhasil dibuka.', 'success');
             }
-          })
-          .withFailureHandler(function(error) {
-            hideLoading();
-            if (scanStatus) scanStatus.classList.remove('scan-searching');
-            setMemberScanStatus('Gagal membaca data member. Coba scan ulang atau input manual.', 'error');
-            showToast('Error: ' + ((error && error.message) || error), 'error');
-          })
-          .scanMemberBarcode(code, AppState.outlet || '');
-      }, 650);
+          } else {
+            showToast((result && result.message) || 'Barcode member tidak ditemukan.', 'error');
+          }
+        })
+        .withFailureHandler(function(error) {
+          hideLoading();
+          setMemberScanStatus('Gagal membaca data member. Coba scan ulang atau input manual.', 'error', 'error');
+          showToast('Error: ' + ((error && error.message) || error), 'error');
+        })
+        .scanMemberBarcode(code, AppState.outlet || '');
     }
 
     /* ============================================================
@@ -7256,7 +7096,7 @@
               <div class="profile-avatar">${getInitials(p.name)}</div>
               <div class="profile-info">
                 <div class="profile-name">${p.name || '-'}</div>
-                <div class="profile-member-id">${p.memberId || '-'}</div>
+                <!-- V5.4: Member ID under name removed; ID remains in detail card -->
                 <div class="profile-tier-badge ${getTierClass(p.tier)}">${p.tier || 'Standard'}</div>
               </div>
               <div class="profile-source-badge">
@@ -7356,7 +7196,7 @@
             <div class="profile-avatar">${getInitials(p.name)}</div>
             <div class="profile-info">
               <div class="profile-name">${p.name}</div>
-              <div class="profile-member-id">${p.memberId}</div>
+              <!-- V5.4: Member ID under name removed; ID remains in detail card -->
               <div class="profile-tier-badge ${getTierClass(p.tier)}">${p.tier || 'Standard'}</div>
             </div>
             <div class="profile-source-badge">
@@ -7608,72 +7448,38 @@
       const card = document.getElementById('visit-today-toggle');
       const checkbox = document.getElementById('visit-checkbox');
       if (card) card.classList.toggle('checked', !!checked);
-      if (card) card.setAttribute('aria-checked', checked ? 'true' : 'false');
 
       if (!checked) return; // only persist on tick; no untick action
-      if (!AppState.dashboardData || !AppState.dashboardData.profile) {
-        if (checkbox) checkbox.checked = false;
-        if (card) card.classList.remove('checked');
-        if (card) card.setAttribute('aria-checked', 'false');
-        showToast('Data customer belum siap. Silakan buka ulang dashboard.', 'error');
-        return;
-      }
+      if (!AppState.dashboardData || !AppState.dashboardData.profile) return;
 
       const profile = AppState.dashboardData.profile;
-      const outletFilter = document.getElementById('visit-outlet-filter');
-      const selectedCustomer = AppState.selectedCustomer || {};
-      const lastVisit = AppState.dashboardData.lastVisit || {};
-      const visitOutlet = (AppState.outlet ||
-        (outletFilter && outletFilter.value) ||
-        selectedCustomer.outlet ||
-        profile.outlet ||
-        lastVisit.branch || '').toString().trim();
-
-      if (!visitOutlet) {
-        if (checkbox) checkbox.checked = false;
-        if (card) card.classList.remove('checked');
-        if (card) card.setAttribute('aria-checked', 'false');
-        showToast('Pilih outlet terlebih dahulu agar kunjungan dapat dicatat.', 'error');
-        return;
-      }
-
-      if (checkbox) checkbox.disabled = true;
-      if (card) card.classList.add('saving');
 
       google.script.run
         .withSuccessHandler(function(result) {
-          if (checkbox) checkbox.disabled = false;
-          if (card) card.classList.remove('saving');
           if (result && result.success) {
             AppState.dashboardData.todayVisit = {
               visited: true,
               reviewStatus: 'Pending',
               row: result.row || null,
-              outlet: visitOutlet
+              outlet: AppState.outlet || ''
             };
             writeDashboardCacheFromResult(AppState.dashboardData, AppState.selectedCustomer, profile.mobile);
-            showToast((result && result.message) || 'Kunjungan berhasil dicatat.', 'success');
-            if (typeof loadVisitTrend === 'function') loadVisitTrend();
           } else {
             if (checkbox) checkbox.checked = false;
             if (card) card.classList.remove('checked');
-            if (card) card.setAttribute('aria-checked', 'false');
             showToast((result && result.message) || 'Gagal mencatat kunjungan.', 'error');
           }
         })
         .withFailureHandler(function(error) {
-          if (checkbox) checkbox.disabled = false;
-          if (card) card.classList.remove('saving');
           if (checkbox) checkbox.checked = false;
           if (card) card.classList.remove('checked');
-          if (card) card.setAttribute('aria-checked', 'false');
           showToast('Gagal mencatat kunjungan: ' + ((error && error.message) || error), 'error');
         })
         .saveVisit({
           name: profile.name,
           memberId: profile.memberId,
           mobile: profile.mobile,
-          outlet: visitOutlet
+          outlet: AppState.outlet
         });
     }
 
@@ -8011,22 +7817,12 @@
     /* ============================================================
        BACKEND BRIDGE — refresh lists from server when available
        ============================================================ */
-    // Invalidate reads started before a list mutation; keep retry IDs stable.
-    let listMutationVersion = 0;
-    let pendingListWrites = 0;
-    let entrySaveInProgress = false;
-    let entryDraftId = null;
-    const pendingEntryStatuses = new Set();
-
     function refreshFromBackend(silent) {
-      if (pendingListWrites) return;
-      const readVersion = listMutationVersion;
       if (!hasBackend()) return;
       const outlet = AppState.outlet || '';
 
       google.script.run
         .withSuccessHandler(function(res) {
-          if (readVersion !== listMutationVersion || pendingListWrites) return;
           if (res && res.success && Array.isArray(res.items)) {
             ListState.reservasi = res.items.map(_normalizeServerEntry);
           }
@@ -8039,7 +7835,6 @@
 
       google.script.run
         .withSuccessHandler(function(res) {
-          if (readVersion !== listMutationVersion || pendingListWrites) return;
           if (res && res.success && Array.isArray(res.items)) {
             ListState.waiting = res.items.map(function(e) {
               const x = _normalizeServerEntry(e);
@@ -8055,8 +7850,6 @@
     }
 
     function refreshReservasiPage(silent) {
-      if (pendingListWrites) return;
-      const readVersion = listMutationVersion;
       if (hasBackend()) {
         const outlet = AppState.outlet || '';
         if (!silent) {
@@ -8065,7 +7858,6 @@
         }
         google.script.run
           .withSuccessHandler(function(res) {
-          if (readVersion !== listMutationVersion || pendingListWrites) return;
             if (res && res.success && Array.isArray(res.items)) {
               ListState.reservasi = res.items.map(_normalizeServerEntry);
             }
@@ -8086,8 +7878,6 @@
     }
 
     function refreshWaitingPage(silent) {
-      if (pendingListWrites) return;
-      const readVersion = listMutationVersion;
       if (hasBackend()) {
         const outlet = AppState.outlet || '';
         if (!silent) {
@@ -8096,7 +7886,6 @@
         }
         google.script.run
           .withSuccessHandler(function(res) {
-          if (readVersion !== listMutationVersion || pendingListWrites) return;
             if (res && res.success && Array.isArray(res.items)) {
               ListState.waiting = res.items.map(function(e) {
                 const x = _normalizeServerEntry(e);
@@ -8158,7 +7947,6 @@
        ============================================================ */
     const LIST_STORAGE_KEY = 'csi_lists_v1';
     const OUTLET_LOGIN_STORAGE_KEY = 'csi_outlet_persistent_login_v14';
-    const NOTIFICATION_STORAGE_KEY = 'csi_notifications_v1';
     const REALTIME_REFRESH_MS = 12000;
     const ListState = {
       reservasi: [],   // {id, name, phone, pax, date, time, special, note, member, createdAt}
@@ -8197,121 +7985,6 @@
       lastOrderIds: '',
       lastSyncAt: 0
     };
-
-    function readNotificationSettings() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(NOTIFICATION_STORAGE_KEY) || '{}');
-        return {
-          enabled: saved.enabled !== false,
-          sound: saved.sound !== false,
-          orders: saved.orders !== false,
-          reservasi: saved.reservasi !== false,
-          waiting: saved.waiting !== false
-        };
-      } catch (e) {
-        return { enabled: true, sound: true, orders: true, reservasi: true, waiting: true };
-      }
-    }
-
-    function saveNotificationSettings(settings) {
-      try { localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(settings)); } catch (e) {}
-      updateNotificationButtons();
-    }
-
-    function updateNotificationButtons() {
-      const settings = readNotificationSettings();
-      const supported = 'Notification' in window;
-      const granted = supported && Notification.permission === 'granted' && settings.enabled;
-      document.querySelectorAll('.notification-settings-btn').forEach(function(button) {
-        button.classList.toggle('notification-enabled', granted);
-        button.setAttribute('title', granted ? 'Notifikasi aktif' : 'Aktifkan notifikasi');
-        button.setAttribute('aria-label', granted ? 'Notifikasi aktif' : 'Aktifkan notifikasi');
-      });
-    }
-
-    async function configureNotifications() {
-      const settings = readNotificationSettings();
-      if (!('Notification' in window)) {
-        settings.enabled = true;
-        saveNotificationSettings(settings);
-        showToast('Notifikasi dalam aplikasi tetap aktif. Browser ini belum mendukung notifikasi sistem.', 'info');
-        return;
-      }
-
-      if (Notification.permission === 'denied') {
-        showToast('Notifikasi diblokir. Buka pengaturan situs browser lalu ubah Notifications menjadi Allow.', 'error');
-        return;
-      }
-
-      let permission = Notification.permission;
-      try {
-        if (permission !== 'granted') permission = await Notification.requestPermission();
-      } catch (e) {
-        showToast('Browser tidak dapat membuka izin notifikasi. Buka website melalui Chrome atau Safari biasa.', 'error');
-        return;
-      }
-      settings.enabled = permission === 'granted';
-      saveNotificationSettings(settings);
-      if (settings.enabled) {
-        playNotificationTone();
-        showToast('Notifikasi Pesanan, Reservasi, dan Waiting List sudah aktif.', 'success');
-      } else {
-        showToast('Izin notifikasi belum diberikan. Notifikasi dalam aplikasi tetap aktif.', 'info');
-      }
-    }
-
-    function playNotificationTone() {
-      const settings = readNotificationSettings();
-      if (!settings.sound) return;
-      try {
-        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContextClass) return;
-        const ctx = new AudioContextClass();
-        const oscillator = ctx.createOscillator();
-        const gain = ctx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(720, ctx.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(920, ctx.currentTime + .16);
-        gain.gain.setValueAtTime(.0001, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(.12, ctx.currentTime + .025);
-        gain.gain.exponentialRampToValueAtTime(.0001, ctx.currentTime + .28);
-        oscillator.connect(gain);
-        gain.connect(ctx.destination);
-        oscillator.start();
-        oscillator.stop(ctx.currentTime + .3);
-        oscillator.addEventListener('ended', function() { ctx.close(); });
-      } catch (e) {}
-    }
-
-    function showLiveBrowserNotification(counts) {
-      counts = counts || {};
-      const settings = readNotificationSettings();
-      const parts = [];
-      if (settings.orders && counts.orders > 0) parts.push(counts.orders + ' pesanan baru');
-      if (settings.reservasi && counts.reservasi > 0) parts.push(counts.reservasi + ' reservasi baru');
-      if (settings.waiting && counts.waiting > 0) parts.push(counts.waiting + ' waiting list baru');
-      if (!parts.length) return;
-
-      const message = parts.join(' • ');
-      showCenterToast(message + '.', 'info', 'Update Baru');
-      playNotificationTone();
-
-      if (!settings.enabled || !('Notification' in window) || Notification.permission !== 'granted') return;
-      try {
-        const notice = new Notification('Bakerzin • Update Baru', {
-          body: message,
-          tag: 'bakerzin-live-update',
-          renotify: true
-        });
-        notice.onclick = function() {
-          window.focus();
-          if (counts.orders > 0) switchTab('page-pemesanan');
-          else if (counts.reservasi > 0) switchTab('page-reservasi');
-          else switchTab('page-waiting');
-          notice.close();
-        };
-      } catch (e) {}
-    }
 
     function setOutletLabels(outlet) {
       const ids = [
@@ -8430,7 +8103,7 @@
     }
 
     function startRealtimeSync(immediate) {
-      if (!hasBackend() || (!AppState.outlet && !AppState.isBIHQ)) return;
+      if (!hasBackend() || !AppState.outlet) return;
       stopRealtimeSync();
       RealtimeState.timer = setInterval(function() {
         refreshLiveSnapshot(true, false);
@@ -8527,21 +8200,20 @@
       }
 
       if (!silent) return;
-      showLiveBrowserNotification({
-        orders: newOrderCount,
-        reservasi: newReservasiCount,
-        waiting: newWaitingCount
-      });
+      if (newOrderCount > 0) {
+        showCenterToast(newOrderCount + ' pesanan baru masuk.', 'info', 'Update Baru');
+      } else if (newReservasiCount > 0) {
+        showCenterToast(newReservasiCount + ' reservasi baru masuk.', 'info', 'Update Baru');
+      } else if (newWaitingCount > 0) {
+        showCenterToast(newWaitingCount + ' waiting list baru masuk.', 'info', 'Update Baru');
+      }
     }
 
     function refreshLiveSnapshot(silent, establishBaseline) {
-      if (pendingListWrites) return;
-      const readVersion = listMutationVersion;
-      if (!hasBackend() || (!AppState.outlet && !AppState.isBIHQ) || RealtimeState.syncInProgress) return;
+      if (!hasBackend() || !AppState.outlet || RealtimeState.syncInProgress) return;
       RealtimeState.syncInProgress = true;
       google.script.run
         .withSuccessHandler(function(res) {
-          if (readVersion !== listMutationVersion || pendingListWrites)  { RealtimeState.syncInProgress = false; return; }
           RealtimeState.syncInProgress = false;
           applyLiveSnapshot(res, silent, establishBaseline);
         })
@@ -8549,7 +8221,7 @@
           RealtimeState.syncInProgress = false;
           if (!silent) showToast('Gagal realtime refresh: ' + ((err && err.message) || err), 'error');
         })
-        .getOutletLiveSnapshot(AppState.isBIHQ ? 'BIHQ' : AppState.outlet);
+        .getOutletLiveSnapshot(AppState.outlet);
     }
 
     function loadLists() {
@@ -9020,9 +8692,13 @@
                 ${highlightMatch(r.name, term)}
                 ${r.member ? '<span class="source-tag"><span class="material-icons-round">verified</span>Member</span>' : ''}
               </div>
-              <div class="list-card-phone list-card-phone-stacked">
+              <div class="list-card-phone">
                 <span class="material-icons-round">phone</span>
                 ${highlightMatch(formatPhoneDisplay(r.phone), term)}
+              </div>
+              <div class="list-card-reservation-time">
+                <span class="material-icons-round">event</span>
+                ${formatHumanDate(r.date)}${r.time ? ' · ' + escapeHtml(r.time) : ''}
               </div>
             </div>
             <div class="list-card-pax">
@@ -9041,17 +8717,7 @@
             </div>
           </div>
           <div class="list-card-actions">
-            <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
-              ${renderBIHQOutlet(r.outlet)}
-              <div class="list-card-context-time">
-                ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
-                <div class="list-card-reservation-time">
-                  <span class="material-icons-round">event</span>
-                  ${formatHumanDate(r.date)}${r.time ? ' · ' + escapeHtml(r.time) : ''}
-                </div>
-              </div>
-            </div>
-            <button class="action-btn data-available-btn history-availability-btn reservasi-only-data-btn" data-phone="${escapeAttr(r.phone)}" data-name="${escapeAttr(r.name)}">
+            <button class="action-btn data-available-btn reservasi-only-data-btn" data-phone="${escapeAttr(r.phone)}" data-name="${escapeAttr(r.name)}">
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
             </button>
@@ -9184,10 +8850,18 @@
                 ${highlightMatch(w.name, term)}
                 ${fromRes ? '<span class="source-tag"><span class="material-icons-round">event_available</span>Reservasi</span>' : ''}
               </div>
-              <div class="list-card-phone list-card-phone-stacked">
+              <div class="list-card-phone">
                 <span class="material-icons-round">phone</span>
                 ${highlightMatch(formatPhoneDisplay(w.phone), term)}
               </div>
+              ${w.time ? `
+                <div class="list-card-reservation-time">
+                  <span class="material-icons-round">schedule</span>
+                  ${w.time}
+                </div>
+              ` : `
+                <div class="list-card-timestamp">Ditambahkan ${timeAgo(w.createdAt)}</div>
+              `}
             </div>
             <div class="list-card-pax">
               <div class="list-card-pax-num">${w.pax}</div>
@@ -9214,21 +8888,7 @@
             </label>
           </div>
           <div class="list-card-actions">
-            <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
-              ${renderBIHQOutlet(w.outlet)}
-              <div class="list-card-context-time">
-                ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
-                ${w.time ? `
-                  <div class="list-card-reservation-time">
-                    <span class="material-icons-round">schedule</span>
-                    ${escapeHtml(w.time)}
-                  </div>
-                ` : `
-                  <div class="list-card-timestamp">Ditambahkan ${timeAgo(w.createdAt)}</div>
-                `}
-              </div>
-            </div>
-            <button class="action-btn data-available-btn history-availability-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
+            <button class="action-btn data-available-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
             </button>
@@ -9241,17 +8901,6 @@
               Cancel
             </button>
           </div>
-        </div>
-      `;
-    }
-
-    function renderBIHQOutlet(outlet) {
-      if (!AppState.isBIHQ) return '';
-      const outletName = String(outlet || '').trim() || 'Outlet tidak tersedia';
-      return `
-        <div class="list-card-outlet" title="Outlet: ${escapeAttr(outletName)}">
-          <span class="material-icons-round" aria-hidden="true">storefront</span>
-          <span class="list-card-outlet-name">${escapeHtml(outletName)}</span>
         </div>
       `;
     }
@@ -9328,10 +8977,9 @@
     }
 
     function _paintDataAvailable(btn, exists, name, phone, info) {
-      const isHistoryStatus = btn.classList.contains('history-availability-btn');
       btn.innerHTML = exists
-        ? '<span class="material-icons-round">database</span>' + (isHistoryStatus ? 'DATA HISTORY TERSEDIA' : 'Data Tersedia')
-        : '<span class="material-icons-round">visibility_off</span>' + (isHistoryStatus ? 'DATA HISTORY TIDAK TERSEDIA' : 'Data Tidak Tersedia');
+        ? '<span class="material-icons-round">database</span>Data Tersedia'
+        : '<span class="material-icons-round">visibility_off</span>Data Tersedia';
       btn.classList.remove('data-available', 'data-unavailable');
       btn.classList.add(exists ? 'data-available' : 'data-unavailable');
       btn.dataset.available = exists ? 'true' : 'false';
@@ -9341,13 +8989,7 @@
       if (info && info.memberId) btn.dataset.memberId = info.memberId;
       if (info && info.source) btn.dataset.source = info.source;
       if (exists) {
-        btn.disabled = false;
-        btn.removeAttribute('aria-disabled');
         btn.onclick = function() { openCustomerDashboardByPhone(phone, name); };
-      } else if (isHistoryStatus) {
-        btn.disabled = true;
-        btn.setAttribute('aria-disabled', 'true');
-        btn.onclick = null;
       } else {
         btn.onclick = function(e) {
           e.preventDefault();
@@ -9459,8 +9101,6 @@
        ADD ENTRY MODAL
        ============================================================ */
     function openAddModal(mode) {
-      if (entrySaveInProgress) return;
-      entryDraftId = uid();
       ListState.addMode = mode;
       document.getElementById('modal-add-title').textContent =
         mode === 'reservasi' ? 'Tambah Reservasi' : 'Tambah Waiting List';
@@ -9496,13 +9136,11 @@
     }
 
     function closeAddModal() {
-      if (entrySaveInProgress) return;
       document.getElementById('modal-add').classList.remove('visible');
       ListState.addMode = null;
     }
 
     function saveEntry() {
-      if (entrySaveInProgress || !ListState.addMode) return;
       const mode = ListState.addMode;
       const name = document.getElementById('entry-name').value.trim();
       const phone = normalizePhone(document.getElementById('entry-phone').value.trim());
@@ -9520,7 +9158,7 @@
       if (!pax || pax < 1) { showToast('Pax harus minimal 1.', 'error'); return; }
       if (!date) { showToast('Tanggal wajib diisi.', 'error'); return; }
 
-      const id = entryDraftId || (entryDraftId = uid());
+      const id = uid();
       const entry = {
         id: id,
         type: mode === 'reservasi' ? 'RESERVASI' : 'WAITING',
@@ -9530,18 +9168,11 @@
         createdAt: Date.now()
       };
 
-      entrySaveInProgress = true;
-      pendingListWrites++;
-      listMutationVersion++;
       const btn = document.getElementById('btn-save-entry');
       btn.disabled = true;
       btn.innerHTML = '<div class="spinner"></div> Menyimpan...';
 
       const finalize = function(success, message) {
-        if (!entrySaveInProgress) return;
-        entrySaveInProgress = false;
-        pendingListWrites--;
-        listMutationVersion++;
         btn.disabled = false;
         btn.innerHTML = '<span class="material-icons-round" style="font-size:18px">save</span> Simpan';
         if (!success) {
@@ -9571,7 +9202,6 @@
       };
 
       if (hasBackend()) {
-        try {
         google.script.run
           .withSuccessHandler(function(res) {
             if (res && res.success) finalize(true, res.message);
@@ -9581,7 +9211,6 @@
             finalize(false, err && err.message);
           })
           .saveReservationOrWaiting(entry);
-        } catch (err) { finalize(false, err && err.message); }
       } else {
         // Local-only fallback
         finalize(true);
@@ -9592,18 +9221,13 @@
        CONFIRM ENTRY (SUDAH MASUK / CANCEL → HISTORY)
        ============================================================ */
     function confirmEntry(source, id, status) {
-      if (pendingEntryStatuses.has(id)) return;
-      const items = source === 'reservasi' ? ListState.reservasi : ListState.waiting;
-      const selected = items.find(x => x.id === id);
-      if (!selected) return;
-      const finish = function() {
       let entry = null;
 
       if (source === 'reservasi') {
         const idx = ListState.reservasi.findIndex(x => x.id === id);
         if (idx === -1) return;
         entry = { ...ListState.reservasi[idx], origin: 'reservasi' };
-        ListState.reservasi = ListState.reservasi.filter(r => r.id !== id);
+        ListState.reservasi.splice(idx, 1);
         // Remove mirrored waiting entry
         ListState.waiting = ListState.waiting.filter(w => !(w.fromReservation && (w.sourceId === id || w.id === id)));
       } else {
@@ -9611,7 +9235,7 @@
         if (idx === -1) return;
         entry = { ...ListState.waiting[idx], origin: ListState.waiting[idx].fromReservation ? 'reservasi' : 'waiting' };
         const sourceId = ListState.waiting[idx].sourceId || (ListState.waiting[idx].fromReservation ? id : null);
-        ListState.waiting = ListState.waiting.filter(w => w.id !== id);
+        ListState.waiting.splice(idx, 1);
         // Also remove from reservasi if it was a reservasi mirror
         if (sourceId) {
           ListState.reservasi = ListState.reservasi.filter(r => r.id !== sourceId);
@@ -9633,35 +9257,18 @@
 
       renderReservasiList();
       renderWaitingList();
-      updateTabBadges();
-      resetRealtimeBaseline();
 
-
-      };
-      if (!hasBackend()) { finish(); return; }
-      pendingEntryStatuses.add(id);
-      pendingListWrites++;
-      listMutationVersion++;
-      showToast('Menyimpan status customer...', 'info');
-      const settle = function(res, error) {
-        if (!pendingEntryStatuses.delete(id)) return;
-        pendingListWrites--;
-        listMutationVersion++;
-        if (res && res.success === true) {
-          finish();
-          refreshFromBackend(true);
-        } else {
-          showToast((res && res.message) || (error && error.message) || 'Status gagal disimpan. Silakan coba lagi.', 'error');
-        }
-      };
-      try {
+      // Persist to backend
+      if (hasBackend()) {
+        const serverStatus = status === 'seated' ? 'Seated' : 'Cancelled';
         google.script.run
-          .withSuccessHandler(function(res) { settle(res); })
-          .withFailureHandler(function(err) { settle(null, err); })
-          .markEntryStatus({ id: selected.sourceId || id, status: status === 'seated' ? 'Seated' : 'Cancelled' });
-      } catch (err) { settle(null, err); }
+          .withSuccessHandler(function() {})
+          .withFailureHandler(function(err) {
+            showToast('Backend gagal sinkron: ' + (err && err.message || ''), 'error');
+          })
+          .markEntryStatus({ id: id, status: serverStatus });
+      }
     }
-
 
     function autoSaveVisitTodayFromEntry(entry) {
       if (!entry || !hasBackend()) return;
@@ -9782,14 +9389,10 @@
       const container = document.getElementById('history-list');
       const label = _historyCategoryLabel(category);
 
-      // Pull fresh, category-specific history from backend.
+      // FAST V19: tampilkan cache lokal SEGERA, sinkronisasi database di background.
+      // User tidak perlu menunggu Apps Script untuk melihat History.
+      renderHistoryList();
       if (hasBackend()) {
-        container.innerHTML = `
-          <div class="list-empty" style="margin:0;border-radius:var(--radius-md)">
-            <div class="spinner spinner-dark" style="width:28px;height:28px"></div>
-            <p style="margin-top:12px;font-size:0.8125rem;color:var(--text-tertiary)">Memuat history ${label}...</p>
-          </div>
-        `;
         google.script.run
           .withSuccessHandler(function(res) {
             if (res && res.success && Array.isArray(res.items)) {
@@ -9797,17 +9400,15 @@
                 return _normalizeHistoryItemForCategory(e, category);
               });
               saveLists();
+              // Render ulang hanya setelah data server tiba.
+              if (ListState.historyCategory === category) renderHistoryList();
             }
-            renderHistoryList();
           })
           .withFailureHandler(function(err) {
-            renderHistoryList();
-            showToast('Gagal memuat history ' + label + ': ' + (err && err.message || err), 'error');
+            // Cache lokal tetap tampil; error server tidak mengosongkan halaman.
+            showToast('Sinkronisasi history ' + label + ' belum berhasil. Data lokal tetap ditampilkan.', 'info');
           })
           .listCategoryHistory(AppState.outlet || '', category, 'all');
-      } else {
-        ListState.history = _filterLocalHistoryByCategory(ListState.history, category);
-        renderHistoryList();
       }
     }
 
@@ -10056,7 +9657,9 @@
       const container = document.getElementById('pemesanan-list');
       if (!container) return;
       const term = ListState.ordersSearch || '';
-      let items = [...(ListState.orders || [])];
+      let items = [...(ListState.orders || [])].filter(function(o) {
+        return (o.type || '').toString().toUpperCase() !== 'RESERVASI_PREORDER';
+      });
       const totalCount = items.length;
       if (term) items = items.filter(o => orderMatchesSearch(o, term));
       items.sort(function(a, b) {
@@ -10091,34 +9694,22 @@
                 ${escapeHtml(o.name || '-')}
                 <span class="order-type-pill"><span class="material-icons-round" style="font-size:13px">${typeIcon}</span>${escapeHtml(o.typeLabel || o.type || '-')}</span>
               </div>
-              <div class="list-card-phone list-card-phone-stacked">
-                <span class="material-icons-round">phone</span>
-                ${escapeHtml(formatPhoneDisplay(o.phone || '-'))}
-              </div>
+              <div class="list-card-phone"><span class="material-icons-round">phone</span>${escapeHtml(formatPhoneDisplay(o.phone || '-'))}</div>
+              <div class="list-card-timestamp">${formatHumanDate(o.date)}${o.time ? ' · ' + escapeHtml(o.time) : ''}</div>
+              ${o.address ? `<div class="list-card-timestamp"><span class="material-icons-round" style="font-size:14px;vertical-align:-2px">location_on</span> ${escapeHtml(o.address)}</div>` : ''}
+              <div class="order-total">${formatPrice(o.total || 0)}</div>
             </div>
             <div class="list-card-pax">
               <div class="list-card-pax-num">${(o.items || []).reduce((s, it) => s + (parseInt(it.qty) || 0), 0)}</div>
               <div class="list-card-pax-label">Qty</div>
             </div>
           </div>
-          ${o.address ? `<div class="list-card-timestamp"><span class="material-icons-round" style="font-size:14px;vertical-align:-2px">location_on</span> ${escapeHtml(o.address)}</div>` : ''}
-          <div class="order-total">${formatPrice(o.total || 0)}</div>
           ${(firstItems || o.note) ? `
             <div class="list-card-meta">
               ${firstItems ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Menu</div><div class="list-card-meta-value">${firstItems}${more}</div></div>` : ''}
               ${o.note ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Note</div><div class="list-card-meta-value">${escapeHtml(o.note)}</div></div>` : ''}
             </div>` : ''}
           <div class="list-card-actions">
-            <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
-              ${renderBIHQOutlet(o.outlet)}
-              <div class="list-card-context-time">
-                ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
-                <div class="list-card-reservation-time">
-                  <span class="material-icons-round">event</span>
-                  ${formatHumanDate(o.date)}${o.time ? ' · ' + escapeHtml(o.time) : ''}
-                </div>
-              </div>
-            </div>
             <button class="action-btn data-available" onclick="openOrderDetailModal('${escapeAttr(o.id)}')">
               <span class="material-icons-round">receipt_long</span>
               Detail Pesanan
@@ -10204,34 +9795,27 @@
     function completeOrder(id) {
       const order = (ListState.orders || []).find(o => o.id === id);
       if (!order) return;
-      const removeLocal = function(pushHistory) {
-        if (pushHistory) {
-          ListState.history.unshift({ ...order, origin: 'pemesanan', status: 'completed', completedAt: Date.now() });
-        }
-        ListState.orders = (ListState.orders || []).filter(o => o.id !== id);
-        saveLists();
-        renderPemesananList();
-        updateTabBadges();
-      };
-      if (!hasBackend()) {
-        removeLocal(true);
-        showCenterToast('Pesanan selesai dan masuk ke History.', 'success', 'Pesanan Selesai');
-        return;
-      }
-      showLoading('Menyelesaikan pesanan...');
+
+      // FAST V19: selesaikan di UI terlebih dahulu agar respons terasa instan.
+      const historyItem = { ...order, origin: 'pemesanan', status: 'completed', completedAt: Date.now() };
+      ListState.history.unshift(historyItem);
+      ListState.orders = (ListState.orders || []).filter(o => o.id !== id);
+      saveLists();
+      renderPemesananList();
+      updateTabBadges();
+      showCenterToast('Pesanan selesai dan masuk ke History.', 'success', 'Pesanan Selesai');
+
+      if (!hasBackend()) return;
+
+      // Database disinkronkan di background, tanpa loading overlay.
       google.script.run
         .withSuccessHandler(function(res) {
-          hideLoading();
-          if (res && res.success) {
-            removeLocal(false);
-            showCenterToast('Pesanan selesai dan masuk ke History.', 'success', 'Pesanan Selesai');
-          } else {
-            showCenterToast((res && res.message) || 'Gagal menyelesaikan pesanan.', 'error');
+          if (!(res && res.success)) {
+            showToast((res && res.message) || 'Sinkronisasi status pesanan belum berhasil.', 'error');
           }
         })
         .withFailureHandler(function(err) {
-          hideLoading();
-          showCenterToast('Gagal menyelesaikan pesanan: ' + (err && err.message || err), 'error');
+          showToast('Pesanan sudah ditutup di layar, tetapi sinkronisasi database gagal. Coba refresh setelah koneksi kembali.', 'error');
         })
         .updateOrderStatus({ id: id, status: 'Completed' });
     }
@@ -10347,7 +9931,6 @@
       // Load lists from localStorage (or seed demo data)
       loadLists();
       updateTabBadges();
-      updateNotificationButtons();
 
       // If no backend (preview mode), bypass login so designs are viewable
       const noBackend = typeof google === 'undefined' || !google.script || !google.script.run;
@@ -10609,30 +10192,8 @@
     font-size:.58rem!important;color:#185e70!important;font-weight:900!important;letter-spacing:.06em!important;
   }
   #page-dashboard .full-dashboard-v46 .custom-checkbox{width:19px!important;height:19px!important;flex-shrink:0!important}
-  #page-dashboard .full-dashboard-v46 .custom-checkbox input {
-    inset:0!important;
-    margin:0!important;
-    padding:0!important;
-  }
   #page-dashboard .full-dashboard-v46 .custom-checkbox .checkmark{
     width:19px!important;height:19px!important;border-radius:6px!important;background:#fff!important;border:2px solid rgba(32,117,138,.28)!important;
-    pointer-events:none!important;
-  }
-  #page-dashboard .full-dashboard-v46 .visit-today-card.checked {
-    background:rgba(42,157,103,.12)!important;
-    border-color:rgba(42,157,103,.42)!important;
-  }
-  #page-dashboard .full-dashboard-v46 .visit-today-card.checked .visit-label {
-    color:#237a54!important;
-  }
-  #page-dashboard .full-dashboard-v46 .visit-today-card.checked .custom-checkbox input:checked + .checkmark {
-    background:#2a9d67!important;
-    border-color:#2a9d67!important;
-    box-shadow:0 0 0 3px rgba(42,157,103,.12)!important;
-  }
-  #page-dashboard .full-dashboard-v46 .visit-today-card.saving {
-    opacity:.62!important;
-    cursor:wait!important;
   }
 
   .v46-detail-grid{
@@ -10916,7 +10477,7 @@
             <div class="v46-avatar">${esc(initials(p.name))}</div>
             <div style="min-width:0">
               <div class="v46-name">${esc(p.name)}</div>
-              <div class="v46-member-id">${esc(p.memberId)}</div>
+              <!-- V5.4: Member ID under name removed; ID remains in detail card -->
               <div class="v46-badge-row">
                 <span class="profile-tier-badge ${tierClass(p.tier)}">${esc(p.tier || 'Standard')}</span>
                 <span class="source-badge member">Member</span>
@@ -11016,7 +10577,7 @@
 
             <div style="min-width:0">
               <div class="v46-name">${esc(p.name)}</div>
-              <div class="v46-member-id">${esc(p.memberId)}</div>
+              <!-- V5.4: Member ID under name removed; ID remains in detail card -->
               <div class="v46-badge-row">
                 <span class="profile-tier-badge ${tierClass(p.tier)}">${esc(p.tier || 'Standard')}</span>
                 <span class="source-badge ${isGuest ? 'guest' : 'member'}">${isGuest ? 'Guest' : 'Member'}</span>
@@ -11403,7 +10964,7 @@
             <div class="v46-avatar">${esc(initials(p.name))}</div>
             <div style="min-width:0">
               <div class="v46-name">${esc(p.name)}</div>
-              <div class="v46-member-id">${esc(p.memberId)}</div>
+              <!-- V5.4: Member ID under name removed; ID remains in detail card -->
             </div>
             <div class="visit-today-card ${todayVisit.visited ? 'checked' : ''}" id="visit-today-toggle">
               <span class="visit-label">Hari Ini</span>
@@ -11501,7 +11062,7 @@
 
             <div style="min-width:0">
               <div class="v46-name">${esc(p.name)}</div>
-              <div class="v46-member-id">${esc(p.memberId)}</div>
+              <!-- V5.4: Member ID under name removed; ID remains in detail card -->
             </div>
 
             <div class="visit-today-card ${data.todayVisit.visited ? 'checked' : ''}" id="visit-today-toggle">
@@ -11896,7 +11457,7 @@
 
             <div style="min-width:0">
               <div class="v46-name">${esc(p.name)}</div>
-              <div class="v46-member-id">${esc(p.memberId)}</div>
+              <!-- V5.4: Member ID under name removed; ID remains in detail card -->
             </div>
 
             <div class="visit-today-card ${data.todayVisit.visited ? 'checked' : ''}" id="visit-today-toggle">
@@ -12101,2685 +11662,693 @@
   window.APP_PREMIUM_RECOMMENDATION_VERSION = 'V5.1_MENU_BAKERZIN_CATEGORY_CONTAIN';
 </script>
 
-<style id="v52-login-search-dashboard-request">
-  /* Give Review is intentionally removed from every page. */
-  [onclick*="Review"],
-  [onclick*="review"],
-  #modal-review,
-  .btn-review-gold,
-  #review-badge {
-    display: none !important;
+
+<script id="v53-safe-qr-status-marker">
+  window.APP_QR_SCAN_STATUS_VERSION = 'V5.3_SAFE_NO_FREEZE';
+</script>
+
+
+<script id="v54-bihq-all-outlet-frontend-marker">
+  window.APP_DASHBOARD_PROFILE_VERSION = 'V5.4_NO_DUPLICATE_MEMBER_ID';
+  window.APP_BIHQ_ACCESS_VERSION = 'V5.4_ALL_OUTLET_BACKEND';
+</script>
+
+
+<style id="v55-baby-readable-dashboard-style">
+  /* ============================================================
+     V5.5 — BABY COLOR READABLE DASHBOARD
+     Goal:
+     - Judul box lebih kecil ±1.6x dibanding isi
+     - Isi/substansi lebih terlihat dan mudah dibaca
+     - Baby color, tidak mencolok
+     - Weekday/Weekend/Single/Group Visitor simetris dengan Phone & ID
+     ============================================================ */
+
+  :root{
+    --v55-ink:#15333a;
+    --v55-ink-soft:#315660;
+    --v55-muted:#7f9ca3;
+    --v55-title:#7aa7b0;
+    --v55-line:rgba(63,105,113,.12);
+    --v55-card:#ffffff;
+    --v55-baby-blue:#eef9fc;
+    --v55-baby-mint:#eefbf6;
+    --v55-baby-cream:#fff8ea;
+    --v55-baby-pink:#fff3f7;
+    --v55-baby-lav:#f6f2ff;
+    --v55-baby-gray:#f7fafb;
+    --v55-teal:#20758a;
   }
 
-  /* Search is phone-only and never shows auto suggestions. */
-  #page-search .search-field-wrapper:has(#search-name),
-  #page-search .search-field-wrapper:has(#search-member),
-  #page-search .suggestion-dropdown {
-    display: none !important;
-  }
-
-  #page-search .search-fields {
-    grid-template-columns: minmax(0, 1fr) !important;
-  }
-
-  #page-search .member-scan-hero {
-    position: relative;
-    min-height: 156px !important;
-    padding: 24px !important;
-    margin: 20px 0 26px !important;
-    border: 3px solid #fff3a6 !important;
-    border-radius: 24px !important;
-    color: #301400 !important;
-    background: linear-gradient(135deg, #fff36d 0%, #ffbd25 45%, #ff6b18 100%) !important;
-    box-shadow: 0 18px 44px rgba(255, 112, 24, .42), 0 0 0 7px rgba(255, 196, 36, .16) !important;
-    overflow: hidden;
-    transform: translateZ(0);
-    animation: member-scan-attention 2.1s ease-in-out infinite;
-  }
-
-  #page-search .member-scan-hero::after {
-    content: '';
-    position: absolute;
-    inset: -80% -30%;
-    background: linear-gradient(110deg, transparent 42%, rgba(255,255,255,.68) 50%, transparent 58%);
-    transform: translateX(-60%);
-    animation: member-scan-shine 3.2s ease-in-out infinite;
-    pointer-events: none;
-  }
-
-  #page-search .member-scan-hero-title {
-    color: #291100 !important;
-    font-size: clamp(1.55rem, 5vw, 2.15rem) !important;
-    line-height: 1.05 !important;
-    font-weight: 950 !important;
-    letter-spacing: -.035em !important;
-  }
-
-  #page-search .member-scan-hero-desc,
-  #page-search .member-scan-hero-kicker {
-    color: #4a2100 !important;
-    font-weight: 800 !important;
-  }
-
-  #page-search .member-scan-hero-icon,
-  #page-search .member-scan-hero-arrow {
-    color: #fff !important;
-    background: #172f75 !important;
-    box-shadow: 0 10px 24px rgba(23, 47, 117, .34) !important;
-  }
-
-  @keyframes member-scan-attention {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.018); }
-  }
-
-  @keyframes member-scan-shine {
-    0%, 28% { transform: translateX(-70%); }
-    62%, 100% { transform: translateX(70%); }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    #page-search .member-scan-hero,
-    #page-search .member-scan-hero::after { animation: none !important; }
-  }
-
-  /* Centered customer-search card: phone search first, QR scan second. */
-  #page-search .search-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 0;
-    padding-top: 24px;
-    padding-bottom: 24px !important;
-  }
-
-  #page-search .search-header {
-    width: min(100%, 520px);
-    margin: 0 auto 16px;
-  }
-
-  #page-search .customer-search-card {
-    width: min(100%, 520px);
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid rgba(32, 117, 138, .13);
-    border-radius: 24px;
-    background: rgba(255, 255, 255, .94);
-    box-shadow: 0 20px 48px rgba(25, 78, 91, .12), 0 4px 14px rgba(25, 78, 91, .07);
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-  }
-
-  #page-search .customer-search-card .search-fields {
-    order: 1;
-    width: 100%;
-    margin: 0;
-    gap: 0;
-  }
-
-  #page-search .customer-search-card .member-scan-hero {
-    order: 2;
-    min-height: 112px !important;
-    margin: 18px 0 0 !important;
-    padding: 18px !important;
-    border-radius: 20px !important;
-  }
-
-  #page-search .customer-search-card .member-scan-hero-title {
-    font-size: clamp(1.12rem, 4.5vw, 1.38rem) !important;
-  }
-
-  #page-search .customer-search-card .member-scan-hero-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 15px;
-  }
-
-  #page-search .customer-search-card .member-scan-hero-icon .material-icons-round {
-    font-size: 29px;
-  }
-
-  #page-search .search-field-wrapper:has(#search-mobile) label {
-    margin-bottom: 8px;
-    color: #5f7479;
-    font-size: .70rem;
-    letter-spacing: .09em;
-  }
-
-  #page-search .search-input-wrap:has(#search-mobile) input {
-    height: 56px;
-    padding: 0 92px 0 17px;
-    border: 1.5px solid #d8e3e5;
-    border-radius: 18px;
-    background: #f8fbfb;
-    color: #17343b;
-    font-size: .94rem;
-    box-shadow: inset 0 1px 2px rgba(25, 78, 91, .025);
-  }
-
-  #page-search .search-input-wrap:has(#search-mobile) input::placeholder {
-    color: #aab7ba;
-    opacity: 1;
-  }
-
-  #page-search .search-input-wrap:has(#search-mobile) input:focus {
-    border-color: #3893a5;
-    background: #fff;
-    box-shadow: 0 0 0 4px rgba(56, 147, 165, .12);
-  }
-
-  #page-search .search-input-wrap:has(#search-mobile) .clear-btn {
-    right: 52px;
-    z-index: 2;
-    background: transparent;
-  }
-
-  #page-search .search-input-wrap:has(#search-mobile) .search-spinner {
-    right: 58px;
-    z-index: 3;
-  }
-
-  #page-search .phone-search-submit {
-    position: absolute;
-    right: 6px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border: 0;
-    border-radius: 14px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    background: linear-gradient(135deg, #20758a, #3298aa);
-    box-shadow: 0 7px 16px rgba(32, 117, 138, .24);
-    cursor: pointer;
-    transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
-  }
-
-  #page-search .phone-search-submit .material-icons-round {
-    font-size: 23px;
-  }
-
-  #page-search .phone-search-submit:active:not(:disabled) {
-    transform: translateY(-50%) scale(.94);
-  }
-
-  #page-search .phone-search-submit:disabled {
-    color: #9aa9ac;
-    background: #e6edef;
-    box-shadow: none;
-    cursor: default;
-  }
-
-  #page-search .search-actions {
-    display: none !important;
-  }
-
-  @media (max-width: 420px) {
-    #page-search .search-content {
-      padding: 18px 14px;
-      padding-bottom: 18px !important;
-    }
-
-    #page-search .search-header {
-      margin-bottom: 14px;
-    }
-
-    #page-search .customer-search-card {
-      padding: 16px;
-      border-radius: 22px;
-    }
-
-    #page-search .customer-search-card .member-scan-hero {
-      min-height: 104px !important;
-      padding: 15px 13px !important;
-      margin-top: 16px !important;
-    }
-
-    #page-search .customer-search-card .member-scan-hero-left {
-      gap: 11px;
-    }
-
-    #page-search .customer-search-card .member-scan-hero-title {
-      font-size: 1.06rem !important;
-    }
-
-    #page-search .customer-search-card .member-scan-hero-desc {
-      font-size: .69rem !important;
-    }
-  }
-
-  /* Visit chart — always starts at the top on mobile, left column on desktop. */
-  #page-search .search-content {
-    width: 100%;
-    max-width: none !important;
-    box-sizing: border-box;
-    justify-content: flex-start !important;
-    overflow-y: auto;
-  }
-
-  #page-search .customer-search-layout {
-    width: min(100%, 1180px);
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 20px;
-    align-content: start;
-  }
-
-  #page-search .customer-search-main,
-  #page-search .visit-trend-card { min-width: 0; }
-  #page-search .customer-search-main .search-header,
-  #page-search .customer-search-main .customer-search-card {
-    width: 100%;
-    max-width: 520px;
-  }
-
-  #page-search .visit-trend-card {
-    box-sizing: border-box;
-    width: 100%;
-    padding: 22px;
-    border: 1px solid rgba(32,117,138,.14);
-    border-radius: 26px;
-    background: radial-gradient(circle at 100% 0%, rgba(77,189,196,.13), transparent 34%), #fff;
-    box-shadow: 0 20px 48px rgba(25,78,91,.12), 0 4px 14px rgba(25,78,91,.06);
-    overflow: hidden;
-  }
-
-  #page-search .visit-trend-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-  }
-  #page-search .visit-trend-head h2 {
-    margin: 8px 0 0;
-    color: #1f7f90;
-    font-size: clamp(.84rem,1.55vw,1.05rem);
-    font-weight: 900;
-    letter-spacing: .075em;
-    white-space: nowrap;
-  }
-  #page-search .visit-trend-controls {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 7px;
-    max-width: 70%;
-  }
-  #page-search .visit-trend-controls select,
-  #page-search .visit-custom-range input {
-    box-sizing: border-box;
-    height: 36px;
-    border: 1px solid #d7e4e6;
-    border-radius: 11px;
-    padding: 0 10px;
-    color: #31545b;
-    background: #f7fafb;
-    font: inherit;
-    font-size: .72rem;
-  }
-  #page-search .visit-outlet-filter select {
-    width: 240px;
-    max-width: 240px;
-  }
-  #page-search .visit-custom-range {
-    margin-top: 14px;
-    padding: 11px;
-    border: 1px solid #e3ecee;
-    border-radius: 14px;
-    display: grid;
-    grid-template-columns: repeat(2,minmax(0,1fr)) auto;
-    gap: 8px;
-    align-items: end;
-    background: #f8fbfb;
-  }
-  #page-search .visit-custom-range[hidden] { display: none !important; }
-  #page-search .visit-custom-range label { min-width: 0; color: #6f858a; font-size: .65rem; font-weight: 700; }
-  #page-search .visit-custom-range input { width: 100%; margin-top: 5px; }
-  #page-search .visit-custom-range button {
-    height: 36px;
-    padding: 0 14px;
-    border: 0;
-    border-radius: 11px;
-    color: #fff;
-    background: #217c8e;
-    font-size: .71rem;
-    font-weight: 750;
-  }
-  #page-search .visit-trend-summary {
-    margin: 14px 2px 2px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-  #page-search .visit-trend-summary span { color: #7b8e92; font-size: .68rem; }
-  #page-search .visit-chart-legend { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  #page-search .visit-chart-legend span { display: inline-flex; align-items: center; gap: 5px; color: #5f777c; font-size: .65rem; font-weight: 750; }
-  #page-search .visit-legend-line { width: 22px; height: 0; border-top: 3px solid #1d8798; border-radius: 999px; }
-  #page-search .visit-legend-line.welcome { border-top-color: #e2aa24; border-top-style: dashed; }
-  #page-search .visit-legend-box { width: 10px; height: 10px; border-radius: 3px; background: #1d8798; }
-  #page-search .visit-legend-box.welcome { background: #e2aa24; }
-  #page-search .visit-outlet-legend { margin-top: 8px; }
-  #page-search .visit-chart-wrap { position: relative; width: 100%; min-height: 235px; }
-  #page-search #visit-line-chart { display: block; width: 100%; height: auto; min-height: 235px; }
-  #page-search .visit-chart-state {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    display: grid;
-    place-items: center;
-    color: #819397;
-    font-size: .78rem;
-    text-align: center;
-    pointer-events: none;
-  }
-  #page-search .visit-chart-state:empty { display: none; }
-  #page-search .visit-line-point { cursor: pointer; outline: none; }
-  #page-search .visit-line-point .visit-point-hit { fill: transparent; }
-  #page-search .visit-line-point:focus .visit-point-dot,
-  #page-search .visit-line-point:hover .visit-point-dot { stroke-width: 4; }
-  #page-search .visit-line-point.is-selected .visit-repeat-dot { fill: #1d8798; stroke: #fff; stroke-width: 4; }
-  #page-search .visit-line-point.is-selected .visit-welcome-dot { fill: #e2aa24; stroke: #fff; stroke-width: 4; }
-
-  #page-search .visit-outlet-breakdown {
-    margin-top: 18px;
-    padding-top: 18px;
-    border-top: 1px solid #e3ecee;
-  }
-  #page-search .visit-outlet-breakdown[hidden] { display: none !important; }
-  #page-search .visit-outlet-breakdown-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 14px;
-    margin-bottom: 12px;
-  }
-  #page-search .visit-outlet-breakdown-head h3 {
-    margin: 0;
-    color: #1f7f90;
-    font-size: .78rem;
-    font-weight: 900;
-    letter-spacing: .075em;
-  }
-  #page-search .visit-outlet-breakdown-head p {
-    margin: 5px 0 0;
-    color: #6f858a;
-    font-size: .7rem;
-    font-weight: 650;
-  }
-  #page-search .visit-outlet-chart-hint {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: #819397;
-    font-size: .65rem;
-    font-weight: 650;
-    text-align: right;
-  }
-  #page-search .visit-outlet-chart-hint .material-icons-round { font-size: 14px; color: #2c879a; }
-  #page-search .visit-outlet-chart-scroll {
-    position: relative;
-    width: 100%;
-    max-height: 420px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scrollbar-width: thin;
-  }
-  #page-search #visit-outlet-bar-chart { display: block; width: 100%; height: auto; min-height: 150px; }
-  #page-search .visit-outlet-chart-state {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    display: grid;
-    place-items: center;
-    padding: 20px;
-    color: #819397;
-    font-size: .75rem;
-    text-align: center;
-    pointer-events: none;
-  }
-  #page-search .visit-outlet-chart-state:empty { display: none; }
-  @media (min-width: 900px) {
-    #page-search .customer-search-layout {
-      grid-template-columns: minmax(0,1.16fr) minmax(390px,.84fr);
-      gap: 26px;
-      align-items: center;
-    }
-    #page-search .visit-trend-card { padding: 26px; }
-    #page-search .visit-chart-wrap,
-    #page-search #visit-line-chart { min-height: 270px; }
-  }
-  @media (max-width: 620px) {
-    #page-search .visit-trend-card { padding: 17px 14px; border-radius: 22px; }
-    #page-search .visit-trend-head { display: block; }
-    #page-search .visit-trend-controls { max-width: none; margin-top: 13px; justify-content: flex-start; }
-    #page-search .visit-trend-controls > select,
-    #page-search .visit-outlet-filter,
-    #page-search .visit-outlet-filter select { flex: 1 1 145px; width: 100%; max-width: none; }
-    #page-search .visit-custom-range { grid-template-columns: repeat(2,minmax(0,1fr)); }
-    #page-search .visit-custom-range button { grid-column: 1 / -1; }
-    #page-search .visit-chart-wrap,
-    #page-search #visit-line-chart { min-height: 210px; }
-    #page-search .visit-outlet-breakdown-head { display: block; }
-    #page-search .visit-outlet-chart-hint { margin-top: 8px; text-align: left; }
-    #page-search .visit-outlet-chart-scroll { max-height: 360px; }
-  }
-
-  .dashboard-fast-shell {
-    width:min(100%,760px);
-    margin:0 auto;
-    display:grid;
-    gap:14px;
-    animation:fast-shell-in .22s ease-out both;
-  }
-  .dashboard-fast-profile,
-  .dashboard-fast-panel {
-    box-sizing:border-box;
-    border:1px solid rgba(32,117,138,.12);
-    border-radius:22px;
-    background:#fff;
-    box-shadow:0 14px 34px rgba(25,78,91,.09);
-  }
-  .dashboard-fast-profile {
-    padding:18px;
-    display:flex;
-    align-items:center;
-    gap:13px;
-  }
-  .dashboard-fast-avatar {
-    width:48px;height:48px;border-radius:15px;
-    display:grid;place-items:center;flex:0 0 auto;
-    color:#fff;background:linear-gradient(135deg,#20758a,#3aa4ad);
-    font-size:.82rem;font-weight:900;letter-spacing:.04em;
-  }
-  .dashboard-fast-profile h2 { margin:0;color:#17373e;font-size:1rem;line-height:1.2; }
-  .dashboard-fast-profile p { margin:5px 0 0;color:#7f9296;font-size:.73rem; }
-  .dashboard-fast-panel { padding:18px; }
-  .dashboard-fast-line {
-    height:11px;margin:9px 0;border-radius:99px;
-    background:linear-gradient(90deg,#edf4f5 20%,#dcebed 42%,#edf4f5 65%);
-    background-size:220% 100%;animation:fast-shell-shimmer 1.25s linear infinite;
-  }
-  .dashboard-fast-line.short { width:46%; }
-  .dashboard-fast-line.medium { width:72%; }
-  .dashboard-fast-error { color:#a84135!important; }
-  @keyframes fast-shell-shimmer { to { background-position:-220% 0; } }
-  @keyframes fast-shell-in { from { opacity:0;transform:translateY(5px); } to { opacity:1;transform:none; } }
-
-  .customer-cheers-popup {
-    --customer-food-accent: #ffd36a;
-    --customer-food-glow: rgba(255, 190, 70, .22);
-    position: relative;
-    box-sizing: border-box !important;
-    width: 100%;
-    min-height: 0;
-    margin: 2px 0 8px;
-    padding: 24px;
-    border: 1px solid rgba(255, 228, 171, .42);
-    border-radius: 24px;
-    color: #fff;
+  #page-dashboard .dashboard-content{
     background:
-      radial-gradient(circle at 88% 18%, rgba(255, 217, 142, .24), transparent 29%),
-      radial-gradient(circle at 5% 110%, rgba(70, 225, 201, .20), transparent 38%),
-      linear-gradient(135deg, #071a33 0%, #0a3d4b 52%, #116a68 100%);
-    box-shadow: 0 22px 48px rgba(5, 36, 51, .28), 0 5px 16px rgba(5, 36, 51, .16);
-    overflow: hidden;
-    animation: cheers-popup-in .34s ease-out both;
+      radial-gradient(circle at 92% 2%, rgba(190,226,235,.34), transparent 26%),
+      linear-gradient(180deg,#fbfdfd 0%,#f7fafa 100%)!important;
   }
 
-  /* Kunjungan dicatat otomatis saat dashboard customer valid terbuka. */
-  #page-dashboard .visit-today-card {
-    display: none !important;
+  #page-dashboard .full-dashboard-v46{
+    gap:12px!important;
   }
 
-  .customer-welcome-only {
-    width: 100%;
-    min-height: min(62vh, 560px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 18px 0;
-  }
-
-  .customer-welcome-only .v46-nohistory-hero {
-    width: 100%;
-    margin: 0;
-  }
-
-  .customer-cheers-popup::before {
-    content: '';
-    position: absolute;
-    width: 180px;
-    height: 180px;
-    right: -90px;
-    top: -108px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 228, 171, .26);
-    box-shadow: 0 0 0 28px rgba(255, 228, 171, .045), 0 0 0 58px rgba(255, 228, 171, .025);
-    pointer-events: none;
-  }
-
-  .customer-cheers-popup::after {
-    content: '';
-    position: absolute;
-    left: 24px;
-    right: 24px;
-    top: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #ffe2a7 24%, #77ead4 72%, transparent);
-    opacity: .9;
-    pointer-events: none;
-  }
-
-  .customer-cheers-popup-title {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 13px;
-    padding: 7px 11px;
-    border: 1px solid rgba(255, 231, 185, .28);
-    border-radius: 999px;
-    color: #ffe9bb;
-    background: rgba(255,255,255,.08);
-    font-size: .64rem;
-    font-weight: 900;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-  }
-
-  .customer-cheers-popup-copy {
-    max-width: 460px;
-    font-size: clamp(1rem, 3.7vw, 1.16rem);
-    line-height: 1.58;
-    font-weight: 650;
-    letter-spacing: -.012em;
-    text-wrap: balance;
-  }
-
-  .customer-script-quote {
-    position: relative;
-    z-index: 1;
-    padding-left: 14px;
-    border-left: 2px solid rgba(255, 226, 167, .76);
-    font-size: clamp(.96rem, 3.5vw, 1.10rem);
-    line-height: 1.58;
-    font-weight: 640;
-    letter-spacing: -.012em;
-    text-wrap: pretty;
-  }
-
-  .customer-cheers-meta-grid {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-    grid-auto-rows: 1fr;
-    align-items: stretch;
-    gap: 10px;
-    margin-top: 17px;
-  }
-
-  .customer-cheers-meta-card {
-    min-width: 0;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    padding: 13px 14px;
-    border: 1px solid rgba(255,255,255,.14);
-    border-radius: 16px;
-    background: rgba(255,255,255,.075);
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    text-align: left;
-    overflow: hidden;
-  }
-
-  .customer-cheers-meta-label {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    gap: 6px;
-    margin-bottom: 6px;
-    min-height: 28px;
-    color: #9ff3e2;
-    font-size: .60rem;
-    line-height: 1.22;
-    font-weight: 950;
-    letter-spacing: .13em;
-    text-transform: uppercase;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-
-  .customer-cheers-note .customer-cheers-meta-label {
-    color: #ffe2a7;
-  }
-
-  .customer-cheers-meta-copy {
-    flex: 0 1 auto;
-    width: 100%;
-    min-width: 0;
-    color: rgba(255,255,255,.91);
-    font-size: .76rem;
-    line-height: 1.48;
-    font-weight: 650;
-    overflow-wrap: anywhere;
-    word-break: normal;
-    hyphens: auto;
-  }
-
-  .customer-cheers-meta-copy strong {
-    color: #fff4d9;
-    font-weight: 900;
-  }
-
-  .customer-cheers-menu-name {
-    color: var(--customer-food-accent, #ffd36a);
-    font-size: 1.10em;
-    line-height: 1.34;
-    font-weight: 950;
-    letter-spacing: .01em;
-    text-shadow: 0 1px 10px var(--customer-food-glow, rgba(255, 190, 70, .22));
-  }
-
-  .customer-cheers-note-menu {
-    color: var(--customer-food-accent, #ffd36a);
-    font-size: 1.08em;
-    font-weight: 950;
-    letter-spacing: .015em;
-    text-shadow: 0 1px 10px var(--customer-food-glow, rgba(255, 190, 70, .22));
-  }
-
-  .customer-cheers-note-separator {
-    color: rgba(255, 226, 167, .72);
-    font-weight: 800;
-  }
-
-  .customer-cheers-note-text {
-    color: rgba(255,255,255,.94);
-    font-weight: 650;
-  }
-
-  /* Dashboard pricing is intentionally hidden from every customer view. */
-  #page-dashboard .recommendation-card-price,
-  #page-dashboard .v46-rec-price,
-  #page-dashboard .v47-list-price,
-  #page-dashboard .spending-panel,
-  #page-dashboard .spending-panel-value,
-  #page-dashboard [class*="price"] {
-    display: none !important;
-  }
-
-  .dashboard-details-divider {
-    width: 100%;
-    margin: 16px 0 8px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    align-items: center;
-    gap: 10px;
-  }
-
-  .dashboard-details-divider::before,
-  .dashboard-details-divider::after {
-    content: '';
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(32, 117, 138, .30));
-  }
-
-  .dashboard-details-divider::after {
-    background: linear-gradient(90deg, rgba(32, 117, 138, .30), transparent);
-  }
-
-  .dashboard-details-toggle {
-    width: 34px;
-    height: 34px;
-    padding: 0;
-    border: 1px solid rgba(32, 117, 138, .28);
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #176a7d;
-    background: #fff;
-    box-shadow: 0 6px 16px rgba(32, 117, 138, .14);
-    cursor: pointer;
-    transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
-  }
-
-  .dashboard-details-toggle .material-icons-round {
-    font-size: 22px;
-    transition: transform .24s ease;
-  }
-
-  .dashboard-details-toggle[aria-expanded="true"] .material-icons-round {
-    transform: rotate(180deg);
-  }
-
-  .dashboard-details-toggle:active {
-    transform: scale(.94);
-  }
-
-  .dashboard-details-collapsible[hidden] {
-    display: none !important;
-  }
-
-  .dashboard-details-collapsible {
-    width: 100%;
-    animation: dashboard-details-open .24s ease both;
-  }
-
-  @keyframes dashboard-details-open {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .customer-cheers-food {
-    color: var(--customer-food-accent, #ffd36a);
-    font-weight: 900;
-    text-shadow: 0 1px 10px var(--customer-food-glow, rgba(255, 190, 70, .22));
-  }
-
-  .customer-cheers-drink {
-    color: #8ff3df;
-    font-weight: 900;
-  }
-
-  .customer-cheers-ai {
-    color: #fff4d9;
-    font-weight: 900;
-  }
-
-  .customer-cheers-close {
-    position: absolute;
-    z-index: 2;
-    top: 16px;
-    right: 16px;
-    width: 34px;
-    height: 34px;
-    border: 1px solid rgba(255,255,255,.24);
-    border-radius: 50%;
-    color: #fff;
-    background: rgba(3, 18, 32, .34);
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    transition: transform .18s ease, background .18s ease, border-color .18s ease;
-  }
-
-  .customer-cheers-close:hover {
-    transform: rotate(7deg) scale(1.05);
-    background: rgba(255,255,255,.15);
-    border-color: rgba(255,255,255,.44);
-  }
-
-  #member-scan-status.scan-success {
-    color: #0b6b55 !important;
-    background: #eafbf5 !important;
-    border-color: rgba(11, 107, 85, .24) !important;
-  }
-
-  #member-scan-status.scan-searching {
-    color: #174d83 !important;
-    background: #edf6ff !important;
-    border-color: rgba(23, 77, 131, .22) !important;
-  }
-
-  #member-scan-status.scan-searching .material-icons-round {
-    animation: scan-status-pulse 1s ease-in-out infinite;
-  }
-
-  @keyframes scan-status-pulse {
-    0%, 100% { transform: scale(.92); opacity: .62; }
-    50% { transform: scale(1.08); opacity: 1; }
-  }
-
-  @keyframes cheers-popup-in {
-    from { opacity: 0; transform: translateY(-8px) scale(.985); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  /* Final visual system: equal rhythm, symmetric grids, and easier reading. */
-  #page-dashboard .dashboard-content {
-    padding: 14px 16px calc(24px + var(--safe-bottom)) !important;
-  }
-
-  #page-dashboard .full-dashboard-v46 {
-    gap: 14px !important;
-  }
-
+  /* Base card: softer and clearer */
+  #page-dashboard .v46-card,
   #page-dashboard .v46-profile,
   #page-dashboard .v48-insight-card,
   #page-dashboard .v47-list-box,
-  #page-dashboard .v46-info-card,
-  #page-dashboard .v46-chip {
-    border-color: rgba(19, 54, 65, .10) !important;
-    box-shadow: 0 8px 24px rgba(15, 44, 54, .055) !important;
+  #page-dashboard .v46-stat,
+  #page-dashboard .v46-info-card{
+    background:linear-gradient(180deg,#ffffff 0%,#fbfdfd 100%)!important;
+    border:1px solid var(--v55-line)!important;
+    box-shadow:0 8px 22px rgba(38,74,82,.055)!important;
   }
 
-  #page-dashboard .v46-profile {
-    padding: 16px !important;
-    border-radius: 24px !important;
+  #page-dashboard .v46-profile{
+    padding:13px!important;
   }
 
-  #page-dashboard .v46-profile-top {
-    grid-template-columns: 48px minmax(0, 1fr) auto !important;
-    gap: 12px !important;
+  #page-dashboard .v46-profile::before{
+    height:3px!important;
+    background:linear-gradient(90deg,#bdeaf1,#d7f3ee,#fff0c7)!important;
   }
 
-  #page-dashboard .v46-detail-grid,
-  #page-dashboard .v48-insight-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px !important;
+  /* Customer name = clear substance */
+  #page-dashboard .v46-name,
+  #page-dashboard .profile-name{
+    color:var(--v55-ink)!important;
+    font-weight:900!important;
+    letter-spacing:-.035em!important;
   }
 
-  #page-dashboard .v46-detail-grid.single-detail .v46-mini {
-    grid-column: 1 / -1 !important;
+  /* Phone & ID mini cards */
+  #page-dashboard .v46-detail-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin-top:10px!important;
   }
 
-  #page-dashboard .v46-customer-types {
-    display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px !important;
-    margin-top: 10px !important;
-    padding-top: 10px !important;
-    overflow: visible !important;
+  #page-dashboard .v46-mini{
+    height:42px!important;
+    min-height:42px!important;
+    padding:7px 10px!important;
+    border-radius:15px!important;
+    background:var(--v55-baby-blue)!important;
+    border:1px solid rgba(95,154,166,.14)!important;
+    box-shadow:none!important;
+    align-items:center!important;
   }
 
-  #page-dashboard .full-dashboard-v46 .v46-customer-types .ctype-badge {
-    width: 100% !important;
-    min-width: 0 !important;
-    min-height: 46px !important;
-    padding: 11px 12px !important;
-    border-radius: 18px !important;
-    justify-content: flex-start !important;
-    background: #f7fbfc !important;
-    border: 1px solid rgba(32, 117, 138, .09) !important;
-    color: #185e70 !important;
-    font-size: .62rem !important;
-    letter-spacing: .055em !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+  #page-dashboard .v46-mini:nth-child(2){
+    background:var(--v55-baby-mint)!important;
+    border-color:rgba(91,160,128,.14)!important;
   }
 
-  #page-dashboard .full-dashboard-v46 .v46-customer-types .ctype-badge .material-icons-round {
-    width: 18px !important;
-    font-size: 17px !important;
-    flex: 0 0 18px !important;
+  #page-dashboard .v46-mini .material-icons-round{
+    width:22px!important;
+    height:22px!important;
+    border-radius:9px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:14px!important;
+    color:#4d8b98!important;
+    background:rgba(255,255,255,.68)!important;
+    flex-shrink:0!important;
   }
 
-  #page-dashboard .v46-mini,
-  #page-dashboard .v48-insight-card {
-    min-height: 68px !important;
-    padding: 12px !important;
-    border-radius: 18px !important;
+  #page-dashboard .v46-mini-text{
+    font-size:.82rem!important;
+    line-height:1.12!important;
+    color:var(--v55-ink)!important;
+    font-weight:850!important;
+    letter-spacing:-.01em!important;
   }
 
-  #page-dashboard .v46-mini {
-    min-height: 46px !important;
+  #page-dashboard .v46-mini-text strong{
+    color:var(--v55-title)!important;
+    font-size:.52rem!important;
+    line-height:1!important;
+    letter-spacing:.08em!important;
+    text-transform:uppercase!important;
+    font-weight:900!important;
+    margin-right:3px!important;
   }
 
-  #page-dashboard .v48-insight-card.wide {
-    grid-column: 1 / -1 !important;
+  /* Customer type badges: make exactly like Phone/ID cards */
+  #page-dashboard .v46-customer-types{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin-top:8px!important;
+    padding-top:0!important;
+    border-top:0!important;
+    overflow:visible!important;
+    scrollbar-width:auto!important;
   }
 
-  #page-dashboard .v46-section-title {
-    min-height: 24px !important;
-    margin: 4px 2px 0 !important;
-    letter-spacing: .12em !important;
+  #page-dashboard .v46-customer-types::-webkit-scrollbar{
+    display:none!important;
   }
 
-  #page-dashboard .v47-list-box {
-    width: 100% !important;
-    border-radius: 20px !important;
-    overflow: hidden !important;
+  #page-dashboard .v46-customer-types .ctype-badge,
+  #page-dashboard .v46-customer-types .v46-pill{
+    width:100%!important;
+    height:42px!important;
+    min-height:42px!important;
+    justify-content:flex-start!important;
+    padding:7px 10px!important;
+    border-radius:15px!important;
+    font-size:.74rem!important;
+    line-height:1.05!important;
+    font-weight:850!important;
+    letter-spacing:-.01em!important;
+    text-transform:none!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    box-shadow:none!important;
+    color:var(--v55-ink-soft)!important;
+    background:var(--v55-baby-gray)!important;
+    border:1px solid rgba(95,154,166,.12)!important;
   }
 
-  #page-dashboard .v47-list-row {
-    min-height: 66px !important;
-    padding: 12px !important;
-    align-items: center !important;
+  #page-dashboard .v46-customer-types .ctype-badge .material-icons-round,
+  #page-dashboard .v46-customer-types .v46-pill .material-icons-round{
+    width:22px!important;
+    height:22px!important;
+    border-radius:9px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    font-size:14px!important;
+    color:#6b9da8!important;
+    background:rgba(255,255,255,.70)!important;
+    flex-shrink:0!important;
   }
 
-  #page-dashboard .v46-horizontal {
-    gap: 10px !important;
+  #page-dashboard .v46-customer-types .weekday-visitor{
+    background:var(--v55-baby-blue)!important;
+    border-color:rgba(95,154,166,.14)!important;
   }
 
-  #page-dashboard .v46-chip {
-    min-height: 42px !important;
-    padding: 10px 12px !important;
+  #page-dashboard .v46-customer-types .weekend-visitor{
+    background:var(--v55-baby-lav)!important;
+    border-color:rgba(145,126,190,.13)!important;
+    color:#5e517a!important;
   }
 
-  @media (max-width: 390px) {
-    #page-dashboard .dashboard-content {
-      padding-left: 12px !important;
-      padding-right: 12px !important;
+  #page-dashboard .v46-customer-types .single-visitor{
+    background:var(--v55-baby-mint)!important;
+    border-color:rgba(91,160,128,.14)!important;
+    color:#436f5a!important;
+  }
+
+  #page-dashboard .v46-customer-types .group-visitor{
+    background:var(--v55-baby-cream)!important;
+    border-color:rgba(204,164,75,.16)!important;
+    color:#7a6539!important;
+  }
+
+  #page-dashboard .v46-customer-types .high-spender{
+    background:var(--v55-baby-pink)!important;
+    border-color:rgba(210,128,154,.14)!important;
+    color:#7b5260!important;
+  }
+
+  /* Section title: baby color, smaller */
+  #page-dashboard .v46-section-title{
+    margin:4px 2px 0!important;
+    color:var(--v55-title)!important;
+    font-size:.58rem!important;
+    line-height:1!important;
+    letter-spacing:.14em!important;
+    font-weight:900!important;
+  }
+
+  #page-dashboard .v46-section-title .material-icons-round{
+    width:18px!important;
+    height:18px!important;
+    border-radius:8px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    color:#6a9da8!important;
+    background:var(--v55-baby-blue)!important;
+    font-size:12px!important;
+  }
+
+  /* Box titles = about 1.6x smaller than values */
+  #page-dashboard .v48-insight-label,
+  #page-dashboard .v46-label{
+    font-size:.58rem!important;
+    line-height:1!important;
+    letter-spacing:.08em!important;
+    color:var(--v55-title)!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+    margin-bottom:0!important;
+  }
+
+  #page-dashboard .v48-insight-label .material-icons-round,
+  #page-dashboard .v46-label .material-icons-round{
+    width:17px!important;
+    height:17px!important;
+    border-radius:7px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    color:#6a9da8!important;
+    background:var(--v55-baby-blue)!important;
+    font-size:11px!important;
+  }
+
+  /* Content / substance = stronger */
+  #page-dashboard .v48-insight-value,
+  #page-dashboard .v46-value,
+  #page-dashboard .v46-info-value,
+  #page-dashboard .v47-list-name{
+    color:var(--v55-ink)!important;
+    font-size:.94rem!important;
+    line-height:1.12!important;
+    font-weight:950!important;
+    letter-spacing:-.03em!important;
+  }
+
+  #page-dashboard .v48-insight-sub,
+  #page-dashboard .v46-sub,
+  #page-dashboard .v46-info-sub,
+  #page-dashboard .v47-list-detail{
+    color:#78979f!important;
+    font-size:.66rem!important;
+    line-height:1.12!important;
+    font-weight:750!important;
+  }
+
+  /* Insight cards clearer distinction */
+  #page-dashboard .v48-insight-grid{
+    gap:8px!important;
+  }
+
+  #page-dashboard .v48-insight-card{
+    min-height:66px!important;
+    padding:10px 11px!important;
+    border-radius:17px!important;
+  }
+
+  #page-dashboard .v48-insight-card:nth-child(1){
+    background:linear-gradient(180deg,#ffffff 0%,#fff8ea 100%)!important;
+    border-color:rgba(204,164,75,.15)!important;
+  }
+
+  #page-dashboard .v48-insight-card:nth-child(2){
+    background:linear-gradient(180deg,#ffffff 0%,#eef9fc 100%)!important;
+    border-color:rgba(95,154,166,.14)!important;
+  }
+
+  #page-dashboard .v48-insight-card:nth-child(3){
+    background:linear-gradient(180deg,#ffffff 0%,#f6f2ff 100%)!important;
+    border-color:rgba(145,126,190,.13)!important;
+  }
+
+  #page-dashboard .v48-insight-card:nth-child(4){
+    background:linear-gradient(180deg,#ffffff 0%,#eefbf6 100%)!important;
+    border-color:rgba(91,160,128,.14)!important;
+  }
+
+  #page-dashboard .v48-insight-card:nth-child(5){
+    background:linear-gradient(180deg,#ffffff 0%,#fff3f7 100%)!important;
+    border-color:rgba(210,128,154,.14)!important;
+  }
+
+  /* Last order chips */
+  #page-dashboard .v46-chip{
+    min-height:40px!important;
+    border-radius:15px!important;
+    background:var(--v55-baby-gray)!important;
+    border:1px solid var(--v55-line)!important;
+    color:var(--v55-ink-soft)!important;
+    font-size:.74rem!important;
+    font-weight:850!important;
+    text-transform:none!important;
+    letter-spacing:-.01em!important;
+  }
+
+  #page-dashboard .v46-chip .material-icons-round{
+    color:#6a9da8!important;
+    background:#fff!important;
+    border-radius:8px!important;
+    font-size:13px!important;
+  }
+
+  /* Recommendation list boxes */
+  #page-dashboard .v47-list-box{
+    padding:8px!important;
+    gap:7px!important;
+    border-radius:18px!important;
+  }
+
+  #page-dashboard .v47-list-row{
+    min-height:48px!important;
+    padding:7px 9px!important;
+    background:var(--v55-baby-gray)!important;
+    border:1px solid var(--v55-line)!important;
+    border-radius:15px!important;
+  }
+
+  #page-dashboard .v47-list-icon{
+    background:#fff!important;
+    color:#6a9da8!important;
+    box-shadow:0 3px 10px rgba(38,74,82,.04)!important;
+  }
+
+  #page-dashboard .v47-list-icon.gold{
+    background:#fffdf6!important;
+    color:#b99444!important;
+  }
+
+  #page-dashboard .v47-list-qty,
+  #page-dashboard .v47-list-price{
+    color:var(--v55-teal)!important;
+    font-size:.76rem!important;
+    font-weight:950!important;
+  }
+
+  #page-dashboard .v46-empty{
+    background:var(--v55-baby-gray)!important;
+    color:#7a979d!important;
+    border-color:rgba(95,154,166,.16)!important;
+    font-weight:800!important;
+  }
+
+  /* Mobile */
+  @media (max-width:390px){
+    #page-dashboard .v46-mini,
+    #page-dashboard .v46-customer-types .ctype-badge,
+    #page-dashboard .v46-customer-types .v46-pill{
+      height:40px!important;
+      min-height:40px!important;
+      padding:6px 8px!important;
+      font-size:.70rem!important;
     }
 
-    #page-dashboard .v46-profile {
-      padding: 14px !important;
+    #page-dashboard .v48-insight-value,
+    #page-dashboard .v46-value,
+    #page-dashboard .v46-info-value,
+    #page-dashboard .v47-list-name{
+      font-size:.88rem!important;
     }
 
-    #page-dashboard .v46-profile-top {
-      grid-template-columns: 44px minmax(0, 1fr) auto !important;
-      gap: 9px !important;
+    #page-dashboard .v48-insight-label,
+    #page-dashboard .v46-label,
+    #page-dashboard .v46-section-title{
+      font-size:.54rem!important;
     }
 
     #page-dashboard .v46-detail-grid,
-    #page-dashboard .v48-insight-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 8px !important;
+    #page-dashboard .v46-customer-types,
+    #page-dashboard .v48-insight-grid{
+      gap:7px!important;
     }
-
-    #page-dashboard .v48-insight-card {
-      min-height: 66px !important;
-      padding: 10px !important;
-    }
-
-    .customer-cheers-popup {
-      padding: 21px 18px;
-      border-radius: 22px;
-    }
-
-    .customer-cheers-popup-copy {
-      font-size: .96rem;
-      line-height: 1.55;
-      text-wrap: pretty;
-    }
-
-    .customer-cheers-meta-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      margin-top: 14px;
-    }
-
-    .customer-cheers-meta-card {
-      padding: 11px 10px;
-      border-radius: 14px;
-    }
-
-    .customer-cheers-meta-label {
-      min-height: 30px;
-      font-size: .54rem;
-      letter-spacing: .09em;
-    }
-
-    .customer-cheers-meta-copy {
-      font-size: .70rem;
-      line-height: 1.44;
-    }
-  }
-
-  /* Visit history on the customer-search page. */
-  .visit-history-modal-content {
-    width: min(1120px, calc(100vw - 28px));
-    max-width: 1120px;
-    height: min(760px, calc(100dvh - 34px));
-    max-height: calc(100dvh - 34px);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-radius: 28px;
-  }
-
-  .visit-history-modal-header { flex: 0 0 auto; }
-  .visit-history-modal-header h3 { margin: 3px 0 0; }
-  .visit-history-eyebrow {
-    color: #24889a;
-    font-size: .58rem;
-    font-weight: 900;
-    letter-spacing: .14em;
-  }
-
-  .visit-history-toolbar {
-    flex: 0 0 auto;
-    padding: 13px 20px 16px;
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
-    gap: 12px;
-    border-bottom: 1px solid #e6eef0;
-    background: #fbfdfd;
-  }
-
-  .visit-history-date-field { display: grid; gap: 6px; }
-  .visit-history-date-field span {
-    color: #71878c;
-    font-size: .61rem;
-    font-weight: 850;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-  .visit-history-date-field input {
-    min-height: 42px;
-    padding: 0 13px;
-    border: 1px solid #cedde0;
-    border-radius: 14px;
-    background: #fff;
-    color: #17363c;
-    font: inherit;
-    font-size: .78rem;
-    font-weight: 750;
-  }
-
-  .visit-history-refresh,
-  .visit-history-phone-save {
-    border: 0;
-    border-radius: 13px;
-    background: #258da0;
-    color: #fff;
-    font: inherit;
-    font-weight: 850;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .visit-history-refresh { min-height: 42px; padding: 0 14px; font-size: .7rem; }
-  .visit-history-refresh .material-icons-round { font-size: 17px; }
-
-  .visit-history-table-wrap {
-    min-height: 0;
-    flex: 1 1 auto;
-    overflow: auto;
-    padding: 0 20px 20px;
-  }
-
-  .visit-history-grid {
-    display: grid;
-    grid-template-columns: 104px 58px minmax(180px, 1.15fr) minmax(205px, 1fr) minmax(145px, .8fr) minmax(190px, 1fr) minmax(92px, .55fr);
-    gap: 12px;
-    align-items: center;
-  }
-
-  .visit-history-grid-head {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    min-width: 1120px;
-    padding: 14px 14px 10px;
-    background: #fff;
-    color: #73898e;
-    border-bottom: 1px solid #e7eef0;
-    font-size: .6rem;
-    font-weight: 900;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-  }
-
-  .visit-history-list { min-width: 1120px; }
-  .visit-history-row {
-    margin-top: 8px;
-    padding: 13px 14px;
-    border: 1px solid #e2ebed;
-    border-radius: 17px;
-    background: #fff;
-    color: #345158;
-    font-size: .75rem;
-    box-shadow: 0 5px 16px rgba(24, 66, 73, .045);
-  }
-  .visit-history-row.is-welcome {
-    border-color: rgba(226, 170, 36, .35);
-    background: linear-gradient(105deg, #fffdf6, #fff);
-  }
-  .visit-history-cell { min-width: 0; overflow-wrap: anywhere; }
-  .visit-history-cell::before { display: none; }
-  .visit-history-name { color: #17383e; font-weight: 850; }
-  .visit-history-member { color: #61787d; font-weight: 750; }
-  .visit-history-type {
-    display: inline-flex;
-    margin-top: 5px;
-    padding: 3px 7px;
-    border-radius: 999px;
-    background: #fff2c7;
-    color: #98700d;
-    font-size: .52rem;
-    font-weight: 900;
-    letter-spacing: .06em;
-  }
-  .visit-history-phone-editor { display: flex; align-items: center; gap: 7px; }
-  .visit-history-phone-input {
-    width: 100%;
-    min-width: 0;
-    height: 38px;
-    padding: 0 10px;
-    border: 1px solid #cedde0;
-    border-radius: 12px;
-    background: #f9fcfc;
-    color: #17383e;
-    font: inherit;
-    font-size: .72rem;
-    outline: none;
-  }
-  .visit-history-phone-input:focus { border-color: #2b91a3; box-shadow: 0 0 0 3px rgba(43,145,163,.12); }
-  .visit-history-phone-save { width: 38px; height: 38px; flex: 0 0 38px; }
-  .visit-history-phone-save .material-icons-round { font-size: 17px; }
-  .visit-history-phone-save:disabled,
-  .visit-history-refresh:disabled { opacity: .55; cursor: wait; }
-  .visit-history-state {
-    min-width: 0;
-    padding: 54px 20px;
-    color: #789096;
-    text-align: center;
-    font-size: .78rem;
-    font-weight: 700;
-  }
-
-  .dashboard-table-card {
-    width: 100%;
-    box-sizing: border-box;
-    margin: 16px 0;
-    padding: 16px;
-    border: 1px solid rgba(217, 176, 69, .38);
-    border-radius: 20px;
-    background: linear-gradient(135deg, #fff8cf 0%, #fff3b8 100%);
-    box-shadow: 0 10px 28px rgba(164, 126, 31, .11);
-    display: grid;
-    grid-template-columns: minmax(150px, .7fr) minmax(180px, 1fr) auto;
-    align-items: center;
-    gap: 13px;
-  }
-  .dashboard-table-heading { min-width: 0; }
-  .dashboard-table-kicker {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #8c6812;
-    font-size: .6rem;
-    font-weight: 900;
-    letter-spacing: .09em;
-    text-transform: uppercase;
-  }
-  .dashboard-table-kicker .material-icons-round { font-size: 16px; }
-  .dashboard-table-heading p {
-    margin: 5px 0 0;
-    color: #8a773e;
-    font-size: .67rem;
-    font-weight: 650;
-  }
-  .dashboard-table-input {
-    width: 100%;
-    min-width: 0;
-    height: 44px;
-    box-sizing: border-box;
-    padding: 0 14px;
-    border: 1px solid rgba(177, 137, 37, .32);
-    border-radius: 14px;
-    background: rgba(255,255,255,.83);
-    color: #4c3a0b;
-    font: inherit;
-    font-size: .8rem;
-    font-weight: 800;
-    outline: none;
-  }
-  .dashboard-table-input:focus { border-color: #c79a29; box-shadow: 0 0 0 3px rgba(199,154,41,.14); }
-  .dashboard-table-save {
-    min-width: 94px;
-    height: 44px;
-    padding: 0 16px;
-    border: 0;
-    border-radius: 14px;
-    background: #9b7518;
-    color: #fff;
-    font: inherit;
-    font-size: .72rem;
-    font-weight: 900;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    cursor: pointer;
-  }
-  .dashboard-table-save .material-icons-round { font-size: 17px; }
-  .dashboard-table-input:disabled,
-  .dashboard-table-save:disabled { opacity: .55; cursor: wait; }
-
-  @media (max-width: 620px) {
-    .visit-history-modal-content {
-      width: 100%;
-      height: min(92dvh, 820px);
-      max-height: 92dvh;
-      margin-top: auto;
-      border-radius: 26px 26px 0 0;
-    }
-    .visit-history-toolbar { padding: 12px 14px 14px; }
-    .visit-history-refresh span:not(.material-icons-round) { display: none; }
-    .visit-history-refresh { width: 42px; padding: 0; }
-    .visit-history-table-wrap { padding: 0 14px 18px; overflow-x: hidden; }
-    .visit-history-grid-head { display: none; }
-    .visit-history-list { min-width: 0; }
-    .visit-history-row {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px 10px;
-      padding: 14px;
-      border-radius: 19px;
-    }
-    .visit-history-cell::before {
-      content: attr(data-label);
-      display: block;
-      margin-bottom: 5px;
-      color: #8a9b9f;
-      font-size: .52rem;
-      font-weight: 900;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    .visit-history-cell-name,
-    .visit-history-cell-phone { grid-column: 1 / -1; }
-    .dashboard-table-card {
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 18px;
-    }
-    .dashboard-table-heading { grid-column: 1 / -1; }
-    .dashboard-table-save { min-width: 86px; padding: 0 13px; }
   }
 </style>
 
-<script id="v52-login-search-dashboard-request-script">
-(function () {
-  'use strict';
+<script id="v55-readable-dashboard-marker">
+  window.APP_DASHBOARD_UI_VERSION = 'V5.5_BABY_COLOR_READABLE_SYMMETRIC';
+</script>
 
-  var ALL_USER_PASSWORD = '@Boga2026';
-  var originalApplyLoggedInOutlet = window.applyLoggedInOutlet;
-  var originalRenderDashboard = window.renderDashboard;
 
-  /* Review actions are disabled in addition to being removed from the interface. */
-  window.openReviewModal = function () { return false; };
-  window.submitReview = function () { return false; };
-  try { openReviewModal = window.openReviewModal; } catch (e) {}
-  try { submitReview = window.submitReview; } catch (e) {}
+<style id="v56-visit-today-click-fix-style">
+  /* ============================================================
+     V5.6 — FIX BUTTON HARI INI
+     Seluruh area tombol HARI INI bisa diklik, bukan hanya checkbox kecil.
+     ============================================================ */
 
-  function digits(value) {
-    return String(value == null ? '' : value).replace(/\D/g, '');
+  #page-dashboard .visit-today-card{
+    cursor:pointer!important;
+    user-select:none!important;
+    -webkit-user-select:none!important;
+    touch-action:manipulation!important;
   }
 
-  function normalizedPhone(value) {
-    var d = digits(value);
-    if (d.indexOf('62') === 0) d = '0' + d.slice(2);
-    if (d.indexOf('8') === 0) d = '0' + d;
-    return d;
+  #page-dashboard .visit-today-card.saving-v56{
+    opacity:.72!important;
+    pointer-events:none!important;
   }
 
-  function maskCustomerPhone(value) {
-    var phone = normalizedPhone(value);
-    if (!phone || phone.length < 4) return value || '-';
-    return phone.slice(0, -3) + 'XXX';
+  #page-dashboard .visit-today-card.saving-v56 .custom-checkbox .checkmark{
+    border-color:#20758a!important;
+    background:rgba(32,117,138,.08)!important;
   }
 
-  function itemName(item) {
-    if (typeof item === 'string') return item;
-    return (item && (item.menu || item.shortName || item.name || item.promoName)) || '';
+  #page-dashboard .visit-today-card.saving-v56 .visit-label::after{
+    content:'...';
+    margin-left:2px;
   }
 
-  function safeHtml(value) {
-    return String(value == null ? '' : value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
+  #page-dashboard .visit-today-card .custom-checkbox{
+    pointer-events:none!important;
   }
 
-  function isDrink(item) {
-    var haystack = [itemName(item), item && item.category, item && item.type]
-      .filter(Boolean).join(' ').toLowerCase();
-    return /drink|minuman|beverage|coffee|kopi|tea|teh|latte|juice|jus|smoothie|soda|water|air mineral|mocktail|chocolate/.test(haystack);
+  #page-dashboard .visit-today-card .custom-checkbox input{
+    pointer-events:none!important;
   }
+</style>
 
-  function pickDashboardOffers(data) {
-    data = data || {};
-    var rec = data.recommendations || {};
-    var favorites = [].concat(data.favoriteMenu || [], rec.customerFavorite || []);
-    var offers = [].concat(rec.smartRecommendation || [], rec.premiumRecommendation || [], rec.recommendedPromo || [], rec.promoRecommendation || [], rec.addOnRecommendation || []);
-    var history = [].concat(data.lastOrderedItems || [], data.orderHistory || [], data.lastOrders || []);
-    var food = favorites.filter(function (x) { return !isDrink(x); })[0] || favorites[0];
-    var drink = favorites.concat(offers).filter(isDrink)[0];
-    var usedNames = [itemName(food), itemName(drink)].filter(Boolean).map(function(name) { return name.toLowerCase(); });
-    var actualCandidates = offers.concat(favorites, history).filter(function (item) {
-      var name = itemName(item);
-      return name && usedNames.indexOf(name.toLowerCase()) < 0;
-    });
-    var ai = actualCandidates[0] || offers[0] || favorites[0] || history[0] || drink;
+<script id="v56-visit-today-click-fix-script">
+(function(){
+  function getVisitElsV56(){
     return {
-      food: itemName(food) || 'menu makanan favoritnya',
-      drink: itemName(drink) || 'minuman favoritnya',
-      ai: itemName(ai) || 'belum ada menu yang dapat direkomendasikan',
-      foodItem: food || null,
-      drinkItem: drink || null,
-      aiItem: ai || null
+      card: document.getElementById('visit-today-toggle'),
+      checkbox: document.getElementById('visit-checkbox')
     };
   }
 
-  function firstUsefulText(values) {
-    for (var i = 0; i < values.length; i++) {
-      var value = values[i];
-      if (value !== null && value !== undefined && String(value).trim() && String(value).trim() !== '-') {
-        return String(value).trim();
-      }
-    }
-    return '';
-  }
-
-  function noteFromItem(item) {
-    if (!item || typeof item !== 'object') return '';
-    return firstUsefulText([
-      item.menuNote, item.menu_note, item.MenuNote, item['Menu Note'],
-      item.note, item.notes, item.orderNote, item.order_note
-    ]);
-  }
-
-  function menuNameFromItem(item) {
-    if (!item || typeof item !== 'object') return '';
-    return firstUsefulText([
-      item.menu, item.menuName, item.menu_name, item.Menu,
-      item.name, item.itemName, item.item_name
-    ]);
-  }
-
-  function formatMenuNote(menu, note) {
-    var cleanMenu = firstUsefulText([menu]);
-    var cleanNote = firstUsefulText([note]);
-    if (!cleanNote) return '';
-    if (!cleanMenu) return cleanNote;
-
-    // Hindari nama menu ganda bila backend lama sudah mengirim "Menu - Note".
-    var normalizedNote = cleanNote.toLowerCase();
-    var normalizedPrefix = cleanMenu.toLowerCase() + ' -';
-    return normalizedNote.indexOf(normalizedPrefix) === 0
-      ? cleanNote
-      : cleanMenu + ' - ' + cleanNote;
-  }
-
-  function pickMenuNote(data, offer) {
-    data = data || {};
-    var rows = [].concat(data.favoriteMenu || [], data.lastOrderedItems || [], data.orderHistory || [], data.lastOrders || []);
-    var direct = firstUsefulText([
-      data.menuNote, data.menu_note, data.MenuNote, data['Menu Note'],
-      data.lastMenuNote, data.lastOrderNote, data.lastTransactionNote,
-      data.favoriteOrderNote, data.orderNote
-    ]);
-    if (direct) {
-      var directMenu = firstUsefulText([
-        data.menuNoteMenu, data.menu_note_menu, data.lastMenuNoteMenu,
-        data.favoriteMenuNoteMenu
-      ]);
-      if (!directMenu) {
-        for (var d = 0; d < rows.length; d++) {
-          if (noteFromItem(rows[d]) === direct) {
-            directMenu = menuNameFromItem(rows[d]);
-            break;
-          }
-        }
-      }
-      return formatMenuNote(directMenu, direct);
-    }
-
-    var preferredItems = [offer && offer.foodItem, offer && offer.drinkItem];
-    for (var p = 0; p < preferredItems.length; p++) {
-      var preferred = noteFromItem(preferredItems[p]);
-      if (preferred) return formatMenuNote(menuNameFromItem(preferredItems[p]), preferred);
-    }
-
-    for (var i = 0; i < rows.length; i++) {
-      var note = noteFromItem(rows[i]);
-      if (note) return formatMenuNote(menuNameFromItem(rows[i]), note);
-    }
-    return 'Belum ada note pada pesanan favorit terakhir.';
-  }
-
-  function menuNoteHtml(value) {
-    var text = firstUsefulText([value]);
-    if (!text) return '';
-
-    var separatorIndex = text.indexOf(' - ');
-    if (separatorIndex <= 0) return safeHtml(text);
-
-    var menu = text.slice(0, separatorIndex).trim();
-    var note = text.slice(separatorIndex + 3).trim();
-    if (!menu || !note) return safeHtml(text);
-
-    return '<span class="customer-cheers-note-menu">' + safeHtml(menu) + '</span>' +
-      '<span class="customer-cheers-note-separator"> - </span>' +
-      '<span class="customer-cheers-note-text">' + safeHtml(note) + '</span>';
-  }
-
-  function smartRecommendationCopy(data, offer) {
-    data = data || {};
-    var types = (data.customerTypes || []).map(function (type) { return (type && type.code) || ''; });
-    var reason = firstUsefulText([offer && offer.aiItem && offer.aiItem.reason]);
-    if (!reason) {
-      reason = 'paling selaras dengan kombinasi menu favorit customer';
-      if (types.indexOf('GROUP_VISITOR') >= 0) reason = 'cocok melengkapi pesanan saat customer datang bersama grup';
-      else if (types.indexOf('HIGH_SPENDER') >= 0) reason = 'memberikan opsi premium yang tetap dekat dengan preferensi customer';
-      else if (types.indexOf('WEEKDAY_VISITOR') >= 0) reason = 'sesuai dengan pola kunjungan weekday dan menu yang paling sering dipesan';
-      else if (types.indexOf('WEEKEND_VISITOR') >= 0) reason = 'sesuai untuk pengalaman bersantap santai saat weekend';
-      else if (types.indexOf('SINGLE_VISITOR') >= 0) reason = 'memiliki porsi dan karakter yang nyaman untuk kunjungan personal';
-    }
-    return '<span class="customer-cheers-menu-name">' + safeHtml(offer.ai) + '</span> direkomendasikan karena ' + safeHtml(reason) + '.';
-  }
-
-  function hideDashboardPrices(container) {
-    if (!container) return;
-    container.querySelectorAll('.recommendation-card-price, .v46-rec-price, .v47-list-price, .spending-panel, .spending-panel-value, [class*="price"]').forEach(function (node) {
-      node.style.display = 'none';
-      node.setAttribute('aria-hidden', 'true');
-    });
-
-    container.querySelectorAll('.v46-stat, .insight-card, .v48-insight-card').forEach(function (card) {
-      if (/total\s*belanja/i.test(card.textContent || '')) {
-        card.style.display = 'none';
-        card.setAttribute('aria-hidden', 'true');
-      }
-    });
-
-    container.querySelectorAll('*').forEach(function (node) {
-      if (!node.children.length && /^\s*Rp\b/i.test(node.textContent || '')) {
-        node.style.display = 'none';
-        node.setAttribute('aria-hidden', 'true');
-      }
-    });
-  }
-
-  function setupDashboardDetailsToggle(container) {
-    if (!container) return;
-    var titles = container.querySelectorAll('.v46-section-title, .section-title');
-    var insightTitle = null;
-    for (var i = 0; i < titles.length; i++) {
-      if (/Customer\s+Insight/i.test(titles[i].textContent || '')) {
-        insightTitle = titles[i];
-        break;
-      }
-    }
-    if (!insightTitle) return;
-
-    var firstSection = insightTitle;
-    var sectionHost = insightTitle.parentNode;
-    if (!sectionHost) return;
-
-    var divider = document.createElement('div');
-    divider.className = 'dashboard-details-divider';
-    divider.innerHTML = '<button class="dashboard-details-toggle" type="button" aria-expanded="false" aria-controls="dashboard-details-content" aria-label="Tampilkan informasi lengkap"><span class="material-icons-round">expand_more</span></button>';
-
-    var collapsible = document.createElement('div');
-    collapsible.id = 'dashboard-details-content';
-    collapsible.className = 'dashboard-details-collapsible';
-    collapsible.hidden = true;
-
-    sectionHost.insertBefore(divider, firstSection);
-    sectionHost.insertBefore(collapsible, firstSection);
-    var node = firstSection;
-    while (node) {
-      var next = node.nextSibling;
-      collapsible.appendChild(node);
-      node = next;
-    }
-
-    var toggle = divider.querySelector('.dashboard-details-toggle');
-    toggle.addEventListener('click', function () {
-      var willExpand = toggle.getAttribute('aria-expanded') !== 'true';
-      toggle.setAttribute('aria-expanded', willExpand ? 'true' : 'false');
-      toggle.setAttribute('aria-label', willExpand ? 'Sembunyikan informasi lengkap' : 'Tampilkan informasi lengkap');
-      collapsible.hidden = !willExpand;
-    });
-  }
-
-  function closeCheersPopup() {
-    var popup = document.getElementById('customer-cheers-popup');
-    if (popup) popup.remove();
-  }
-  window.closeCheersPopup = closeCheersPopup;
-
-  var autoVisitRequests = {};
-  var autoVisitRows = {};
-  var dashboardVisitContext = null;
-
-  function activateDashboardTableNumber(data, rowNumber, outlet, existingTable) {
-    var input = document.getElementById('dashboard-table-input');
-    var button = document.getElementById('dashboard-table-save');
-    var hint = document.getElementById('dashboard-table-hint');
-    if (!input || !button || !rowNumber || !data || !data.profile) return;
-
-    dashboardVisitContext = {
-      sheetRow: Number(rowNumber),
-      memberId: firstUsefulText([data.profile.memberId, AppState.selectedCustomer && AppState.selectedCustomer.memberId]),
-      outlet: outlet || resolveAutomaticVisitOutlet(data),
-      data: data
-    };
-    input.disabled = false;
-    button.disabled = false;
-    if (existingTable && !input.value) input.value = existingTable;
-    if (hint) hint.textContent = 'Opsional · tersimpan pada kunjungan hari ini';
-  }
-
-  function renderDashboardTableNumber(data) {
-    var container = document.getElementById('dashboard-content');
-    if (!container || !data || data.scannedUnknown || data.welcomeOnly) return;
-    var oldCard = container.querySelector('#dashboard-table-card');
-    if (oldCard) oldCard.remove();
-    dashboardVisitContext = null;
-
-    var card = document.createElement('section');
-    card.id = 'dashboard-table-card';
-    card.className = 'dashboard-table-card';
-    card.innerHTML =
-      '<div class="dashboard-table-heading">' +
-        '<div class="dashboard-table-kicker"><span class="material-icons-round">table_restaurant</span>No Table</div>' +
-        '<p id="dashboard-table-hint">Opsional · menyiapkan data kunjungan...</p>' +
-      '</div>' +
-      '<input id="dashboard-table-input" class="dashboard-table-input" type="text" maxlength="24" autocomplete="off" placeholder="Contoh: 12 atau A5" disabled onkeydown="handleDashboardTableKey(event)">' +
-      '<button id="dashboard-table-save" class="dashboard-table-save" type="button" onclick="saveDashboardTableNumber()" disabled>' +
-        '<span class="material-icons-round">save</span><span>Save</span>' +
-      '</button>';
-
-    var popup = container.querySelector('#customer-cheers-popup');
-    var profile = container.querySelector('.v46-profile, .profile-card');
-    if (popup && popup.parentNode) popup.insertAdjacentElement('afterend', card);
-    else if (profile && profile.parentNode) profile.insertAdjacentElement('afterend', card);
-    else container.insertAdjacentElement('afterbegin', card);
-
-    var todayVisit = data.todayVisit || {};
-    if (todayVisit.row) {
-      activateDashboardTableNumber(data, todayVisit.row, todayVisit.outlet, todayVisit.tableNumber || '');
+  function setVisitVisualV56(checked, saving){
+    var els = getVisitElsV56();
+    if (els.checkbox) els.checkbox.checked = !!checked;
+    if (els.card) {
+      els.card.classList.toggle('checked', !!checked);
+      els.card.classList.toggle('saving-v56', !!saving);
+      els.card.setAttribute('aria-pressed', checked ? 'true' : 'false');
+      els.card.setAttribute('role', 'button');
+      els.card.setAttribute('tabindex', '0');
     }
   }
 
-  window.handleDashboardTableKey = function (event) {
-    if (event && event.key === 'Enter') {
-      event.preventDefault();
-      window.saveDashboardTableNumber();
+  function showVisitToastV56(message, type){
+    if (typeof showToast === 'function') {
+      showToast(message, type || 'info');
     }
-  };
+  }
 
-  window.saveDashboardTableNumber = function () {
-    var input = document.getElementById('dashboard-table-input');
-    var button = document.getElementById('dashboard-table-save');
-    var hint = document.getElementById('dashboard-table-hint');
-    var value = input ? input.value.trim() : '';
-    if (!dashboardVisitContext || !input || !button) {
-      showToast('Data kunjungan masih disiapkan. Silakan tunggu sebentar.', 'info');
-      return;
-    }
-    if (!value) {
-      showToast('Isi No Table terlebih dahulu.', 'error');
-      input.focus();
+  window.handleVisitToggle = function(checked) {
+    var els = getVisitElsV56();
+
+    // Sama seperti versi awal: hanya simpan saat dicentang.
+    // Jika sudah dicentang, tidak perlu simpan ulang.
+    if (!checked) {
+      if (els.checkbox) els.checkbox.checked = true;
+      setVisitVisualV56(true, false);
       return;
     }
 
-    input.disabled = true;
-    button.disabled = true;
-    button.innerHTML = '<span class="spinner" style="width:15px;height:15px"></span><span>Menyimpan</span>';
-    google.script.run
-      .withSuccessHandler(function (result) {
-        if (!result || !result.success) {
-          input.disabled = false;
-          button.disabled = false;
-          button.innerHTML = '<span class="material-icons-round">save</span><span>Save</span>';
-          showToast((result && result.message) || 'No Table belum dapat disimpan.', 'error');
-          return;
-        }
-        input.value = result.tableNumber || value.toUpperCase();
-        input.disabled = false;
-        button.disabled = false;
-        button.innerHTML = '<span class="material-icons-round">check</span><span>Saved</span>';
-        if (hint) hint.textContent = 'Tersimpan pada kunjungan hari ini';
-        if (dashboardVisitContext.data && dashboardVisitContext.data.todayVisit) {
-          dashboardVisitContext.data.todayVisit.tableNumber = input.value;
-          AppState.dashboardData = dashboardVisitContext.data;
-        }
-        showToast(result.message || 'No Table berhasil disimpan.', 'success');
-      })
-      .withFailureHandler(function (error) {
-        input.disabled = false;
-        button.disabled = false;
-        button.innerHTML = '<span class="material-icons-round">save</span><span>Save</span>';
-        showToast('Gagal menyimpan No Table: ' + ((error && error.message) || error), 'error');
-      })
-      .updateVisitTableNumber({
-        sheetRow: dashboardVisitContext.sheetRow,
-        memberId: dashboardVisitContext.memberId || '',
-        outlet: dashboardVisitContext.outlet || '',
-        tableNumber: value
-      });
-  };
-
-  function renderWelcomeBackOnly() {
-    var container = document.getElementById('dashboard-content');
-    if (!container) return;
-    closeCheersPopup();
-    container.innerHTML =
-      '<div class="customer-welcome-only">' +
-        '<div class="v46-nohistory-hero">' +
-          '<div class="v46-nohistory-icon"><span class="material-icons-round">volunteer_activism</span></div>' +
-          '<div class="v46-pill" style="margin-bottom:10px"><span class="material-icons-round" style="font-size:12px">auto_awesome</span>Welcome Back Moment</div>' +
-          '<div class="v46-nohistory-title">Customer ini sudah lama sekali tidak berkunjung ke Bakerzin.</div>' +
-          '<div class="v46-nohistory-message">Layanilah dengan baik, berikan pengalaman yang tak akan terlupakan!</div>' +
-          '<div class="v46-nohistory-closing"><span class="material-icons-round" style="font-size:16px">favorite</span>Semangat! We Still &amp; Always Love You.</div>' +
-        '</div>' +
-      '</div>';
-  }
-
-  function resolveAutomaticVisitOutlet(data) {
-    data = data || {};
-    var profile = data.profile || {};
-    var selectedCustomer = AppState.selectedCustomer || {};
-    var lastVisit = data.lastVisit || {};
-    var outletFilter = document.getElementById('visit-outlet-filter');
-    var filteredOutlet = outletFilter && outletFilter.value ? outletFilter.value.toString().trim() : '';
-    function physicalOutlet(value) {
-      var text = firstUsefulText([value]);
-      if (!text || /^(all|all outlet|all outlets|semua outlet|bihq|hq|head office)$/i.test(text)) return '';
-      return text;
-    }
-
-    if (AppState.isBIHQ) {
-      return physicalOutlet(filteredOutlet) || physicalOutlet(selectedCustomer.outlet) || physicalOutlet(profile.outlet);
-    }
-
-    return physicalOutlet(AppState.outlet) || physicalOutlet(selectedCustomer.outlet) ||
-      physicalOutlet(profile.outlet) || physicalOutlet(lastVisit.branch);
-  }
-
-  function autoRecordDashboardVisit(data) {
-    if (!data || !data.success || data.scannedUnknown || data.welcomeOnly || data.recordVisit === false) return;
-    if (!data.profile || !hasBackend()) return;
-
-    var profile = data.profile;
-    var selectedCustomer = AppState.selectedCustomer || {};
-    var memberId = firstUsefulText([profile.memberId, selectedCustomer.memberId]);
-    var mobile = firstUsefulText([profile.mobile, selectedCustomer.mobile]);
-    var outlet = resolveAutomaticVisitOutlet(data);
-    if ((!memberId && !mobile) || !outlet) return;
-
-    var todayKey = new Date().toISOString().slice(0, 10);
-    var requestKey = [todayKey, memberId || mobile, outlet, 'REPEAT'].join('|').toLowerCase();
-    if (autoVisitRequests[requestKey]) {
-      if (autoVisitRows[requestKey]) {
-        activateDashboardTableNumber(data, autoVisitRows[requestKey].row, outlet, autoVisitRows[requestKey].tableNumber || '');
-      }
+    if (!AppState.dashboardData || !AppState.dashboardData.profile) {
+      setVisitVisualV56(false, false);
+      showVisitToastV56('Data customer belum siap. Coba buka ulang dashboard customer.', 'error');
       return;
     }
-    autoVisitRequests[requestKey] = 'sending';
+
+    if (AppState.dashboardData.todayVisit && AppState.dashboardData.todayVisit.visited) {
+      setVisitVisualV56(true, false);
+      return;
+    }
+
+    var profile = AppState.dashboardData.profile;
+    setVisitVisualV56(true, true);
 
     google.script.run
       .withSuccessHandler(function(result) {
         if (result && result.success) {
-          autoVisitRequests[requestKey] = 'done';
-          autoVisitRows[requestKey] = { row: result.row || null, tableNumber: result.tableNumber || '' };
-          data.todayVisit = {
+          AppState.dashboardData.todayVisit = {
             visited: true,
             reviewStatus: 'Pending',
             row: result.row || null,
-            outlet: outlet,
-            tableNumber: result.tableNumber || '',
-            automatic: true
+            outlet: result.outlet || AppState.outlet || ''
           };
-          AppState.dashboardData = data;
-          writeDashboardCacheFromResult(data, AppState.selectedCustomer, mobile);
-          activateDashboardTableNumber(data, result.row, outlet, result.tableNumber || '');
-          if (typeof loadVisitTrend === 'function') loadVisitTrend();
+
+          try {
+            writeDashboardCacheFromResult(AppState.dashboardData, AppState.selectedCustomer, profile.mobile);
+          } catch(e) {}
+
+          setVisitVisualV56(true, false);
+          showVisitToastV56('Kunjungan hari ini berhasil dicatat.', 'success');
         } else {
-          delete autoVisitRequests[requestKey];
-          console.warn((result && result.message) || 'Kunjungan otomatis belum dapat dicatat.');
+          setVisitVisualV56(false, false);
+          showVisitToastV56((result && result.message) || 'Gagal mencatat kunjungan.', 'error');
         }
       })
       .withFailureHandler(function(error) {
-        delete autoVisitRequests[requestKey];
-        console.warn('Kunjungan otomatis gagal:', error && error.message ? error.message : error);
+        setVisitVisualV56(false, false);
+        showVisitToastV56('Gagal mencatat kunjungan: ' + ((error && error.message) || error), 'error');
       })
       .saveVisit({
-        name: profile.name || '',
-        memberId: memberId,
-        mobile: mobile,
-        outlet: outlet,
-        visitType: 'REPEAT'
+        name: profile.name,
+        memberId: profile.memberId,
+        mobile: profile.mobile,
+        outlet: AppState.outlet
       });
-  }
-
-  function autoRecordWelcomeBackVisit(data) {
-    // Welcome Back selalu dicatat ketika hasil scan/input member tidak
-    // memiliki dashboard. Jangan blokir pencatatan berdasarkan flag lama
-    // recordVisit=false dari deployment backend sebelumnya.
-    if (!data || !data.success || (!data.scannedUnknown && !data.welcomeOnly) || !hasBackend()) return;
-
-    var profile = data.profile || {};
-    var selectedCustomer = AppState.selectedCustomer || {};
-    var memberId = firstUsefulText([profile.memberId, selectedCustomer.memberId, data.scannedCode, data.memberId]);
-    var mobile = firstUsefulText([profile.mobile, selectedCustomer.mobile]);
-    if (/^data tidak tersedia$/i.test(mobile)) mobile = '';
-    var outlet = resolveAutomaticVisitOutlet(data);
-    if ((!memberId && !mobile) || !outlet) return;
-
-    var todayKey = new Date().toISOString().slice(0, 10);
-    var requestKey = [todayKey, memberId || mobile, outlet, 'WELCOME_BACK'].join('|').toLowerCase();
-    if (autoVisitRequests[requestKey]) return;
-    autoVisitRequests[requestKey] = 'sending';
-
-    google.script.run
-      .withSuccessHandler(function(result) {
-        if (result && result.success) {
-          autoVisitRequests[requestKey] = 'done';
-          if (typeof loadVisitTrend === 'function') loadVisitTrend();
-        } else {
-          delete autoVisitRequests[requestKey];
-          console.warn((result && result.message) || 'Welcome Back Moment belum dapat dicatat.');
-        }
-      })
-      .withFailureHandler(function(error) {
-        delete autoVisitRequests[requestKey];
-        console.warn('Pencatatan Welcome Back Moment gagal:', error && error.message ? error.message : error);
-      })
-      .saveVisit({
-        name: firstUsefulText([profile.name, selectedCustomer.name]) || 'Customer Bakerzin',
-        memberId: memberId,
-        mobile: mobile,
-        outlet: outlet,
-        visitType: 'WELCOME_BACK'
-      });
-  }
-
-  function addDashboardCheers(data) {
-    var container = document.getElementById('dashboard-content');
-    if (!container) return;
-
-    container.querySelectorAll('.visit-today-card').forEach(function(card) { card.remove(); });
-
-    var phone = document.getElementById('phone-display-value');
-    if (phone && data && data.profile) phone.textContent = maskCustomerPhone(data.profile.mobile);
-
-    container.querySelectorAll('.v46-name, .profile-name, .customer-name').forEach(function (nameNode) {
-      nameNode.textContent = (nameNode.textContent || '').toUpperCase();
-    });
-
-    var memberLabel = container.querySelector('.v46-member-id');
-    var noMember = memberLabel && /^(no[\s-]*member|non[\s-]*member|nonmember|data tidak tersedia|-)$/i.test(memberLabel.textContent.trim());
-    if (memberLabel) memberLabel.remove();
-    if (noMember) {
-      var detailGrid = container.querySelector('.v46-detail-grid');
-      if (detailGrid) {
-        detailGrid.querySelectorAll('.v46-mini').forEach(function (card) {
-          if (/\bID\s*(No[\s-]*Member|Non[\s-]*Member|Data tidak tersedia|-)\b/i.test(card.textContent.trim())) card.remove();
-        });
-        detailGrid.classList.add('single-detail');
-      }
-    }
-
-    closeCheersPopup();
-    var offer = pickDashboardOffers(data);
-    var menuNote = pickMenuNote(data, offer);
-    var smartCopy = smartRecommendationCopy(data, offer);
-    var popup = document.createElement('section');
-    popup.id = 'customer-cheers-popup';
-    popup.className = 'customer-cheers-popup';
-    popup.setAttribute('role', 'status');
-    popup.innerHTML =
-      '<button class="customer-cheers-close" type="button" aria-label="Tutup rekomendasi" onclick="closeCheersPopup()">' +
-        '<span class="material-icons-round" style="font-size:19px">close</span>' +
-      '</button>' +
-      '<div class="customer-cheers-popup-title"><span class="material-icons-round" style="font-size:17px">record_voice_over</span>SCRIPT</div>' +
-      '<div class="customer-script-quote">“ ..., sebelumnya pernah memesan <span class="customer-cheers-food">' + safeHtml(offer.food) +
-      '</span> dan <span class="customer-cheers-drink">' + safeHtml(offer.drink) +
-      '</span>. Apakah hari ini ingin memesan menu yang sama?”</div>' +
-      '<div class="customer-cheers-meta-grid">' +
-        '<div class="customer-cheers-meta-card">' +
-          '<div class="customer-cheers-meta-label"><span class="material-icons-round" style="font-size:15px">auto_awesome</span>Smart Recommendation</div>' +
-          '<div class="customer-cheers-meta-copy">' + smartCopy + '</div>' +
-        '</div>' +
-        '<div class="customer-cheers-meta-card customer-cheers-note">' +
-          '<div class="customer-cheers-meta-label"><span class="material-icons-round" style="font-size:15px">sticky_note_2</span>Note</div>' +
-          '<div class="customer-cheers-meta-copy">' + menuNoteHtml(menuNote) + '</div>' +
-        '</div>' +
-      '</div>';
-
-    var profile = container.querySelector('.v46-profile, .profile-card');
-    if (profile && profile.parentNode) profile.insertAdjacentElement('afterend', popup);
-    else container.insertAdjacentElement('afterbegin', popup);
-
-    renderDashboardTableNumber(data);
-
-    hideDashboardPrices(container);
-    setupDashboardDetailsToggle(container);
-  }
-
-  window.renderDashboard = function (data) {
-    if (data && (data.scannedUnknown || data.welcomeOnly)) {
-      renderWelcomeBackOnly();
-      autoRecordWelcomeBackVisit(data);
-      return;
-    }
-    originalRenderDashboard(data);
-    addDashboardCheers(data);
-    autoRecordDashboardVisit(data);
   };
 
-  /* Login persists on this browser until the user explicitly logs out. */
-  window.tryPersistentAutoLogin = function () {
-    if (!hasBackend()) return false;
-
-    var saved = readPersistentLogin();
-    if (!saved || !saved.outlet || !saved.outletCode) return false;
-
-    var savedCode = saved.outletCode.toString().trim();
-    finishLogin({
-      success: true,
-      outlet: saved.outlet,
-      outletCode: savedCode,
-      message: 'Login tersimpan.'
-    }, savedCode, true);
-
-    /* BIHQ is validated by its dedicated all-outlet login rule. */
-    if (savedCode.toUpperCase() === 'BIHQ') return true;
-
-    google.script.run
-      .withSuccessHandler(function(result) {
-        if (result && result.success) {
-          savePersistentLogin(result.outletCode || savedCode, result.outlet || saved.outlet);
-          AppState.outlet = result.outlet || saved.outlet;
-          AppState.outletCode = result.outletCode || savedCode;
-          AppState.isBIHQ = false;
-          setOutletLabels(AppState.outlet);
-        } else {
-          clearPersistentLogin();
-          stopRealtimeSync();
-          showPage('page-login');
-          showToast('Kode outlet tersimpan sudah tidak valid. Silakan login ulang.', 'error');
-        }
-      })
-      .withFailureHandler(function() {
-        /* Gangguan sementara tidak menghapus sesi yang sudah tersimpan. */
-      })
-      .validateLogin(savedCode);
-
-    return true;
-  };
-  try { tryPersistentAutoLogin = window.tryPersistentAutoLogin; } catch (e) {}
-
-  /* Make the whole "Hari Ini" pill clickable, not only the tiny checkbox. */
-  if (!window.__visitTodayDelegated) {
-    window.__visitTodayDelegated = true;
-    document.addEventListener('click', function (event) {
-      var card = event.target && event.target.closest ? event.target.closest('.visit-today-card') : null;
-      if (!card || event.target.matches('input[type="checkbox"]')) return;
-      var checkbox = card.querySelector('input[type="checkbox"]');
-      if (checkbox && !checkbox.disabled) checkbox.click();
-    });
-    document.addEventListener('keydown', function (event) {
-      var card = event.target && event.target.closest ? event.target.closest('.visit-today-card') : null;
-      if (!card || (event.key !== 'Enter' && event.key !== ' ')) return;
+  window.handleVisitTodayCardClickV56 = function(event){
+    if (event) {
       event.preventDefault();
-      var checkbox = card.querySelector('input[type="checkbox"]');
-      if (checkbox && !checkbox.disabled) checkbox.click();
-    });
-  }
-
-  var visitTrendRequestId = 0;
-  var visitTrendBound = false;
-  var visitTrendSelectedDate = '';
-  var visitTrendLastResult = null;
-
-  function visitIsoDate(date) {
-    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
-  }
-
-  function visitShortDate(iso) {
-    var p = String(iso || '').split('-');
-    if (p.length !== 3) return iso || '';
-    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-  }
-
-  function visitLongDate(iso) {
-    var p = String(iso || '').split('-');
-    if (p.length !== 3) return iso || '';
-    var date = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
-    var label = date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    return iso === visitIsoDate(new Date()) ? 'Hari ini · ' + label : label;
-  }
-
-  function setupVisitTrendControls() {
-    if (visitTrendBound) return;
-    visitTrendBound = true;
-    var mode = document.getElementById('visit-range-mode');
-    var outlet = document.getElementById('visit-outlet-filter');
-    var apply = document.getElementById('visit-apply-range');
-    if (mode) mode.addEventListener('change', function () {
-      var custom = document.getElementById('visit-custom-range');
-      if (custom) custom.hidden = mode.value !== 'custom';
-      if (mode.value !== 'custom') loadVisitTrend();
-    });
-    if (outlet) outlet.addEventListener('change', loadVisitTrend);
-    if (apply) apply.addEventListener('click', function () {
-      var start = document.getElementById('visit-start-date');
-      var end = document.getElementById('visit-end-date');
-      if (!start || !end || !start.value || !end.value) {
-        showToast('Pilih tanggal awal dan akhir terlebih dahulu.', 'error');
-        return;
-      }
-      loadVisitTrend();
-    });
-  }
-
-  function initVisitTrend(force) {
-    setupVisitTrendControls();
-    var outletWrap = document.getElementById('visit-outlet-filter-wrap');
-    if (outletWrap) outletWrap.hidden = !AppState.isBIHQ;
-    var outletBreakdown = document.getElementById('visit-outlet-breakdown');
-    if (outletBreakdown) outletBreakdown.hidden = !AppState.isBIHQ;
-    var end = new Date();
-    var start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - 6);
-    var startInput = document.getElementById('visit-start-date');
-    var endInput = document.getElementById('visit-end-date');
-    if (startInput && (!startInput.value || force)) startInput.value = visitIsoDate(start);
-    if (endInput && (!endInput.value || force)) endInput.value = visitIsoDate(end);
-    if (force) visitTrendSelectedDate = visitIsoDate(end);
-    loadVisitTrend();
-  }
-
-  function loadVisitTrend() {
-    var state = document.getElementById('visit-chart-state');
-    var svg = document.getElementById('visit-line-chart');
-    var modeEl = document.getElementById('visit-range-mode');
-    if (!state || !svg || !modeEl) return;
-    if (!hasBackend()) {
-      state.textContent = 'Grafik tersedia setelah aplikasi terhubung ke data.';
-      return;
+      event.stopPropagation();
     }
-    var mode = modeEl.value || '7d';
-    var outletSelect = document.getElementById('visit-outlet-filter');
-    var params = { mode: mode, outlet: AppState.isBIHQ ? ((outletSelect && outletSelect.value) || '') : (AppState.outlet || '') };
-    if (mode === 'custom') {
-      params.startDate = (document.getElementById('visit-start-date') || {}).value || '';
-      params.endDate = (document.getElementById('visit-end-date') || {}).value || '';
-    }
-    var requestId = ++visitTrendRequestId;
-    state.textContent = 'Memuat grafik kunjungan...';
-    svg.innerHTML = '';
-    var outletState = document.getElementById('visit-outlet-chart-state');
-    if (AppState.isBIHQ && outletState) outletState.textContent = 'Memuat kunjungan outlet...';
-    google.script.run
-      .withSuccessHandler(function (result) {
-        if (requestId !== visitTrendRequestId) return;
-        if (!result || !result.success) {
-          state.textContent = (result && result.message) || 'Grafik kunjungan belum dapat dimuat.';
-          return;
-        }
-        renderVisitTrend(result);
-      })
-      .withFailureHandler(function () {
-        if (requestId === visitTrendRequestId) state.textContent = 'Grafik gagal dimuat. Silakan coba lagi.';
-      })
-      .getVisitTrend(params);
-  }
 
-  function populateVisitOutlets(outlets) {
-    var select = document.getElementById('visit-outlet-filter');
-    if (!select || !AppState.isBIHQ) return;
-    var current = select.value;
-    select.innerHTML = '<option value="">Semua Outlet</option>';
-    (Array.isArray(outlets) ? outlets : []).forEach(function (name) {
-      var option = document.createElement('option');
-      option.value = name;
-      option.textContent = name;
-      select.appendChild(option);
-    });
-    select.value = Array.from(select.options).some(function (o) { return o.value === current; }) ? current : '';
-  }
+    var els = getVisitElsV56();
+    if (!els.card || els.card.classList.contains('saving-v56')) return;
 
-  function renderVisitTrend(result) {
-    var svg = document.getElementById('visit-line-chart');
-    var state = document.getElementById('visit-chart-state');
-    var period = document.getElementById('visit-chart-period');
-    if (!svg || !state) return;
-    visitTrendLastResult = result;
-    populateVisitOutlets(result.outlets);
-    if (period) period.textContent = visitShortDate(result.startDate) + ' – ' + visitShortDate(result.endDate);
-    var points = Array.isArray(result.points) ? result.points : [];
-    if (!points.length) {
-      svg.innerHTML = '';
-      state.textContent = 'Belum ada data kunjungan pada periode ini.';
-      renderVisitOutletBarChart(result, visitTrendSelectedDate || result.endDate);
-      return;
-    }
-    state.textContent = '';
-    var availableDates = points.map(function (point) { return point.date; });
-    var todayIso = visitIsoDate(new Date());
-    if (!visitTrendSelectedDate || availableDates.indexOf(visitTrendSelectedDate) === -1) {
-      visitTrendSelectedDate = availableDates.indexOf(todayIso) >= 0 ? todayIso : points[points.length - 1].date;
-    }
-    var W = 640, H = 270, left = 44, right = 18, top = 18, bottom = 42;
-    var innerW = W - left - right, innerH = H - top - bottom;
-    var maxValue = Math.max.apply(null, points.reduce(function (values, p) {
-      values.push(Number(p.repeatCount) || 0, Number(p.welcomeCount) || 0);
-      return values;
-    }, [0]));
-    var axisMax = Math.max(1, Math.ceil(maxValue / 4) * 4);
-    var x = function (i) { return left + (points.length === 1 ? innerW / 2 : i * innerW / (points.length - 1)); };
-    var y = function (v) { return top + innerH - (Number(v) || 0) / axisMax * innerH; };
-    var markup = '';
-    for (var tick = 0; tick <= 4; tick++) {
-      var value = axisMax * tick / 4, py = y(value);
-      markup += '<line x1="' + left + '" y1="' + py + '" x2="' + (W-right) + '" y2="' + py + '" stroke="#e4edef"/>';
-      markup += '<text x="' + (left-10) + '" y="' + (py+4) + '" text-anchor="end" fill="#91a1a5" font-size="11">' + Math.round(value) + '</text>';
-    }
-    function buildPositiveSeriesPath(key) {
-      var drawing = false;
-      return points.reduce(function (path, point, index) {
-        var value = Number(point[key]) || 0;
-        if (value <= 0) {
-          drawing = false;
-          return path;
-        }
-        path.push((drawing ? 'L' : 'M') + x(index).toFixed(2) + ' ' + y(value).toFixed(2));
-        drawing = true;
-        return path;
-      }, []).join(' ');
-    }
-    var repeatPath = buildPositiveSeriesPath('repeatCount');
-    var welcomePath = buildPositiveSeriesPath('welcomeCount');
-    var selectedIndex = availableDates.indexOf(visitTrendSelectedDate);
-    if (selectedIndex >= 0) {
-      markup += '<line x1="' + x(selectedIndex) + '" y1="' + top + '" x2="' + x(selectedIndex) + '" y2="' + (top + innerH) + '" stroke="#b7dfe5" stroke-width="2" stroke-dasharray="4 5"/>';
-    }
-    if (repeatPath) markup += '<path d="' + repeatPath + '" fill="none" stroke="#1d8798" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>';
-    if (welcomePath) markup += '<path d="' + welcomePath + '" fill="none" stroke="#e2aa24" stroke-width="3.5" stroke-dasharray="8 7" stroke-linecap="round" stroke-linejoin="round"/>';
-    var labelEvery = Math.max(1, Math.ceil(points.length / 6));
-    points.forEach(function (p,i) {
-      var pointX = x(i);
-      var repeatCount = Number(p.repeatCount) || 0;
-      var welcomeCount = Number(p.welcomeCount) || 0;
-      var repeatY = y(repeatCount), welcomeY = y(welcomeCount);
-      var repeatLabelY = repeatY < 32 ? repeatY + 20 : repeatY - 11;
-      var welcomeLabelY = welcomeY > H - bottom - 20 ? welcomeY - 11 : welcomeY + 20;
-      if (Math.abs(repeatY - welcomeY) < 26) {
-        repeatLabelY = Math.max(13, repeatY - 12);
-        welcomeLabelY = Math.min(H - bottom - 4, welcomeY + 22);
-      }
-      var selectedClass = p.date === visitTrendSelectedDate ? ' is-selected' : '';
-      markup += '<g class="visit-line-point' + selectedClass + '" data-date="' + p.date + '" tabindex="0" role="button" aria-label="' + visitShortDate(p.date) + ', Repeat ' + repeatCount + ', Welcome Back ' + welcomeCount + '. Tampilkan rincian outlet">';
-      markup += '<rect class="visit-point-hit" x="' + (pointX - 14) + '" y="' + top + '" width="28" height="' + innerH + '"/>';
-      if (repeatCount > 0) {
-        markup += '<circle class="visit-point-dot visit-repeat-dot" cx="' + pointX + '" cy="' + repeatY + '" r="5" fill="#fff" stroke="#1d8798" stroke-width="3"><title>' + visitShortDate(p.date) + ' — Repeat: ' + repeatCount + '</title></circle>';
-        markup += '<text x="' + pointX + '" y="' + repeatLabelY + '" text-anchor="middle" fill="#174b55" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="10.5" font-weight="800" pointer-events="none">' + repeatCount + '</text>';
-      }
-      if (welcomeCount > 0) {
-        markup += '<circle class="visit-point-dot visit-welcome-dot" cx="' + pointX + '" cy="' + welcomeY + '" r="5" fill="#fff" stroke="#e2aa24" stroke-width="3"><title>' + visitShortDate(p.date) + ' — Welcome Back: ' + welcomeCount + '</title></circle>';
-        markup += '<text x="' + pointX + '" y="' + welcomeLabelY + '" text-anchor="middle" fill="#9a6a00" stroke="#fff" stroke-width="3" paint-order="stroke" font-size="10.5" font-weight="800" pointer-events="none">' + welcomeCount + '</text>';
-      }
-      markup += '</g>';
-      if (i % labelEvery === 0 || i === points.length - 1) markup += '<text x="' + x(i) + '" y="' + (H-15) + '" text-anchor="middle" fill="#71878c" font-size="11">' + visitShortDate(p.date) + '</text>';
-    });
-    svg.innerHTML = markup;
-    Array.prototype.forEach.call(svg.querySelectorAll('.visit-line-point'), function (point) {
-      function chooseDate() {
-        visitTrendSelectedDate = point.getAttribute('data-date') || '';
-        renderVisitTrend(visitTrendLastResult);
-      }
-      point.addEventListener('click', chooseDate);
-      point.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          chooseDate();
-        }
-      });
-    });
-    renderVisitOutletBarChart(result, visitTrendSelectedDate);
-  }
-
-  function renderVisitOutletBarChart(result, selectedDate) {
-    var section = document.getElementById('visit-outlet-breakdown');
-    var svg = document.getElementById('visit-outlet-bar-chart');
-    var state = document.getElementById('visit-outlet-chart-state');
-    var dateLabel = document.getElementById('visit-outlet-chart-date');
-    if (!section || !svg || !state) return;
-    section.hidden = !AppState.isBIHQ;
-    if (!AppState.isBIHQ) return;
-
-    selectedDate = selectedDate || visitIsoDate(new Date());
-    if (dateLabel) dateLabel.textContent = visitLongDate(selectedDate);
-    var byDate = result && result.outletBreakdownTypeByDate ? result.outletBreakdownTypeByDate : {};
-    var counts = byDate[selectedDate] || {};
-    var rows = Object.keys(counts).map(function (outlet) {
-      var item = counts[outlet] || {};
-      var repeatCount = Number(item.repeatCount) || 0;
-      var welcomeCount = Number(item.welcomeCount) || 0;
-      return { outlet: outlet, repeatCount: repeatCount, welcomeCount: welcomeCount, total: repeatCount + welcomeCount };
-    }).filter(function (row) { return row.total > 0; }).sort(function (a, b) {
-      return b.total - a.total || a.outlet.localeCompare(b.outlet);
-    });
-
-    if (!rows.length) {
-      svg.innerHTML = '';
-      state.textContent = 'Belum ada kunjungan outlet pada ' + visitLongDate(selectedDate).toLowerCase() + '.';
+    // Kalau sudah visited, tombol tetap checked dan tidak melakukan uncheck.
+    if (els.checkbox && els.checkbox.checked) {
+      setVisitVisualV56(true, false);
       return;
     }
 
-    state.textContent = '';
-    var W = 640, H = 260, top = 25, bottom = 48, left = 42, right = 18;
-    var innerW = W - left - right, innerH = H - top - bottom;
-    var maxValue = Math.max.apply(null, rows.map(function (row) { return row.total; }));
-    var axisMax = Math.max(1, Math.ceil(maxValue / 4) * 4);
-    var slotW = innerW / Math.max(rows.length, 1);
-    var barW = Math.min(42, Math.max(18, slotW * .56));
-    var markup = '';
-
-    for (var tick = 0; tick <= 4; tick++) {
-      var tickValue = axisMax * tick / 4;
-      var tickY = top + innerH - innerH * tick / 4;
-      markup += '<line x1="' + left + '" y1="' + tickY + '" x2="' + (W - right) + '" y2="' + tickY + '" stroke="#e5edef" stroke-width="1"/>';
-      markup += '<text x="' + (left - 9) + '" y="' + (tickY + 4) + '" text-anchor="end" fill="#91a1a5" font-size="10">' + Math.round(tickValue) + '</text>';
-    }
-
-    rows.forEach(function (row, index) {
-      var centerX = left + slotW * index + slotW / 2;
-      var welcomeH = row.welcomeCount / axisMax * innerH;
-      var repeatH = row.repeatCount / axisMax * innerH;
-      var baseY = top + innerH;
-      var welcomeY = baseY - welcomeH;
-      var repeatY = welcomeY - repeatH;
-      var shortName = row.outlet.length > 12 ? row.outlet.substring(0, 11) + '…' : row.outlet;
-      markup += '<rect x="' + (centerX - barW / 2) + '" y="' + welcomeY + '" width="' + barW + '" height="' + Math.max(0, welcomeH) + '" rx="4" fill="#e2aa24"><title>' + escapeHtml(row.outlet) + ' — Welcome Back: ' + row.welcomeCount + '</title></rect>';
-      markup += '<rect x="' + (centerX - barW / 2) + '" y="' + repeatY + '" width="' + barW + '" height="' + Math.max(0, repeatH) + '" rx="4" fill="#1d8798"><title>' + escapeHtml(row.outlet) + ' — Repeat: ' + row.repeatCount + '</title></rect>';
-      markup += '<text x="' + centerX + '" y="' + Math.max(12, repeatY - 7) + '" text-anchor="middle" fill="#174b55" font-size="11" font-weight="900">' + row.total + '</text>';
-      markup += '<text x="' + centerX + '" y="' + (H - 22) + '" text-anchor="middle" fill="#31545b" font-size="10.5" font-weight="750"><title>' + escapeHtml(row.outlet) + '</title>' + escapeHtml(row.outlet) + '</text>';
-    });
-
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-    svg.setAttribute('aria-label', 'Kunjungan Repeat dan Welcome Back per outlet pada ' + visitLongDate(selectedDate));
-    svg.innerHTML = markup;
-  }
-
-  window.initVisitTrend = initVisitTrend;
-  window.loadVisitTrend = loadVisitTrend;
-  window.renderVisitTrend = renderVisitTrend;
-  window.renderVisitOutletBarChart = renderVisitOutletBarChart;
-
-  function finishLogin(result, code, fromCache) {
-    var isBIHQ = code.toUpperCase() === 'BIHQ';
-    savePersistentLogin(result.outletCode || code, result.outlet || (isBIHQ ? 'Semua Outlet' : ''));
-
-    if (isBIHQ) {
-      AppState.outlet = '';
-      AppState.outletCode = 'BIHQ';
-      AppState.isBIHQ = true;
-      setOutletLabels('Semua Outlet');
-      showPage('page-search');
-      initVisitTrend(true);
-      updateTabBadges();
-      resetRealtimeBaseline();
-      if (hasBackend()) {
-        refreshFromBackend(true);
-        refreshOrdersFromBackend(true);
-        startRealtimeSync(true);
-      }
-      showToast(fromCache ? 'Login BIHQ tersimpan. Masuk otomatis.' : 'Login BIHQ berhasil. Akses: Semua Outlet.', 'success');
-      return;
-    }
-
-    AppState.isBIHQ = false;
-    originalApplyLoggedInOutlet(result.outlet, result.outletCode || code, !!fromCache);
-    initVisitTrend(true);
-    if (!fromCache) showToast((result.message || 'Login berhasil.') + ' Akses outlet aktif.', 'success');
-  }
-
-  window.handleLogin = function () {
-    var codeInput = document.getElementById('login-outlet-code');
-    var passwordInput = document.getElementById('login-password');
-    var code = codeInput ? codeInput.value.trim() : '';
-    var password = passwordInput ? passwordInput.value : '';
-
-    if (!code) {
-      showToast('Masukkan kode outlet terlebih dahulu.', 'error');
-      return;
-    }
-    if (password !== ALL_USER_PASSWORD) {
-      showToast('Password tidak sesuai.', 'error');
-      if (passwordInput) { passwordInput.focus(); passwordInput.select(); }
-      return;
-    }
-
-    /* BIHQ is the headquarters viewer and intentionally uses an all-outlet scope. */
-    if (code.toUpperCase() === 'BIHQ') {
-      finishLogin({ success: true, outlet: 'Semua Outlet', outletCode: 'BIHQ', message: 'Login BIHQ berhasil.' }, code);
-      return;
-    }
-
-    var btn = document.getElementById('btn-login');
-    btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div> Memproses...';
-
-    google.script.run
-      .withSuccessHandler(function (result) {
-        btn.disabled = false;
-        btn.innerHTML = '<span class="material-icons-round" style="font-size:20px">login</span> Masuk';
-        if (result && result.success) finishLogin(result, code);
-        else showToast((result && result.message) || 'Login gagal.', 'error');
-      })
-      .withFailureHandler(function (error) {
-        btn.disabled = false;
-        btn.innerHTML = '<span class="material-icons-round" style="font-size:20px">login</span> Masuk';
-        showToast('Terjadi kesalahan: ' + ((error && error.message) || error), 'error');
-      })
-      .validateLogin(code);
+    setVisitVisualV56(true, false);
+    window.handleVisitToggle(true);
   };
-  try { handleLogin = window.handleLogin; } catch (e) {}
 
-  function showFastDashboardShell(customer) {
-    var container = document.getElementById('dashboard-content');
-    if (!container) return;
-    var name = (customer && customer.name) || 'Customer';
-    var initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map(function (part) { return part.charAt(0).toUpperCase(); }).join('') || 'C';
-    container.innerHTML =
-      '<div class="dashboard-fast-shell">' +
-        '<section class="dashboard-fast-profile">' +
-          '<div class="dashboard-fast-avatar">' + safeHtml(initials) + '</div>' +
-          '<div><h2>' + safeHtml(name) + '</h2><p id="dashboard-fast-status">Menyiapkan insight customer...</p></div>' +
-        '</section>' +
-        '<section class="dashboard-fast-panel" aria-hidden="true">' +
-          '<div class="dashboard-fast-line medium"></div>' +
-          '<div class="dashboard-fast-line"></div>' +
-          '<div class="dashboard-fast-line short"></div>' +
-        '</section>' +
-      '</div>';
-    showPage('page-dashboard');
-  }
+  function attachVisitClickV56(){
+    var els = getVisitElsV56();
+    if (!els.card || els.card.__v56Attached) return;
 
-  function loadDeferredDashboardRecommendations(result, customer) {
-    if (!result || !result.recommendationsDeferred || !hasBackend()) return;
-    google.script.run
-      .withSuccessHandler(function (detail) {
-        if (!detail || !detail.success || !detail.recommendations) return;
-        var active = AppState.selectedCustomer || {};
-        if (String(active.memberId || '') !== String((customer && customer.memberId) || '')) return;
-        result.recommendations = Object.assign({}, result.recommendations || {}, detail.recommendations);
-        result.recommendationsDeferred = false;
-        result.recommendationSheetsLoaded = true;
-        AppState.dashboardData = result;
-        writeDashboardCacheFromResult(result, customer);
-        window.renderDashboard(result);
-      })
-      .withFailureHandler(function () {
-        /* Core dashboard is already usable; keep recommendation failure silent. */
-      })
-      .loadDashboardRecommendations(
-        customer.memberId,
-        AppState.isBIHQ ? '' : (AppState.outlet || ''),
-        result.favoriteMenu || [],
-        result.lastPax || null,
-        result.customerTypes || []
-      );
-  }
+    els.card.__v56Attached = true;
+    els.card.setAttribute('role', 'button');
+    els.card.setAttribute('tabindex', '0');
+    els.card.setAttribute('aria-label', 'Tandai customer berkunjung hari ini');
 
-  function loadCustomer(customer) {
-    AppState.selectedCustomer = customer;
-    var requestStartedAt = Date.now();
-    showFastDashboardShell(customer);
-    var slowMessageTimer = setTimeout(function () {
-      var status = document.getElementById('dashboard-fast-status');
-      if (status) status.textContent = 'Menyusun rekomendasi dan catatan favorit...';
-    }, 2500);
-    google.script.run
-      .withSuccessHandler(function (result) {
-        clearTimeout(slowMessageTimer);
-        if (result && result.success) {
-          AppState.dashboardData = result;
-          writeDashboardCacheFromResult(result, customer);
-          window.renderDashboard(result);
-          loadDeferredDashboardRecommendations(result, customer);
-          console.info('Dashboard ready in ' + (Date.now() - requestStartedAt) + ' ms; mode=' + (result.performanceMode || 'unknown') + '; backend=' + (result.loadMs || '-') + ' ms');
-        } else {
-          var status = document.getElementById('dashboard-fast-status');
-          if (status) {
-            status.classList.add('dashboard-fast-error');
-            status.textContent = (result && result.message) || 'Dashboard belum dapat dimuat.';
-          }
-          showToast((result && result.message) || 'Gagal memuat dashboard.', 'error');
-        }
-      })
-      .withFailureHandler(function (error) {
-        clearTimeout(slowMessageTimer);
-        var status = document.getElementById('dashboard-fast-status');
-        if (status) {
-          status.classList.add('dashboard-fast-error');
-          status.textContent = 'Koneksi data terputus. Silakan kembali dan coba lagi.';
-        }
-        showToast('Error: ' + ((error && error.message) || error), 'error');
-      })
-      .loadCustomerDashboard(customer.memberId, customer.source, AppState.isBIHQ ? '' : (AppState.outlet || ''));
-  }
-
-  window.handleSearchCustomer = function () {
-    var input = document.getElementById('search-mobile');
-    var value = input ? input.value.trim() : '';
-    var wanted = normalizedPhone(value);
-    if (wanted.length < 8) {
-      showToast('Masukkan nomor HP customer secara lengkap.', 'error');
-      return;
-    }
-
-    /* Fastest path: dashboards saved after a previous scan/search. */
-    try {
-      var cachedDashboard = readDashboardCacheByPhone(wanted);
-      if (cachedDashboard && openDashboardFromCachedRecord(cachedDashboard)) {
-        showToast('Data customer dibuka dari hasil scan sebelumnya.', 'success');
-        return;
+    els.card.addEventListener('click', window.handleVisitTodayCardClickV56, true);
+    els.card.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ') {
+        window.handleVisitTodayCardClickV56(e);
       }
-    } catch (e) {}
+    }, true);
+  }
 
-    var cachedAvailability = null;
-    try { cachedAvailability = readDataAvailableCache(wanted); } catch (e) {}
-    if (cachedAvailability && cachedAvailability.exists && cachedAvailability.memberId) {
-      loadCustomer({
-        name: cachedAvailability.name || '',
-        memberId: cachedAvailability.memberId,
-        mobile: wanted,
-        source: cachedAvailability.source || 'MEMBER'
-      });
-      return;
-    }
+  // Patch renderDashboard supaya setiap dashboard selesai render,
+  // tombol HARI INI langsung punya area klik penuh.
+  var oldRenderDashboardV56 = window.renderDashboard;
+  if (typeof oldRenderDashboardV56 === 'function' && !oldRenderDashboardV56.__v56VisitPatched) {
+    var wrappedRenderDashboardV56 = function(){
+      var output = oldRenderDashboardV56.apply(this, arguments);
+      setTimeout(attachVisitClickV56, 0);
+      setTimeout(attachVisitClickV56, 150);
+      return output;
+    };
+    wrappedRenderDashboardV56.__v56VisitPatched = true;
+    window.renderDashboard = wrappedRenderDashboardV56;
+  }
 
-    var btn = document.getElementById('btn-search');
-    btn.disabled = true;
-    showLoading('Mencocokkan nomor dengan database customer...');
-    var settled = false;
+  // Patch no-history dashboard juga.
+  var oldNoHistoryV56 = window.renderNoHistoryMemberDashboard;
+  if (typeof oldNoHistoryV56 === 'function' && !oldNoHistoryV56.__v56VisitPatched) {
+    var wrappedNoHistoryV56 = function(){
+      var output = oldNoHistoryV56.apply(this, arguments);
+      setTimeout(attachVisitClickV56, 0);
+      setTimeout(attachVisitClickV56, 150);
+      return output;
+    };
+    wrappedNoHistoryV56.__v56VisitPatched = true;
+    window.renderNoHistoryMemberDashboard = wrappedNoHistoryV56;
+  }
 
-    function finishWithCustomer(customer) {
-      if (settled) return;
-      settled = true;
-      hideLoading();
-      btn.disabled = false;
-      writeDataAvailableCache(wanted, {
-        exists: true,
-        name: customer.name || '',
-        memberId: customer.memberId || '',
-        source: customer.source || 'MEMBER'
-      });
-      loadCustomer(customer);
-    }
-
-    function finishWithoutCustomer(message) {
-      if (settled) return;
-      settled = true;
-      hideLoading();
-      btn.disabled = false;
-      showToast(message, 'error');
-    }
-
-    /* One direct lookup is faster and avoids the former multi-query batch timeout. */
-    var timeoutId = setTimeout(function () {
-      finishWithoutCustomer('Database belum mengembalikan data customer. Silakan coba kembali.');
-    }, 25000);
-    google.script.run
-      .withSuccessHandler(function (result) {
-        if (settled) return;
-        clearTimeout(timeoutId);
-        var rows = (result && result.results) || [];
-        var wantedTail = wanted.slice(-8);
-        var exact = rows.filter(function (row) {
-          return normalizedPhone(row && row.mobile) === wanted;
-        })[0];
-        var suffixMatch = rows.filter(function (row) {
-          return normalizedPhone(row && row.mobile).slice(-8) === wantedTail;
-        })[0];
-        var match = exact || suffixMatch || rows[0];
-        if (match && match.memberId) finishWithCustomer(match);
-        else finishWithoutCustomer((result && result.error) || 'Customer belum ditemukan pada nomor HP tersebut.');
-      })
-      .withFailureHandler(function () {
-        if (settled) return;
-        clearTimeout(timeoutId);
-        finishWithoutCustomer('Pencarian nomor HP gagal diakses. Silakan coba kembali.');
-      })
-      .searchCustomers('mobile', value);
-  };
-  try { handleSearchCustomer = window.handleSearchCustomer; } catch (e) {}
-
-  document.addEventListener('DOMContentLoaded', function () {
-    var password = document.getElementById('login-password');
-    if (password) password.addEventListener('keydown', function (event) {
-      if (event.key === 'Enter') window.handleLogin();
-    });
-
-    /* Cloning removes the old auto-suggestion listeners from the remaining phone field. */
-    var oldMobile = document.getElementById('search-mobile');
-    if (oldMobile) {
-      var mobile = oldMobile.cloneNode(true);
-      oldMobile.parentNode.replaceChild(mobile, oldMobile);
-      mobile.addEventListener('input', function () {
-        var value = this.value.trim();
-        var clear = document.getElementById('clear-mobile');
-        var button = document.getElementById('btn-search');
-        if (clear) clear.classList.toggle('visible', value.length > 0);
-        if (button) button.disabled = normalizedPhone(value).length < 8;
-        AppState.selectedCustomer = null;
-      });
-      mobile.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' && normalizedPhone(this.value).length >= 8) window.handleSearchCustomer();
-      });
-    }
-
-    document.querySelectorAll('.suggestion-dropdown').forEach(function (node) {
-      node.innerHTML = '';
-      node.classList.remove('visible');
-    });
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(attachVisitClickV56, 300);
   });
+
+  window.APP_VISIT_TODAY_VERSION = 'V5.6_FULL_BUTTON_CLICK_RESTORED';
 })();
 </script>
 
-<script id="visit-history-feature-script">
-(function () {
-  'use strict';
 
-  var visitHistoryRequestId = 0;
-  var visitHistoryRows = {};
-
-  function historyHtml(value) {
-    return String(value == null ? '' : value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+<style id="v57-fast-camera-open-style">
+  /* V5.7: camera responsiveness improvement */
+  #member-scan-reader {
+    min-height: 320px !important;
+    background:
+      radial-gradient(circle at center, rgba(32,117,138,.08), transparent 45%),
+      #071014 !important;
   }
 
-  function maskHistoryPhone(value) {
-    var phone = String(value == null ? '' : value).trim();
-    if (!phone || /XXX$/i.test(phone)) return phone;
-    if (phone.length <= 3) return 'X'.repeat(phone.length);
-    return phone.slice(0, -3) + 'XXX';
+  #member-scan-reader video {
+    object-fit: cover !important;
+    transform: translateZ(0);
   }
 
-  function jakartaTodayIso() {
-    try {
-      var parts = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit'
-      }).formatToParts(new Date());
-      var values = {};
-      parts.forEach(function (part) { if (part.type !== 'literal') values[part.type] = part.value; });
-      return values.year + '-' + values.month + '-' + values.day;
-    } catch (e) {
-      var now = new Date();
-      return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-    }
+  .member-scan-status.reading-v53 {
+    transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  }
+</style>
+<script id="v57-fast-camera-open-marker">
+  window.APP_QR_CAMERA_VERSION = 'V5.7_FAST_DIRECT_ENVIRONMENT_CAMERA';
+</script>
+
+
+<style id="v58-bright-green-check-style">
+  /* ============================================================
+     V5.8 — Bright Green Visit Today Check
+     Centang HARI INI dibuat hijau cerah dan mencolok.
+     ============================================================ */
+
+  #page-dashboard .visit-today-card.checked,
+  #page-dashboard .visit-today-card[aria-pressed="true"]{
+    background: linear-gradient(135deg, rgba(0, 230, 64, .22), rgba(57, 255, 20, .18)) !important;
+    border-color: rgba(0, 210, 55, .78) !important;
+    box-shadow:
+      0 0 0 1.5px rgba(0, 210, 55, .36),
+      0 8px 18px rgba(0, 210, 55, .18),
+      0 0 18px rgba(57, 255, 20, .30) !important;
   }
 
-  function selectedHistoryOutlet() {
-    if (AppState && AppState.isBIHQ) {
-      var filter = document.getElementById('visit-outlet-filter');
-      return filter ? filter.value.trim() : '';
-    }
-    return (AppState && AppState.outlet) ? AppState.outlet : '';
+  #page-dashboard .visit-today-card.checked .visit-label,
+  #page-dashboard .visit-today-card[aria-pressed="true"] .visit-label{
+    color: #009624 !important;
+    font-weight: 950 !important;
+    text-shadow: 0 0 8px rgba(57, 255, 20, .18) !important;
   }
 
-  function renderVisitHistory(rows) {
-    var list = document.getElementById('visit-history-list');
-    if (!list) return;
-    rows = Array.isArray(rows) ? rows : [];
-    visitHistoryRows = {};
-
-    if (!rows.length) {
-      list.innerHTML = '<div class="visit-history-state">Belum ada kunjungan pada tanggal tersebut.</div>';
-      return;
-    }
-
-    list.innerHTML = rows.map(function (row) {
-      var key = String(row.sheetRow || '');
-      visitHistoryRows[key] = row;
-      var isWelcome = row.visitType === 'WELCOME_BACK';
-      var phoneHtml = row.mobile
-        ? '<span>' + historyHtml(maskHistoryPhone(row.mobile)) + '</span>'
-        : (row.canUpdatePhone
-          ? '<div class="visit-history-phone-editor">' +
-              '<input class="visit-history-phone-input" id="visit-history-phone-' + historyHtml(key) + '" type="tel" inputmode="tel" autocomplete="tel" placeholder="Isi No Telp" aria-label="Isi nomor telepon" onkeydown="handleVisitHistoryPhoneKey(event,' + Number(row.sheetRow) + ')">' +
-              '<button class="visit-history-phone-save" id="visit-history-save-' + historyHtml(key) + '" type="button" onclick="saveVisitHistoryPhone(' + Number(row.sheetRow) + ')" aria-label="Simpan nomor telepon"><span class="material-icons-round">send</span></button>' +
-            '</div>'
-          : '<span>-</span>');
-
-      return '<div class="visit-history-grid visit-history-row' + (isWelcome ? ' is-welcome' : '') + '">' +
-        '<div class="visit-history-cell" data-label="Tanggal">' + historyHtml(row.date || '-') + '</div>' +
-        '<div class="visit-history-cell" data-label="Jam">' + historyHtml(row.time || '-') + '</div>' +
-        '<div class="visit-history-cell visit-history-cell-name" data-label="Nama"><div class="visit-history-name">' + historyHtml((isWelcome ? 'Member Tanpa History' : (row.name || 'Customer Bakerzin')).toUpperCase()) + '</div>' +
-          (isWelcome ? '<span class="visit-history-type">WELCOME BACK</span>' : '') + '</div>' +
-        '<div class="visit-history-cell visit-history-cell-phone" data-label="No Telp">' + phoneHtml + '</div>' +
-        '<div class="visit-history-cell" data-label="No Member"><span class="visit-history-member">' + historyHtml(row.memberId || '-') + '</span></div>' +
-        '<div class="visit-history-cell" data-label="Outlet">' + historyHtml(row.outlet || '-') + '</div>' +
-        '<div class="visit-history-cell" data-label="No Table"><strong>' + historyHtml(row.tableNumber || '-') + '</strong></div>' +
-      '</div>';
-    }).join('');
+  #page-dashboard .visit-today-card.checked .custom-checkbox .checkmark,
+  #page-dashboard .visit-today-card[aria-pressed="true"] .custom-checkbox .checkmark,
+  #page-dashboard .visit-today-card .custom-checkbox input:checked + .checkmark{
+    background: linear-gradient(135deg, #00e640, #39ff14) !important;
+    border-color: #00c853 !important;
+    box-shadow:
+      0 0 0 2px rgba(255, 255, 255, .95),
+      0 0 0 4px rgba(0, 200, 83, .30),
+      0 0 16px rgba(57, 255, 20, .72) !important;
   }
 
-  window.openVisitHistoryModal = function () {
-    var modal = document.getElementById('modal-visit-history');
-    var dateInput = document.getElementById('visit-history-date');
-    var today = jakartaTodayIso();
-    if (dateInput) {
-      dateInput.max = today;
-      dateInput.value = today;
-    }
-    if (modal) modal.classList.add('visible');
-    window.loadVisitHistory();
-  };
+  #page-dashboard .visit-today-card.checked .custom-checkbox .checkmark::after,
+  #page-dashboard .visit-today-card[aria-pressed="true"] .custom-checkbox .checkmark::after,
+  #page-dashboard .visit-today-card .custom-checkbox input:checked + .checkmark::after{
+    opacity: 1 !important;
+    border-color: #ffffff !important;
+    filter: drop-shadow(0 1px 1px rgba(0, 80, 20, .38)) !important;
+  }
 
-  window.closeVisitHistoryModal = function () {
-    var modal = document.getElementById('modal-visit-history');
-    if (modal) modal.classList.remove('visible');
-  };
+  #page-dashboard .visit-today-card.saving-v56{
+    background: rgba(0, 230, 64, .12) !important;
+    border-color: rgba(0, 200, 83, .42) !important;
+  }
 
-  window.handleVisitHistoryBackdrop = function (event) {
-    if (event && event.target && event.target.id === 'modal-visit-history') window.closeVisitHistoryModal();
-  };
+  #page-dashboard .visit-today-card.saving-v56 .custom-checkbox .checkmark{
+    background: rgba(57, 255, 20, .22) !important;
+    border-color: #00c853 !important;
+  }
+</style>
 
-  window.loadVisitHistory = function () {
-    var list = document.getElementById('visit-history-list');
-    var dateInput = document.getElementById('visit-history-date');
-    var refresh = document.querySelector('.visit-history-refresh');
-    if (!list || !dateInput) return;
-
-    var today = jakartaTodayIso();
-    if (!dateInput.value) dateInput.value = today;
-    if (dateInput.value > today) dateInput.value = today;
-    dateInput.max = today;
-    list.innerHTML = '<div class="visit-history-state">Memuat history kunjungan...</div>';
-    if (refresh) refresh.disabled = true;
-    var requestId = ++visitHistoryRequestId;
-
-    google.script.run
-      .withSuccessHandler(function (result) {
-        if (requestId !== visitHistoryRequestId) return;
-        if (refresh) refresh.disabled = false;
-        if (!result || !result.success) {
-          list.innerHTML = '<div class="visit-history-state">' + historyHtml((result && result.message) || 'History belum dapat dimuat.') + '</div>';
-          return;
-        }
-        renderVisitHistory(result.rows || []);
-      })
-      .withFailureHandler(function (error) {
-        if (requestId !== visitHistoryRequestId) return;
-        if (refresh) refresh.disabled = false;
-        list.innerHTML = '<div class="visit-history-state">Gagal memuat history. Silakan coba kembali.</div>';
-        console.warn('Visit history failed:', error && error.message ? error.message : error);
-      })
-      .getVisitHistory({ date: dateInput.value, outlet: selectedHistoryOutlet() });
-  };
-
-  window.handleVisitHistoryPhoneKey = function (event, sheetRow) {
-    if (event && event.key === 'Enter') {
-      event.preventDefault();
-      window.saveVisitHistoryPhone(sheetRow);
-    }
-  };
-
-  window.saveVisitHistoryPhone = function (sheetRow) {
-    var key = String(sheetRow || '');
-    var row = visitHistoryRows[key];
-    var input = document.getElementById('visit-history-phone-' + key);
-    var button = document.getElementById('visit-history-save-' + key);
-    var phone = input ? input.value.trim() : '';
-    var digits = phone.replace(/\D/g, '');
-    if (!row || !input) return;
-    if (digits.length < 8) {
-      showToast('Nomor HP harus minimal 8 digit.', 'error');
-      input.focus();
-      return;
-    }
-
-    input.disabled = true;
-    if (button) {
-      button.disabled = true;
-      button.innerHTML = '<span class="spinner" style="width:15px;height:15px"></span>';
-    }
-
-    var dateInput = document.getElementById('visit-history-date');
-    google.script.run
-      .withSuccessHandler(function (result) {
-        if (!result || !result.success) {
-          input.disabled = false;
-          if (button) {
-            button.disabled = false;
-            button.innerHTML = '<span class="material-icons-round">send</span>';
-          }
-          showToast((result && result.message) || 'Nomor HP belum dapat disimpan.', 'error');
-          return;
-        }
-        showToast(result.message || 'Nomor HP berhasil disimpan.', 'success');
-        window.loadVisitHistory();
-      })
-      .withFailureHandler(function (error) {
-        input.disabled = false;
-        if (button) {
-          button.disabled = false;
-          button.innerHTML = '<span class="material-icons-round">send</span>';
-        }
-        showToast('Gagal menyimpan nomor HP: ' + ((error && error.message) || error), 'error');
-      })
-      .updateVisitHistoryPhone({
-        sheetRow: Number(row.sheetRow),
-        date: dateInput ? dateInput.value : '',
-        memberId: row.memberId || '',
-        outlet: row.outlet || '',
-        phone: phone
-      });
-  };
-
-  document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape') {
-      var modal = document.getElementById('modal-visit-history');
-      if (modal && modal.classList.contains('visible')) window.closeVisitHistoryModal();
-    }
-  });
-})();
+<script id="v58-bright-green-check-marker">
+  window.APP_VISIT_TODAY_COLOR_VERSION = 'V5.8_BRIGHT_GREEN_CHECK';
 </script>
 
 </body>
 </html>
-
