@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "bakerzin-customer-insight-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-24",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  },
+  "vars": {
+    "ENVIRONMENT": "cloudflare-primary"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "bakerzin-customer-insight",
+      "database_id": "779f5173-9ac0-45ae-a683-b2bef0d06874"
+    }
+  ]
+}
