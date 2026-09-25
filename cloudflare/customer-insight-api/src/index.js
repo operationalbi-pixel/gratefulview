@@ -165,25 +165,112 @@ function recommendationCandidates(row) {
   return [...unique.values()].slice(0, 12);
 }
 
-function fallbackRecommendations(candidates, signals) {
-  const reason = signals.groupVisitor
-    ? 'Cocok ditawarkan kembali saat customer datang bersama grup.'
-    : signals.weekendVisits > signals.weekdayVisits
-      ? 'Sesuai dengan pola kunjungan weekend dan riwayat pesanan customer.'
-      : 'Sesuai dengan riwayat menu yang memang pernah dipesan customer.';
+function menuIsDrink(item) {
+  const text = `${item?.menu || ''} ${item?.category || ''}`.toLowerCase();
+  return /drink|minuman|beverage|coffee|kopi|tea|teh|latte|juice|jus|smoothie|soda|water|air mineral|mocktail|chocolate/.test(text);
+}
+
+function menuFamily(item) {
+  const text = `${item?.menu || ''} ${item?.category || ''}`.toLowerCase();
+  const families = [
+    ['chicken', /ayam|chicken/],
+    ['pasta', /pasta|spaghetti|fettuccine|lasagna|macaroni|penne/],
+    ['rice', /nasi|rice|risotto/],
+    ['beef', /sapi|beef|steak|tenderloin|sirloin/],
+    ['seafood', /seafood|ikan|fish|salmon|tuna|prawn|shrimp|udang/],
+    ['pizza', /pizza/],
+    ['sandwich', /sandwich|burger|panini/],
+    ['soup', /soup|sup/],
+    ['salad', /salad/],
+    ['coffee', /coffee|kopi|latte|cappuccino|espresso|americano/],
+    ['tea', /tea|teh/],
+    ['juice', /juice|jus|smoothie/],
+    ['dessert', /cake|dessert|tiramisu|pudding|ice cream|gelato/]
+  ];
+  return families.find(([, pattern]) => pattern.test(text))?.[0] || '';
+}
+
+function buildWaiterScript(candidates) {
+  const food = candidates.find(item => !menuIsDrink(item));
+  const drink = candidates.find(menuIsDrink);
+  if (food && drink) return `Selamat datang kembali. Biasanya Anda menikmati ${food.menu} bersama ${drink.menu}. Apakah ingin memesan keduanya lagi hari ini?`;
+  if (food) return `Selamat datang kembali. Biasanya Anda menikmati ${food.menu}. Apakah ingin memesan menu favorit tersebut lagi hari ini?`;
+  if (drink) return `Selamat datang kembali. Biasanya Anda menikmati ${drink.menu}. Apakah ingin memesan minuman favorit tersebut lagi hari ini?`;
+  return 'Selamat datang. Boleh kami tahu jenis makanan dan minuman yang Anda sukai agar kami dapat membantu memilihkan menu?';
+}
+
+async function loadRecommendationAlternatives(db, habitual) {
+  const categories = [...new Set(habitual.map(item => item.category).filter(Boolean))].slice(0, 8);
+  if (!categories.length) return [];
+  const placeholders = categories.map(() => '?').join(',');
+  const { results = [] } = await db.prepare(
+    `SELECT menu,category,price,popularity FROM menu_catalog
+      WHERE category IN (${placeholders}) AND menu <> ''
+      ORDER BY popularity DESC, menu ASC LIMIT 120`
+  ).bind(...categories).all();
+  const orderedNames = new Set(habitual.map(item => item.menu.toLowerCase()));
+  const catalogByName = new Map(results.map(item => [String(item.menu || '').trim().toLowerCase(), item]));
+  const anchors = habitual.map(item => ({
+    ...item,
+    family: menuFamily(item),
+    price: Number(catalogByName.get(item.menu.toLowerCase())?.price || 0) || null
+  }));
+  const alternatives = [];
+  for (const row of results) {
+    const menu = String(row.menu || '').trim();
+    if (!menu || orderedNames.has(menu.toLowerCase())) continue;
+    const candidate = {
+      menu,
+      category: String(row.category || '').trim(),
+      price: Number(row.price || 0) || null,
+      popularity: Number(row.popularity || 0),
+      family: menuFamily(row)
+    };
+    const exactFamily = anchors.find(anchor => anchor.family && anchor.family === candidate.family);
+    const sameCategory = anchors.find(anchor => anchor.category && anchor.category.toLowerCase() === candidate.category.toLowerCase());
+    const anchor = exactFamily || sameCategory;
+    if (!anchor) continue;
+    alternatives.push({
+      ...candidate,
+      anchorMenu: anchor.menu,
+      anchorPrice: anchor.price,
+      upsell: Boolean(candidate.price && anchor.price && candidate.price > anchor.price),
+      matchType: exactFamily ? 'same_family' : 'same_category'
+    });
+  }
+  return alternatives
+    .sort((a, b) => Number(b.matchType === 'same_family') - Number(a.matchType === 'same_family') || Number(b.upsell) - Number(a.upsell) || b.popularity - a.popularity)
+    .slice(0, 24);
+}
+
+function fallbackRecommendations(candidates, alternatives, signals) {
+  const genericReason = signals.groupVisitor
+    ? 'Alternatif sejenis yang populer dan cocok ditawarkan saat customer datang bersama grup.'
+    : 'Alternatif populer dengan kategori atau jenis menu yang sama dengan favorit customer.';
   return {
-    smartRecommendation: candidates.slice(0, 3).map(item => ({ menu: item.menu, category: item.category, reason })),
-    aiScript: candidates.length
-      ? `Tawarkan ${candidates[0].menu} sebagai pilihan yang paling dekat dengan kebiasaan pesanan customer.`
-      : 'Tanyakan preferensi customer hari ini sebelum memberikan rekomendasi menu.',
-    serviceApproach: signals.groupVisitor ? 'Utamakan pilihan yang nyaman untuk dinikmati bersama.' : 'Mulai dari menu favorit, lalu tawarkan pelengkap yang relevan.',
+    smartRecommendation: alternatives.slice(0, 3).map(item => ({
+      menu: item.menu,
+      category: item.category,
+      price: item.price,
+      reason: item.upsell
+        ? `Sama-sama ${item.family || item.category} seperti ${item.anchorMenu}, dengan pilihan premium bernilai lebih tinggi.`
+        : item.matchType === 'same_family'
+          ? `Sama-sama ${item.family} seperti ${item.anchorMenu}, tetapi merupakan favorit alternatif.`
+        : genericReason
+    })),
+    aiScript: buildWaiterScript(candidates),
+    serviceApproach: signals.groupVisitor ? 'Utamakan pilihan yang nyaman untuk dinikmati bersama.' : 'Mulai dari menu yang biasa dipesan, lalu tawarkan satu alternatif sejenis.',
+    waiterFavorites: {
+      food: candidates.find(item => !menuIsDrink(item))?.menu || '',
+      drink: candidates.find(menuIsDrink)?.menu || ''
+    },
     aiGenerated: false
   };
 }
 
-function sanitizeAiRecommendations(value, candidates, signals) {
-  const fallback = fallbackRecommendations(candidates, signals);
-  const byName = new Map(candidates.map(item => [item.menu.toLowerCase(), item]));
+function sanitizeAiRecommendations(value, candidates, alternatives, signals) {
+  const fallback = fallbackRecommendations(candidates, alternatives, signals);
+  const byName = new Map(alternatives.map(item => [item.menu.toLowerCase(), item]));
   const rows = Array.isArray(value?.smartRecommendation) ? value.smartRecommendation : [];
   const smartRecommendation = [];
   for (const row of rows) {
@@ -192,14 +279,16 @@ function sanitizeAiRecommendations(value, candidates, signals) {
     smartRecommendation.push({
       menu: source.menu,
       category: source.category,
+      price: source.price,
       reason: String(row?.reason || fallback.smartRecommendation[0]?.reason || '').trim().slice(0, 180)
     });
     if (smartRecommendation.length >= 3) break;
   }
   return {
     smartRecommendation: smartRecommendation.length ? smartRecommendation : fallback.smartRecommendation,
-    aiScript: String(value?.aiScript || fallback.aiScript).trim().slice(0, 240),
+    aiScript: fallback.aiScript,
     serviceApproach: String(value?.serviceApproach || fallback.serviceApproach).trim().slice(0, 180),
+    waiterFavorites: fallback.waiterFavorites,
     aiGenerated: smartRecommendation.length > 0
   };
 }
@@ -213,6 +302,7 @@ async function loadAiRecommendations(env, memberId) {
   if (!row) return { success: false, message: 'Customer tidak ditemukan.' };
 
   const candidates = recommendationCandidates(row);
+  const alternatives = await loadRecommendationAlternatives(env.DB, candidates);
   const signals = {
     weekdayVisits: Number(row.weekday_visits || 0),
     weekendVisits: Number(row.weekend_visits || 0),
@@ -222,11 +312,11 @@ async function loadAiRecommendations(env, memberId) {
     groupVisitor: Number(row.group_visits || 0) >= 2 && Number(row.group_ratio || 0) >= 0.4
   };
   if (!candidates.length) {
-    return { success: true, recommendations: fallbackRecommendations(candidates, signals), cached: false };
+    return { success: true, recommendations: fallbackRecommendations(candidates, alternatives, signals), cached: false };
   }
 
   const model = String(env.AI_RECOMMENDATION_MODEL || '@cf/meta/llama-3.1-8b-instruct');
-  const input = JSON.stringify({ candidates, signals, summaryUpdatedAt: row.updated_at || '' });
+  const input = JSON.stringify({ habitualOrders: candidates, alternatives, signals, summaryUpdatedAt: row.updated_at || '' });
   const inputHash = await sha256(input);
   const cached = await env.DB.prepare(
     "SELECT response_json,model FROM ai_recommendations WHERE member_id=? AND input_hash=? AND expires_at > datetime('now')"
@@ -241,11 +331,11 @@ async function loadAiRecommendations(env, memberId) {
       messages: [
         {
           role: 'system',
-          content: 'Anda adalah asisten hospitality Bakerzin. Buat rekomendasi singkat dalam Bahasa Indonesia. Pilih menu HANYA dari daftar candidates dan jangan membuat harga, promo aktif, alergi, atau fakta baru. Jangan sebut nama, nomor telepon, atau ID customer.'
+          content: 'Anda adalah asisten hospitality Bakerzin. Buat smart recommendation singkat dalam Bahasa Indonesia. Pilih menu HANYA dari daftar alternatives. Rekomendasi harus menjadi alternatif sejenis dari habitualOrders: prioritaskan matchType same_family, lalu same_category. Jangan mengulang menu yang biasa dipesan, membuat harga, promo aktif, alergi, atau fakta baru. Jangan sebut nama, nomor telepon, atau ID customer. Kalimat waiter dibuat oleh sistem dan tidak boleh diubah.'
         },
         {
           role: 'user',
-          content: `Susun maksimal 3 rekomendasi menu dan kalimat layanan berdasarkan data anonim berikut: ${input}`
+          content: `Pilih maksimal 3 smart recommendation alternatif dan tulis serviceApproach berdasarkan data anonim berikut: ${input}`
         }
       ],
       temperature: 0.2,
@@ -263,18 +353,17 @@ async function loadAiRecommendations(env, memberId) {
                 required: ['menu', 'reason']
               }
             },
-            aiScript: { type: 'string' },
             serviceApproach: { type: 'string' }
           },
-          required: ['smartRecommendation', 'aiScript', 'serviceApproach']
+          required: ['smartRecommendation', 'serviceApproach']
         }
       }
     });
     const generated = typeof response?.response === 'string' ? JSON.parse(response.response) : response?.response;
-    recommendations = sanitizeAiRecommendations(generated, candidates, signals);
+    recommendations = sanitizeAiRecommendations(generated, candidates, alternatives, signals);
   } catch (error) {
     console.error('customer-ai-recommendation', { memberIdHash: (await sha256(memberId)).slice(0, 12), message: error?.message || String(error) });
-    recommendations = fallbackRecommendations(candidates, signals);
+    recommendations = fallbackRecommendations(candidates, alternatives, signals);
   }
 
   await env.DB.prepare(
@@ -335,6 +424,17 @@ async function ingestBatch(db, payload) {
       if (!id) continue;
       const values = [id,'source','name','mobile','mobile_digits','tier','last_visit_date','last_sales_number','last_outlet','last_waiter','last_pax','last_promotion','weekday_visits','weekend_visits','total_visits','classified_visits','group_visits','group_ratio','favorite_menu_json','menu_note','last_order_json','has_transaction_history','updated_at'].map((name,i) => i === 0 ? id : pick(row,name));
       statements.push(db.prepare('INSERT INTO customer_summary(member_id,source,name,mobile,mobile_digits,tier,last_visit_date,last_sales_number,last_outlet,last_waiter,last_pax,last_promotion,weekday_visits,weekend_visits,total_visits,classified_visits,group_visits,group_ratio,favorite_menu_json,menu_note,last_order_json,has_transaction_history,updated_at,source_hash) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(member_id) DO UPDATE SET source=excluded.source,name=excluded.name,mobile=excluded.mobile,mobile_digits=excluded.mobile_digits,tier=excluded.tier,last_visit_date=excluded.last_visit_date,last_sales_number=excluded.last_sales_number,last_outlet=excluded.last_outlet,last_waiter=excluded.last_waiter,last_pax=excluded.last_pax,last_promotion=excluded.last_promotion,weekday_visits=excluded.weekday_visits,weekend_visits=excluded.weekend_visits,total_visits=excluded.total_visits,classified_visits=excluded.classified_visits,group_visits=excluded.group_visits,group_ratio=excluded.group_ratio,favorite_menu_json=excluded.favorite_menu_json,menu_note=excluded.menu_note,last_order_json=excluded.last_order_json,has_transaction_history=excluded.has_transaction_history,updated_at=excluded.updated_at,source_hash=excluded.source_hash').bind(...values, hash));
+    } else if (sourceTable === 'Menu Bakerzin') {
+      const menu = String(pick(row, 'Menu', 'menu', 'Name', 'Product Name', 'Item Name')).trim();
+      if (!menu) continue;
+      const category = String(pick(row, 'Category', 'category', 'Menu Category', 'menu_category')).trim();
+      const price = Number(pick(row, 'Price', 'price', 'Selling Price', 'Harga') || 0) || null;
+      statements.push(db.prepare(
+        `INSERT INTO menu_catalog(menu,category,family,price,popularity,updated_at)
+         VALUES(?,?,?,?,0,CURRENT_TIMESTAMP)
+         ON CONFLICT(menu) DO UPDATE SET category=excluded.category,family=excluded.family,
+           price=excluded.price,updated_at=CURRENT_TIMESTAMP`
+      ).bind(menu, category, menuFamily({ menu, category }), price));
     } else return { success: false, message: 'Tabel sumber tidak dikenal.' };
   }
   if (statements.length) await db.batch(statements);
@@ -349,4 +449,4 @@ async function migrationStatus(db) {
   return { success: true, counts, batches: batches.results || [] };
 }
 
-export { fallbackRecommendations, recommendationCandidates, sanitizeAiRecommendations };
+export { buildWaiterScript, fallbackRecommendations, menuFamily, menuIsDrink, recommendationCandidates, sanitizeAiRecommendations };
