@@ -15,6 +15,10 @@ export default {
       if (dashboard && request.method === 'GET') {
         return cors(json(await loadDashboard(env.DB, decodeURIComponent(dashboard[1]))), request);
       }
+      const recommendations = url.pathname.match(/^\/v1\/customers\/([^/]+)\/recommendations$/);
+      if (recommendations && request.method === 'GET') {
+        return cors(json(await loadAiRecommendations(env, decodeURIComponent(recommendations[1]))), request);
+      }
       const mobile = url.pathname.match(/^\/v1\/customers\/([^/]+)\/mobile$/);
       if (mobile && request.method === 'PATCH') {
         return cors(json(await updateMobile(env.DB, decodeURIComponent(mobile[1]), await request.json())), request);
@@ -141,6 +145,147 @@ async function loadDashboard(db, memberId) {
   };
 }
 
+function recommendationCandidates(row) {
+  const favorite = parseArray(row.favorite_menu_json).map(item => ({
+    menu: String(item?.menu || '').trim(),
+    category: String(item?.category || '').trim(),
+    count: Number(item?.count || 0)
+  }));
+  const recent = parseArray(row.last_order_json).map(item => ({
+    menu: String(typeof item === 'string' ? item : item?.menu || item?.name || '').trim(),
+    category: String(typeof item === 'object' && item ? item.category || '' : '').trim(),
+    count: 0
+  }));
+  const unique = new Map();
+  for (const item of [...favorite, ...recent]) {
+    if (!item.menu) continue;
+    const key = item.menu.toLowerCase();
+    if (!unique.has(key)) unique.set(key, item);
+  }
+  return [...unique.values()].slice(0, 12);
+}
+
+function fallbackRecommendations(candidates, signals) {
+  const reason = signals.groupVisitor
+    ? 'Cocok ditawarkan kembali saat customer datang bersama grup.'
+    : signals.weekendVisits > signals.weekdayVisits
+      ? 'Sesuai dengan pola kunjungan weekend dan riwayat pesanan customer.'
+      : 'Sesuai dengan riwayat menu yang memang pernah dipesan customer.';
+  return {
+    smartRecommendation: candidates.slice(0, 3).map(item => ({ menu: item.menu, category: item.category, reason })),
+    aiScript: candidates.length
+      ? `Tawarkan ${candidates[0].menu} sebagai pilihan yang paling dekat dengan kebiasaan pesanan customer.`
+      : 'Tanyakan preferensi customer hari ini sebelum memberikan rekomendasi menu.',
+    serviceApproach: signals.groupVisitor ? 'Utamakan pilihan yang nyaman untuk dinikmati bersama.' : 'Mulai dari menu favorit, lalu tawarkan pelengkap yang relevan.',
+    aiGenerated: false
+  };
+}
+
+function sanitizeAiRecommendations(value, candidates, signals) {
+  const fallback = fallbackRecommendations(candidates, signals);
+  const byName = new Map(candidates.map(item => [item.menu.toLowerCase(), item]));
+  const rows = Array.isArray(value?.smartRecommendation) ? value.smartRecommendation : [];
+  const smartRecommendation = [];
+  for (const row of rows) {
+    const source = byName.get(String(row?.menu || '').trim().toLowerCase());
+    if (!source || smartRecommendation.some(item => item.menu.toLowerCase() === source.menu.toLowerCase())) continue;
+    smartRecommendation.push({
+      menu: source.menu,
+      category: source.category,
+      reason: String(row?.reason || fallback.smartRecommendation[0]?.reason || '').trim().slice(0, 180)
+    });
+    if (smartRecommendation.length >= 3) break;
+  }
+  return {
+    smartRecommendation: smartRecommendation.length ? smartRecommendation : fallback.smartRecommendation,
+    aiScript: String(value?.aiScript || fallback.aiScript).trim().slice(0, 240),
+    serviceApproach: String(value?.serviceApproach || fallback.serviceApproach).trim().slice(0, 180),
+    aiGenerated: smartRecommendation.length > 0
+  };
+}
+
+async function loadAiRecommendations(env, memberId) {
+  const row = await env.DB.prepare(
+    `SELECT favorite_menu_json,last_order_json,last_pax,last_promotion,weekday_visits,weekend_visits,
+            total_visits,classified_visits,group_visits,group_ratio,updated_at
+       FROM customer_summary WHERE member_id = ? LIMIT 1`
+  ).bind(memberId).first();
+  if (!row) return { success: false, message: 'Customer tidak ditemukan.' };
+
+  const candidates = recommendationCandidates(row);
+  const signals = {
+    weekdayVisits: Number(row.weekday_visits || 0),
+    weekendVisits: Number(row.weekend_visits || 0),
+    totalVisits: Number(row.total_visits || 0),
+    lastPax: Number(row.last_pax || 0),
+    lastPromotion: String(row.last_promotion || '').slice(0, 120),
+    groupVisitor: Number(row.group_visits || 0) >= 2 && Number(row.group_ratio || 0) >= 0.4
+  };
+  if (!candidates.length) {
+    return { success: true, recommendations: fallbackRecommendations(candidates, signals), cached: false };
+  }
+
+  const model = String(env.AI_RECOMMENDATION_MODEL || '@cf/meta/llama-3.1-8b-instruct');
+  const input = JSON.stringify({ candidates, signals, summaryUpdatedAt: row.updated_at || '' });
+  const inputHash = await sha256(input);
+  const cached = await env.DB.prepare(
+    "SELECT response_json,model FROM ai_recommendations WHERE member_id=? AND input_hash=? AND expires_at > datetime('now')"
+  ).bind(memberId, inputHash).first();
+  if (cached) {
+    return { success: true, recommendations: JSON.parse(cached.response_json), cached: true, model: cached.model };
+  }
+
+  let recommendations;
+  try {
+    const response = await env.AI.run(model, {
+      messages: [
+        {
+          role: 'system',
+          content: 'Anda adalah asisten hospitality Bakerzin. Buat rekomendasi singkat dalam Bahasa Indonesia. Pilih menu HANYA dari daftar candidates dan jangan membuat harga, promo aktif, alergi, atau fakta baru. Jangan sebut nama, nomor telepon, atau ID customer.'
+        },
+        {
+          role: 'user',
+          content: `Susun maksimal 3 rekomendasi menu dan kalimat layanan berdasarkan data anonim berikut: ${input}`
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 350,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          type: 'object',
+          properties: {
+            smartRecommendation: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: { menu: { type: 'string' }, reason: { type: 'string' } },
+                required: ['menu', 'reason']
+              }
+            },
+            aiScript: { type: 'string' },
+            serviceApproach: { type: 'string' }
+          },
+          required: ['smartRecommendation', 'aiScript', 'serviceApproach']
+        }
+      }
+    });
+    const generated = typeof response?.response === 'string' ? JSON.parse(response.response) : response?.response;
+    recommendations = sanitizeAiRecommendations(generated, candidates, signals);
+  } catch (error) {
+    console.error('customer-ai-recommendation', { memberIdHash: (await sha256(memberId)).slice(0, 12), message: error?.message || String(error) });
+    recommendations = fallbackRecommendations(candidates, signals);
+  }
+
+  await env.DB.prepare(
+    `INSERT INTO ai_recommendations(member_id,input_hash,response_json,model,created_at,expires_at)
+     VALUES(?,?,?,?,CURRENT_TIMESTAMP,datetime('now','+24 hours'))
+     ON CONFLICT(member_id) DO UPDATE SET input_hash=excluded.input_hash,response_json=excluded.response_json,
+       model=excluded.model,created_at=excluded.created_at,expires_at=excluded.expires_at`
+  ).bind(memberId, inputHash, JSON.stringify(recommendations), model).run();
+  return { success: true, recommendations, cached: false, model };
+}
+
 async function updateMobile(db, memberId, payload) {
   const mobile = String(payload?.mobile || '').trim();
   if (!mobile) return { success: false, message: 'Nomor telepon kosong.' };
@@ -203,3 +348,5 @@ async function migrationStatus(db) {
   const batches = await db.prepare('SELECT source_table,COUNT(*) batches,SUM(row_count) received,SUM(inserted_count) inserted FROM migration_batches GROUP BY source_table').all();
   return { success: true, counts, batches: batches.results || [] };
 }
+
+export { fallbackRecommendations, recommendationCandidates, sanitizeAiRecommendations };

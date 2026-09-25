@@ -8,7 +8,11 @@
     "head_sampling_rate": 0.1
   },
   "vars": {
-    "ENVIRONMENT": "cloudflare-primary"
+    "ENVIRONMENT": "cloudflare-primary",
+    "AI_RECOMMENDATION_MODEL": "@cf/meta/llama-3.1-8b-instruct"
+  },
+  "ai": {
+    "binding": "AI"
   },
   "d1_databases": [
     {
