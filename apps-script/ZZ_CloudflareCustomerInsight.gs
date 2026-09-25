@@ -83,6 +83,15 @@ loadCustomerDashboard = function(memberId, source, outlet) {
   }
 };
 
+/** Deferred AI recommendations: keeps the main dashboard fast. */
+loadDashboardRecommendations = function(memberId, outlet, favoriteMenu, lastPax, customerTypes) {
+  try {
+    return ciRequest_('/v1/customers/' + encodeURIComponent(memberId || '') + '/recommendations', { method: 'get' });
+  } catch (error) {
+    return { success: false, message: 'Cloudflare AI Recommendation: ' + error.message };
+  }
+};
+
 /** Runtime override: writes phone changes to Cloudflare only. */
 updateCustomerPhone = function(phoneData) {
   try {

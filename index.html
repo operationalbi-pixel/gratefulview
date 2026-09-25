@@ -13936,6 +13936,13 @@
     var offer = pickDashboardOffers(data);
     var menuNote = pickMenuNote(data, offer);
     var smartCopy = smartRecommendationCopy(data, offer);
+    var recommendationData = (data && data.recommendations) || {};
+    var aiScript = firstUsefulText([recommendationData.aiScript]);
+    var scriptCopy = aiScript
+      ? '“' + safeHtml(aiScript) + '”'
+      : '“ ..., sebelumnya pernah memesan <span class="customer-cheers-food">' + safeHtml(offer.food) +
+        '</span> dan <span class="customer-cheers-drink">' + safeHtml(offer.drink) +
+        '</span>. Apakah hari ini ingin memesan menu yang sama?”';
     var popup = document.createElement('section');
     popup.id = 'customer-cheers-popup';
     popup.className = 'customer-cheers-popup';
@@ -13944,10 +13951,8 @@
       '<button class="customer-cheers-close" type="button" aria-label="Tutup rekomendasi" onclick="closeCheersPopup()">' +
         '<span class="material-icons-round" style="font-size:19px">close</span>' +
       '</button>' +
-      '<div class="customer-cheers-popup-title"><span class="material-icons-round" style="font-size:17px">record_voice_over</span>SCRIPT</div>' +
-      '<div class="customer-script-quote">“ ..., sebelumnya pernah memesan <span class="customer-cheers-food">' + safeHtml(offer.food) +
-      '</span> dan <span class="customer-cheers-drink">' + safeHtml(offer.drink) +
-      '</span>. Apakah hari ini ingin memesan menu yang sama?”</div>' +
+      '<div class="customer-cheers-popup-title"><span class="material-icons-round" style="font-size:17px">auto_awesome</span>' + (recommendationData.aiGenerated ? 'AI SCRIPT' : 'SCRIPT') + '</div>' +
+      '<div class="customer-script-quote">' + scriptCopy + '</div>' +
       '<div class="customer-cheers-meta-grid">' +
         '<div class="customer-cheers-meta-card">' +
           '<div class="customer-cheers-meta-label"><span class="material-icons-round" style="font-size:15px">auto_awesome</span>Smart Recommendation</div>' +
