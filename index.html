@@ -13462,7 +13462,7 @@
     var offers = [].concat(rec.smartRecommendation || [], rec.premiumRecommendation || [], rec.recommendedPromo || [], rec.promoRecommendation || [], rec.addOnRecommendation || []);
     var history = [].concat(data.lastOrderedItems || [], data.orderHistory || [], data.lastOrders || []);
     var food = favorites.filter(function (x) { return !isDrink(x); })[0] || favorites[0];
-    var drink = favorites.concat(offers).filter(isDrink)[0];
+    var drink = favorites.concat(history).filter(isDrink)[0];
     var usedNames = [itemName(food), itemName(drink)].filter(Boolean).map(function(name) { return name.toLowerCase(); });
     var actualCandidates = offers.concat(favorites, history).filter(function (item) {
       var name = itemName(item);
@@ -13938,11 +13938,18 @@
     var smartCopy = smartRecommendationCopy(data, offer);
     var recommendationData = (data && data.recommendations) || {};
     var aiScript = firstUsefulText([recommendationData.aiScript]);
-    var scriptCopy = aiScript
-      ? '“' + safeHtml(aiScript) + '”'
-      : '“ ..., sebelumnya pernah memesan <span class="customer-cheers-food">' + safeHtml(offer.food) +
-        '</span> dan <span class="customer-cheers-drink">' + safeHtml(offer.drink) +
-        '</span>. Apakah hari ini ingin memesan menu yang sama?”';
+    var fallbackWaiterScript = offer.foodItem && offer.drinkItem
+      ? '“Sebelumnya Anda biasa memesan <span class="customer-cheers-food">' + safeHtml(offer.food) +
+        '</span> bersama <span class="customer-cheers-drink">' + safeHtml(offer.drink) +
+        '</span>. Apakah ingin memesan keduanya lagi hari ini?”'
+      : offer.foodItem
+        ? '“Sebelumnya Anda biasa memesan <span class="customer-cheers-food">' + safeHtml(offer.food) +
+          '</span>. Apakah ingin memesan menu favorit tersebut lagi hari ini?”'
+        : offer.drinkItem
+          ? '“Sebelumnya Anda biasa memesan <span class="customer-cheers-drink">' + safeHtml(offer.drink) +
+            '</span>. Apakah ingin memesan minuman favorit tersebut lagi hari ini?”'
+          : '“Boleh kami tahu jenis makanan dan minuman yang Anda sukai agar kami dapat membantu memilihkan menu?”';
+    var scriptCopy = aiScript ? '“' + safeHtml(aiScript) + '”' : fallbackWaiterScript;
     var popup = document.createElement('section');
     popup.id = 'customer-cheers-popup';
     popup.className = 'customer-cheers-popup';
@@ -14132,7 +14139,8 @@
       .withSuccessHandler(function (result) {
         if (requestId !== visitTrendRequestId) return;
         if (!result || !result.success) {
-          state.textContent = (result && result.message) || 'Grafik kunjungan belum dapat dimuat.';
+          console.warn('Visit chart backend response:', result && result.message);
+          state.textContent = 'Grafik kunjungan belum dapat dimuat. Silakan muat ulang halaman.';
           return;
         }
         renderVisitTrend(result);
