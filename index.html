@@ -9230,10 +9230,11 @@
               <div class="list-card-pax-label">Pax</div>
             </div>
           </div>
+          ${String(w.special || '').trim() || String(w.note || '').trim() ? `
           <div class="list-card-meta">
             ${String(w.special || '').trim() ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Special</div><div class="list-card-meta-value">${highlightMatch(w.special, term)}</div></div>` : ''}
             ${String(w.note || '').trim() ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Note</div><div class="list-card-meta-value">${highlightMatch(w.note, term)}</div></div>` : ''}
-          </div>
+          </div>` : ''}
           <div class="list-card-actions">
             ${AppState.isBIHQ || w.time ? `
             <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
