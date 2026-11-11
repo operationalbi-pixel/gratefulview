@@ -2749,6 +2749,26 @@
     .date-section-pill .material-icons-round { font-size: 14px; color: var(--cyan-400); }
     .date-section-count { font-size: 0.75rem; color: var(--text-tertiary); font-weight: 500; }
 
+    /* Compact date filter: whole Hari Ini pill opens the native date picker. */
+    #page-reservasi .universal-search-hint,
+    #page-waiting .universal-search-hint { display: none !important; }
+    .date-filter-bar { align-items: center; }
+    .date-select-chip { position: relative; display: inline-flex; overflow: hidden; cursor: pointer; }
+    .date-select-chip input[type="date"] {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 16px;
+      color-scheme: light;
+    }
+    /* Updating data must not replay entrance animations or flicker. */
+    #reservasi-list .list-card,
+    #waiting-list .list-card,
+    #reservasi-list .date-section,
+    #waiting-list .date-section { animation: none !important; }
     .list-grid { display: flex; flex-direction: column; gap: 10px; }
     .list-card {
       background: var(--bg-card);
@@ -5966,21 +5986,15 @@
         <button class="universal-search-clear" id="reservasi-search-clear" onclick="clearUniversalSearch('reservasi')" aria-label="Bersihkan">
           <span class="material-icons-round" style="font-size:16px">close</span>
         </button>
-        <div class="universal-search-hint">
-          <span class="material-icons-round">tune</span>
-          Cari di:
-          <span class="search-tag">Nama</span>
-          <span class="search-tag">No Telp</span>
-          <span class="search-tag">Special</span>
-          <span class="search-tag">Note</span>
-        </div>
+
       </div>
 
-      <div class="filter-bar">
-        <div class="filter-chip active">
-          <span class="material-icons-round">all_inclusive</span>
-          Semua
-        </div>
+      <div class="filter-bar date-filter-bar">
+        <label class="filter-chip active date-select-chip" id="reservasi-date-chip" for="reservasi-date-input">
+          <span class="material-icons-round">today</span>
+          <span id="reservasi-date-label">Hari Ini</span>
+          <input type="date" id="reservasi-date-input" aria-label="Pilih tanggal reservasi" onchange="setListDate('reservasi', this.value)">
+        </label>
         <div class="filter-summary" id="reservasi-summary">0 reservasi</div>
       </div>
 
@@ -6049,29 +6063,15 @@
         <button class="universal-search-clear" id="waiting-search-clear" onclick="clearUniversalSearch('waiting')" aria-label="Bersihkan">
           <span class="material-icons-round" style="font-size:16px">close</span>
         </button>
-        <div class="universal-search-hint">
-          <span class="material-icons-round">tune</span>
-          Cari di:
-          <span class="search-tag">Nama</span>
-          <span class="search-tag">No Telp</span>
-          <span class="search-tag">Special</span>
-          <span class="search-tag">Note</span>
-        </div>
+
       </div>
 
-      <div class="filter-bar">
-        <div class="filter-chip active" id="filter-today-chip" onclick="setWaitingFilter('today')">
+      <div class="filter-bar date-filter-bar">
+        <label class="filter-chip active date-select-chip" id="waiting-date-chip" for="waiting-date-input">
           <span class="material-icons-round">today</span>
-          Hari Ini
-        </div>
-        <div class="filter-chip" id="filter-upcoming-chip" onclick="setWaitingFilter('upcoming')">
-          <span class="material-icons-round">date_range</span>
-          Mendatang
-        </div>
-        <div class="filter-chip" id="filter-date-chip">
-          <span class="material-icons-round">event</span>
-          <input type="date" id="filter-date-input" onchange="setWaitingFilterDate(this.value)">
-        </div>
+          <span id="waiting-date-label">Hari Ini</span>
+          <input type="date" id="waiting-date-input" aria-label="Pilih tanggal waiting list" onchange="setListDate('waiting', this.value)">
+        </label>
         <div class="filter-summary" id="waiting-summary">0 entri</div>
       </div>
 
@@ -8066,7 +8066,7 @@
         const outlet = AppState.outlet || '';
         if (!silent) {
           const container = document.getElementById('reservasi-list');
-          if (container) container.innerHTML = '<div class="list-empty"><div class="spinner spinner-dark" style="width:28px;height:28px"></div><p style="margin-top:12px;color:var(--text-tertiary)">Memuat reservasi...</p></div>';
+          // Keep existing cards visible during refresh to avoid screen flashing.
         }
         google.script.run
           .withSuccessHandler(function(res) {
@@ -8096,7 +8096,7 @@
         const outlet = AppState.outlet || '';
         if (!silent) {
           const container = document.getElementById('waiting-list');
-          if (container) container.innerHTML = '<div class="list-empty"><div class="spinner spinner-dark" style="width:28px;height:28px"></div><p style="margin-top:12px;color:var(--text-tertiary)">Memuat waiting list...</p></div>';
+          // Keep existing cards visible during refresh to avoid screen flashing.
         }
         google.script.run
           .withSuccessHandler(function(res) {
@@ -8171,8 +8171,9 @@
       history: [],     // {...entry, status:'seated'|'cancelled', completedAt, origin:'reservasi'|'waiting'}
       orders: [],      // customer delivery / pickup list
       addMode: null,   // 'reservasi' | 'waiting'
-      waitingFilter: 'today', // 'today' | 'upcoming' | 'date'
+      waitingFilter: 'today',
       waitingFilterDate: null,
+      reservasiFilterDate: null,
       historyFilter: 'all',
       reservasiSearch: '',
       waitingSearch: '',
@@ -9024,6 +9025,8 @@
       ListState.waiting = ListState.waiting.filter(entry => !isPastReservation(entry));
     }
 
+    let reservasiRenderSignature = '';
+    let waitingRenderSignature = '';
     function renderReservasiList() {
       reconcileExpiredReservations();
       const container = document.getElementById('reservasi-list');
@@ -9032,11 +9035,16 @@
       const term = ListState.reservasiSearch || '';
 
       // Sort newest first by createdAt
-      let items = ListState.reservasi.filter(r => !isPastReservation(r)).sort((a, b) => b.createdAt - a.createdAt);
+      const selectedDate = ListState.reservasiFilterDate || isoToday();
+      syncListDateControls('reservasi', selectedDate);
+      let items = ListState.reservasi.filter(r => !isPastReservation(r) && r.date === selectedDate).sort((a, b) => b.createdAt - a.createdAt);
 
       // Apply universal search
       const totalCount = items.length;
       if (term) items = items.filter(r => matchesSearch(r, term));
+      const signature = JSON.stringify([selectedDate, term, items]);
+      if (signature === reservasiRenderSignature) return;
+      reservasiRenderSignature = signature;
 
       const summaryEl = document.getElementById('reservasi-summary');
       summaryEl.textContent = term
@@ -9126,26 +9134,25 @@
     /* ============================================================
        RENDER — WAITING LIST
        ============================================================ */
-    function setWaitingFilter(mode) {
-      ListState.waitingFilter = mode;
-      ListState.waitingFilterDate = null;
-      document.getElementById('filter-today-chip').classList.toggle('active', mode === 'today');
-      document.getElementById('filter-upcoming-chip').classList.toggle('active', mode === 'upcoming');
-      document.getElementById('filter-date-chip').classList.toggle('active', mode === 'date');
-      if (mode !== 'date') {
-        document.getElementById('filter-date-input').value = '';
+    function setListDate(tab, date) {
+      if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date || '')) return;
+      if (tab === 'reservasi') {
+        ListState.reservasiFilterDate = date;
+        renderReservasiList();
+      } else if (tab === 'waiting') {
+        ListState.waitingFilter = 'date';
+        ListState.waitingFilterDate = date;
+        renderWaitingList();
       }
-      renderWaitingList();
     }
 
-    function setWaitingFilterDate(value) {
-      if (!value) return;
-      ListState.waitingFilter = 'date';
-      ListState.waitingFilterDate = value;
-      document.getElementById('filter-today-chip').classList.remove('active');
-      document.getElementById('filter-upcoming-chip').classList.remove('active');
-      document.getElementById('filter-date-chip').classList.add('active');
-      renderWaitingList();
+    function syncListDateControls(tab, selected) {
+      const input = document.getElementById(tab + '-date-input');
+      const label = document.getElementById(tab + '-date-label');
+      const chip = document.getElementById(tab + '-date-chip');
+      if (input && input.value !== selected) input.value = selected;
+      if (label) label.textContent = selected === isoToday() ? 'Hari Ini' : formatHumanDate(selected);
+      if (chip) chip.title = 'Pilih tanggal';
     }
 
     // Waiting durations use persisted timestamps, never the latest refresh time.
@@ -9218,14 +9225,9 @@
       const today = isoToday();
       let items = mergePendingWaiting(ListState.waiting).filter(entry => !isPastReservation(entry));
 
-      // Apply date filter
-      if (ListState.waitingFilter === 'today') {
-        items = items.filter(i => i.date === today);
-      } else if (ListState.waitingFilter === 'date' && ListState.waitingFilterDate) {
-        items = items.filter(i => i.date === ListState.waitingFilterDate);
-      } else if (ListState.waitingFilter === 'upcoming') {
-        items = items.filter(i => i.date >= today);
-      }
+      const selectedDate = ListState.waitingFilterDate || today;
+      syncListDateControls('waiting', selectedDate);
+      items = items.filter(i => i.date === selectedDate);
 
       const totalAfterDate = items.length;
 
@@ -9235,6 +9237,9 @@
 
       // Oldest waiting start first within each date group.
       items.sort(compareWaitingEntries);
+      const signature = JSON.stringify([selectedDate, term, items]);
+      if (signature === waitingRenderSignature) { updateWaitingClocks(); return; }
+      waitingRenderSignature = signature;
 
       const summaryEl = document.getElementById('waiting-summary');
       summaryEl.textContent = term
