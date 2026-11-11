@@ -2910,8 +2910,9 @@
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
     }
-    /* Waiting List: show Pax seamlessly, without a bordered badge. */
-    #waiting-list .list-card-pax {
+    /* Reservation and Waiting List: show Pax seamlessly, without a bordered badge. */
+    #waiting-list .list-card-pax,
+    #reservasi-list .list-card-pax {
       min-width: 0;
       padding: 0;
       background: transparent;
@@ -5934,36 +5935,6 @@
         </div>
       </div>
 
-      <div class="outlet-full-card" id="outlet-full-card">
-        <div class="outlet-full-header">
-          <div class="outlet-full-title">
-            <span class="material-icons-round">do_not_disturb_on</span>
-            <span>Kontrol Reservasi Outlet</span>
-          </div>
-          <label class="outlet-full-toggle" for="outlet-full-check">
-            <input type="checkbox" id="outlet-full-check" onchange="toggleOutletFullUI()">
-            Outlet sedang penuh
-          </label>
-        </div>
-        <div class="outlet-full-times">
-          <div>
-            <label>Jam Dari</label>
-            <input type="time" id="outlet-full-from" onchange="toggleOutletFullUI()">
-          </div>
-          <div>
-            <label>Jam Sampai</label>
-            <input type="time" id="outlet-full-to" onchange="toggleOutletFullUI()">
-          </div>
-          <button class="pill-btn" onclick="saveOutletFullStatusFromUI()">
-            <span class="material-icons-round">save</span>
-            Simpan Status
-          </button>
-        </div>
-        <div class="outlet-full-note" id="outlet-full-note">
-          Jika diaktifkan, customer tidak bisa membuat reservasi pada outlet ini selama rentang jam yang ditentukan.
-        </div>
-      </div>
-
       <div class="filter-bar">
         <div class="filter-chip active">
           <span class="material-icons-round">all_inclusive</span>
@@ -8029,7 +8000,6 @@
         .withFailureHandler(function() {})
         .listReservasi(outlet);
 
-      loadOutletFullStatus();
 
       google.script.run
         .withSuccessHandler(function(res) {
@@ -8072,8 +8042,7 @@
             if (!silent) showToast('Gagal refresh Reservasi: ' + (err && err.message || err), 'error');
           })
           .listReservasi(outlet);
-        loadOutletFullStatus();
-      } else {
+        } else {
         renderReservasiList();
         if (!silent) showToast('Reservasi diperbarui.', 'success');
       }
@@ -8359,8 +8328,7 @@
         // V15: startRealtimeSync(true) already performs the first baseline snapshot.
         // Do not call refreshLiveSnapshot twice because duplicate render can make the UI appear blinking.
         startRealtimeSync(true);
-        loadOutletFullStatus();
-      } else {
+        } else {
         renderReservasiList();
         renderWaitingList();
         renderPemesananList();
@@ -8510,6 +8478,7 @@
       ListState.reservasi = newReservasi;
       ListState.waiting = newWaiting;
       ListState.orders = newOrders;
+      reconcileExpiredReservations();
 
       RealtimeState.lastReservasiIds = nextReservasiIds;
       RealtimeState.lastWaitingIds = nextWaitingIds;
@@ -8956,14 +8925,73 @@
     /* ============================================================
        RENDER — RESERVASI LIST
        ============================================================ */
+    // Past-date reservations are removed from active lists and represented in History.
+    const EXPIRED_RESERVATION_STORE = 'grateful_expired_reservations_v1';
+    const expirySyncAttempted = new Set();
+    function isPastReservation(entry) {
+      return !!(entry && entry.date && /^\\d{4}-\\d{2}-\\d{2}$/.test(String(entry.date)) && entry.date < isoToday()
+        && (entry.type === 'RESERVASI' || entry.fromReservation));
+    }
+    function expiredReservationKey(entry) {
+      return String(entry.outlet || AppState.outlet || '') + ':' + String(entry.sourceId || entry.id);
+    }
+    function readExpiredReservations() {
+      try { return JSON.parse(localStorage.getItem(EXPIRED_RESERVATION_STORE) || '{}') || {}; }
+      catch (_) { return {}; }
+    }
+    function archiveExpiredReservations(entries) {
+      const archive = readExpiredReservations();
+      let changed = false;
+      (entries || []).forEach(entry => {
+        if (!isPastReservation(entry)) return;
+        const key = expiredReservationKey(entry);
+        if (!archive[key]) {
+          archive[key] = { ...entry, id: entry.sourceId || entry.id, origin: 'reservasi',
+            status: 'expired', completedAt: Date.now(), type: 'RESERVASI' };
+          changed = true;
+        }
+        // Attempt server-side archival once per session; do not label as cancelled.
+        if (hasBackend() && !expirySyncAttempted.has(key)) {
+          expirySyncAttempted.add(key);
+          try {
+            google.script.run
+              .withSuccessHandler(function(res) {
+                if (!res || !res.success) console.warn('Reservasi expiry sync not accepted:', key);
+              })
+              .withFailureHandler(function(err) { console.warn('Reservasi expiry sync failed:', key, err); })
+              .markEntryStatus({ id: entry.sourceId || entry.id, status: 'Expired' });
+          } catch (err) { console.warn('Reservasi expiry sync failed:', key, err); }
+        }
+      });
+      if (changed) {
+        try { localStorage.setItem(EXPIRED_RESERVATION_STORE, JSON.stringify(archive)); }
+        catch (_) { console.warn('Could not cache expired reservations'); }
+      }
+    }
+    function appendExpiredReservationHistory(items) {
+      const map = new Map((items || []).map(item => [String(item.id), item]));
+      Object.values(readExpiredReservations()).forEach(entry => {
+        if (entry && (!AppState.outlet || AppState.isBIHQ || entry.outlet === AppState.outlet)
+            && !map.has(String(entry.id))) map.set(String(entry.id), entry);
+      });
+      return [...map.values()];
+    }
+    function reconcileExpiredReservations() {
+      archiveExpiredReservations(ListState.reservasi);
+      archiveExpiredReservations(ListState.waiting);
+      ListState.reservasi = ListState.reservasi.filter(entry => !isPastReservation(entry));
+      ListState.waiting = ListState.waiting.filter(entry => !isPastReservation(entry));
+    }
+
     function renderReservasiList() {
+      reconcileExpiredReservations();
       const container = document.getElementById('reservasi-list');
       if (!container) return;
 
       const term = ListState.reservasiSearch || '';
 
       // Sort newest first by createdAt
-      let items = [...ListState.reservasi].sort((a, b) => b.createdAt - a.createdAt);
+      let items = ListState.reservasi.filter(r => !isPastReservation(r)).sort((a, b) => b.createdAt - a.createdAt);
 
       // Apply universal search
       const totalCount = items.length;
@@ -9014,26 +9042,22 @@
               <div class="list-card-name">
                 ${highlightMatch(r.name, term)}
               </div>
+              ${String(r.phone || '').trim() ? `
               <div class="list-card-phone list-card-phone-stacked">
                 <span class="material-icons-round">phone</span>
                 ${highlightMatch(formatPhoneDisplay(r.phone), term)}
-              </div>
+              </div>` : ''}
             </div>
             <div class="list-card-pax">
               <div class="list-card-pax-num">${r.pax}</div>
               <div class="list-card-pax-label">Pax</div>
             </div>
           </div>
+          ${String(r.special || '').trim() || String(r.note || '').trim() ? `
           <div class="list-card-meta">
-            <div class="list-card-meta-row">
-              <div class="list-card-meta-label">Special</div>
-              <div class="list-card-meta-value ${r.special ? '' : 'muted'}">${r.special ? highlightMatch(r.special, term) : '—'}</div>
-            </div>
-            <div class="list-card-meta-row">
-              <div class="list-card-meta-label">Note</div>
-              <div class="list-card-meta-value ${r.note ? '' : 'muted'}">${r.note ? highlightMatch(r.note, term) : '—'}</div>
-            </div>
-          </div>
+            ${String(r.special || '').trim() ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Special</div><div class="list-card-meta-value">${highlightMatch(r.special, term)}</div></div>` : ''}
+            ${String(r.note || '').trim() ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Note</div><div class="list-card-meta-value">${highlightMatch(r.note, term)}</div></div>` : ''}
+          </div>` : ''}
           <div class="list-card-actions">
             <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
               ${renderBIHQOutlet(r.outlet)}
@@ -9138,6 +9162,7 @@
     document.addEventListener('visibilitychange', updateWaitingClocks);
 
     function renderWaitingList() {
+      reconcileExpiredReservations();
       const container = document.getElementById('waiting-list');
       if (!container) return;
 
@@ -9520,6 +9545,7 @@
       const dateInput = document.getElementById('entry-date');
       const timeInput = document.getElementById('entry-time');
       dateInput.value = isoToday();
+      dateInput.min = mode === 'reservasi' ? isoToday() : '';
       timeInput.value = '';
 
       const isWaiting = mode === 'waiting';
@@ -9625,6 +9651,7 @@
       }
       if (!pax || pax < 1) { showToast('Pax harus minimal 1.', 'error'); return; }
       if (!date) { showToast('Tanggal wajib diisi.', 'error'); return; }
+      if (mode === 'reservasi' && date < isoToday()) { showToast('Tanggal reservasi tidak boleh di masa lalu.', 'error'); return; }
 
       const id = entryDraftId || (entryDraftId = uid());
       const entry = {
@@ -9995,7 +10022,8 @@
       const categoryLabel = _historyCategoryLabel(category);
       let items = [...(ListState.history || [])];
 
-      // Frontend guard: ensure history shown in each page only matches its category.
+      // Merge locally archived past reservations, even when backend history is delayed.
+      if (category === 'reservasi') items = appendExpiredReservationHistory(items);
       items = _filterLocalHistoryByCategory(items, category);
 
       if (ListState.historyFilter === 'seated') items = items.filter(i => i.status === 'seated');
@@ -10030,9 +10058,10 @@
         const isOrderHistory = category === 'pemesanan' || h.origin === 'pemesanan';
         const isSeated = h.status === 'seated';
         const isCompleted = h.status === 'completed';
-        const statusClass = isCompleted ? 'completed' : (isSeated ? 'seated' : 'cancelled');
-        const statusIcon = isCompleted ? 'task_alt' : (isSeated ? 'check_circle' : 'cancel');
-        const statusLabel = isCompleted ? 'Pesanan Selesai' : (isSeated ? 'Sudah Masuk' : (isOrderHistory ? 'Pesanan Cancel' : 'Cancel'));
+        const isExpired = h.status === 'expired';
+        const statusClass = isExpired ? 'completed' : (isCompleted ? 'completed' : (isSeated ? 'seated' : 'cancelled'));
+        const statusIcon = isExpired ? 'event_busy' : (isCompleted ? 'task_alt' : (isSeated ? 'check_circle' : 'cancel'));
+        const statusLabel = isExpired ? 'Tanggal Terlewat' : (isCompleted ? 'Pesanan Selesai' : (isSeated ? 'Sudah Masuk' : (isOrderHistory ? 'Pesanan Cancel' : 'Cancel')));
         const paxLabel = isOrderHistory ? 'Qty' : 'Pax';
         const qtyTotal = isOrderHistory
           ? (h.items || []).reduce((s, it) => s + (parseInt(it.qty) || 0), 0)
@@ -10461,9 +10490,9 @@
       const resBadges = document.querySelectorAll('#tab-badge-reservasi');
       const wlBadges = document.querySelectorAll('#tab-badge-waiting');
       const orderBadges = document.querySelectorAll('#tab-badge-pemesanan');
-      const resCount = ListState.reservasi.length;
+      const resCount = ListState.reservasi.filter(r => !isPastReservation(r)).length;
       const today = isoToday();
-      const wlCount = ListState.waiting.filter(w => w.date === today).length;
+      const wlCount = ListState.waiting.filter(w => w.date === today && !isPastReservation(w)).length;
       const orderCount = (ListState.orders || []).length;
 
       resBadges.forEach(b => {
@@ -10582,8 +10611,7 @@
       };
       if (payload.isFull && (!payload.from || !payload.to)) {
         showToast('Isi Jam Dari dan Jam Sampai terlebih dahulu.', 'error');
-        loadOutletFullStatus();
-        return;
+          return;
       }
       if (!hasBackend()) {
         showToast('Preview: status outlet penuh tersimpan secara simulasi.', 'info');
@@ -10598,14 +10626,12 @@
             showToast(res.message || 'Status outlet tersimpan dan tersinkron.', 'success');
           } else {
             showToast((res && res.message) || 'Gagal menyimpan status.', 'error');
-            loadOutletFullStatus();
-          }
+                }
         })
         .withFailureHandler(function(err) {
           hideLoading();
           showToast('Gagal menyimpan: ' + (err && err.message || err), 'error');
-          loadOutletFullStatus();
-        })
+            })
         .saveOutletFullStatus(payload);
     }
 
