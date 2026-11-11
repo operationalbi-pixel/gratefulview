@@ -9313,7 +9313,7 @@
                 <span class="material-icons-round" aria-hidden="true">hourglass_top</span>
                 <span data-waiting-start="${clock.start == null ? '' : clock.start}">${elapsed}</span>
               </div>
-              ${w.date ? `<div class="list-card-context-time"><span class="waiting-inline-divider" aria-hidden="true">|</span><span class="material-icons-round" aria-hidden="true">event</span><span>${formatHumanDate(w.date)}${w.time ? ' · ' + escapeHtml(w.time) : ''}</span></div>` : ''}
+              ${(fromRes || w.type === 'RESERVASI') && w.date ? `<div class="list-card-context-time"><span class="waiting-inline-divider" aria-hidden="true">|</span><span class="material-icons-round" aria-hidden="true">event</span><span>${formatHumanDate(w.date)}${w.time ? ' · ' + escapeHtml(w.time) : ''}</span></div>` : ''}
             </div>
             ${w._syncFailed ? `<button class="action-btn" onclick="retryWaitingSync('${escapeAttr(w.id)}')"><span class="material-icons-round">sync</span> Coba Sinkronkan</button>` : ''}
             <button class="action-btn data-available-btn history-availability-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
