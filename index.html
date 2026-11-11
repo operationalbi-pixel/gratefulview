@@ -8045,6 +8045,20 @@
     let entrySaveInProgress = false;
     let entryDraftId = null;
     const pendingEntryStatuses = new Set();
+    // Hide completed rows immediately; keep them hidden during stale backend refreshes.
+    const hiddenCompletedEntryIds = new Set();
+    function entryIsCompletedLocally(entry) {
+      return !!entry && (hiddenCompletedEntryIds.has(String(entry.id || ''))
+        || hiddenCompletedEntryIds.has(String(entry.sourceId || '')));
+    }
+    function reconcileCompletedIds(waitingItems, reservationItems) {
+      const active = new Set([...(waitingItems || []), ...(reservationItems || [])]
+        .flatMap(item => [String(item.id || ''), String(item.sourceId || '')]));
+      for (const id of hiddenCompletedEntryIds) {
+        if (!active.has(id)) hiddenCompletedEntryIds.delete(id);
+      }
+    }
+
 
     function refreshFromBackend(silent) {
       if (pendingListWrites) return;
@@ -8542,6 +8556,7 @@
       ListState.reservasi = newReservasi;
       ListState.waiting = newWaiting;
       ListState.orders = newOrders;
+      reconcileCompletedIds(newWaiting, newReservasi);
       reconcileExpiredReservations();
 
       RealtimeState.lastReservasiIds = nextReservasiIds;
@@ -9067,7 +9082,7 @@
 
       // All active reservations, nearest calendar date first, then earlier reservation time.
       const today = isoToday();
-      let items = ListState.reservasi.filter(r => !isPastReservation(r) && r.date >= today)
+      let items = ListState.reservasi.filter(r => !entryIsCompletedLocally(r) && !isPastReservation(r) && r.date >= today)
         .sort((a, b) => String(a.date || '').localeCompare(String(b.date || ''))
           || String(a.time || '99:99').localeCompare(String(b.time || '99:99'))
           || Number(a.createdAt || 0) - Number(b.createdAt || 0));
@@ -9264,7 +9279,7 @@
       if (!container) return;
 
       const today = isoToday();
-      let items = mergePendingWaiting(ListState.waiting).filter(entry => entry.date === today && !isPastReservation(entry));
+      let items = mergePendingWaiting(ListState.waiting).filter(entry => !entryIsCompletedLocally(entry) && entry.date === today && !isPastReservation(entry));
 
       // No separate date filter: show all active entries in chronological order.
       const totalAfterDate = items.length;
@@ -9946,7 +9961,10 @@
       // UI diselesaikan lebih dulu agar tombol terasa instan.
       // Database disinkronkan di background. Jika gagal, refresh backend
       // akan mengembalikan kondisi server terbaru.
+      const sourceId = String(selected.sourceId || id);
       pendingEntryStatuses.add(id);
+      hiddenCompletedEntryIds.add(String(id));
+      hiddenCompletedEntryIds.add(sourceId);
       pendingListWrites++;
       listMutationVersion++;
 
@@ -9957,11 +9975,26 @@
         pendingListWrites = Math.max(0, pendingListWrites - 1);
         listMutationVersion++;
         if (res && res.success === true) {
-          // Tidak perlu menunggu / render ulang di depan.
-          // Realtime polling berikutnya akan mengonfirmasi state server.
+          // Keep completed entries hidden until the next server snapshot excludes them.
           resetRealtimeBaseline();
+          refreshFromBackend(true);
         } else {
-          showToast((res && res.message) || (error && error.message) || 'Sinkronisasi status gagal. Data akan dimuat ulang.', 'error');
+          hiddenCompletedEntryIds.delete(String(id));
+          hiddenCompletedEntryIds.delete(sourceId);
+          ListState.history = ListState.history.filter(h => !(String(h.id) === String(id) && h.completedAt));
+          showToast((res && res.message) || (error && error.message) || 'Gagal menyimpan status. Entri dikembalikan ke daftar.', 'error');
+          if (source === 'reservasi') {
+            if (!ListState.reservasi.some(r => String(r.id) === String(selected.id))) ListState.reservasi.push(selected);
+            if (!ListState.waiting.some(w => String(w.id) === String(selected.id)))
+              ListState.waiting.push({ ...selected, fromReservation: true, sourceId: selected.id });
+          } else {
+            if (!ListState.waiting.some(w => String(w.id) === String(selected.id))) ListState.waiting.push(selected);
+            if (selected.fromReservation && !ListState.reservasi.some(r => String(r.id) === sourceId))
+              ListState.reservasi.push({ ...selected, id: sourceId });
+          }
+          saveLists();
+          renderReservasiList();
+          renderWaitingList();
           refreshFromBackend(true);
         }
       };
@@ -10613,9 +10646,9 @@
       const resBadges = document.querySelectorAll('#tab-badge-reservasi');
       const wlBadges = document.querySelectorAll('#tab-badge-waiting');
       const orderBadges = document.querySelectorAll('#tab-badge-pemesanan');
-      const resCount = ListState.reservasi.filter(r => !isPastReservation(r)).length;
+      const resCount = ListState.reservasi.filter(r => !entryIsCompletedLocally(r) && !isPastReservation(r)).length;
       const today = isoToday();
-      const wlCount = ListState.waiting.filter(w => w.date === today && !isPastReservation(w)).length;
+      const wlCount = ListState.waiting.filter(w => !entryIsCompletedLocally(w) && w.date === today && !isPastReservation(w)).length;
       const orderCount = (ListState.orders || []).length;
 
       resBadges.forEach(b => {
