@@ -5613,6 +5613,20 @@
     /* Three visible navigation tabs and collapsible entry details. */
     .bottom-tabs[data-tab-bar] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
     #entry-more-details[hidden], #entry-more-toggle[hidden] { display: none; }
+    .waiting-duration {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 12px 0;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: #fff6df;
+      color: #805000;
+      font-size: 13px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+    .waiting-duration .material-icons-round { font-size: 18px; flex-shrink: 0; }
   </style>
 </head>
 <body>
@@ -8102,7 +8116,8 @@
         member: !!e.member,
         outlet: e.outlet || '',
         status: e.status || 'Active',
-        createdAt: e.createdAt || Date.now(),
+        createdAt: e.createdAt || null,
+        waitingStartedAt: e.waitingStartedAt || null,
         completedAt: e.completedAt || null,
         items: Array.isArray(e.items) ? e.items : [],
         total: parseFloat(e.total) || 0,
@@ -9058,6 +9073,60 @@
       renderWaitingList();
     }
 
+    // Waiting durations use persisted timestamps, never the latest refresh time.
+    function parseWaitingTimestamp(value) {
+      if (value == null || value === '') return null;
+      const numeric = Number(value);
+      const ms = Number.isFinite(numeric)
+        ? (numeric < 100000000000 ? numeric * 1000 : numeric)
+        : Date.parse(value);
+      return Number.isFinite(ms) && ms > 0 ? ms : null;
+    }
+
+    function waitingClockInfo(entry) {
+      const explicit = parseWaitingTimestamp(entry.waitingStartedAt);
+      if (explicit) return { start: explicit, reservation: false };
+      if (entry.fromReservation || entry.type === 'RESERVASI') {
+        const scheduled = entry.date && entry.time
+          ? Date.parse(entry.date + 'T' + entry.time) : NaN;
+        return { start: Number.isFinite(scheduled) ? scheduled : null, reservation: true };
+      }
+      return { start: parseWaitingTimestamp(entry.createdAt), reservation: false };
+    }
+
+    function compareWaitingEntries(a, b) {
+      const dateOrder = String(a.date || '').localeCompare(String(b.date || ''));
+      if (dateOrder) return dateOrder;
+      const aStart = waitingClockInfo(a).start;
+      const bStart = waitingClockInfo(b).start;
+      return (aStart == null ? Infinity : aStart) - (bStart == null ? Infinity : bStart)
+        || String(a.id || '').localeCompare(String(b.id || ''));
+    }
+
+    function waitingDurationText(start, reservation, now) {
+      if (start == null) return reservation ? 'Reservasi · jam belum diisi' : 'Waktu mulai belum tersedia';
+      if (start > now) return reservation ? 'Belum jadwal reservasi' : 'Belum mulai menunggu';
+      const total = Math.floor((now - start) / 1000);
+      const hours = Math.floor(total / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const seconds = total % 60;
+      return (reservation ? 'Lewat jadwal ' : 'Menunggu ')
+        + (hours ? hours + ' jam ' : '') + minutes + ' menit ' + seconds + ' detik';
+    }
+
+    function updateWaitingClocks() {
+      if (document.hidden || getActivePageId() !== 'page-waiting') return;
+      const now = Date.now();
+      document.querySelectorAll('#waiting-list [data-waiting-start]').forEach(function(el) {
+        const start = el.dataset.waitingStart ? Number(el.dataset.waitingStart) : null;
+        el.textContent = waitingDurationText(start, el.dataset.waitingReservation === 'true', now);
+      });
+    }
+
+    // One shared ticker updates text only, preserving scroll and card interactions.
+    setInterval(updateWaitingClocks, 1000);
+    document.addEventListener('visibilitychange', updateWaitingClocks);
+
     function renderWaitingList() {
       const container = document.getElementById('waiting-list');
       if (!container) return;
@@ -9080,11 +9149,8 @@
       const term = ListState.waitingSearch || '';
       if (term) items = items.filter(i => matchesSearch(i, term));
 
-      // Sort: by date ascending, then by createdAt descending within same date
-      items.sort((a, b) => {
-        if (a.date !== b.date) return a.date.localeCompare(b.date);
-        return b.createdAt - a.createdAt;
-      });
+      // Oldest waiting start first within each date group.
+      items.sort(compareWaitingEntries);
 
       const summaryEl = document.getElementById('waiting-summary');
       summaryEl.textContent = term
@@ -9145,6 +9211,7 @@
 
     function renderWaitingCard(w, i, term) {
       const fromRes = w.fromReservation;
+      const clock = waitingClockInfo(w);
       return `
         <div class="list-card ${fromRes ? 'from-reservation' : ''}" style="animation-delay:${i * 0.04}s">
           <div class="list-card-top">
@@ -9162,6 +9229,11 @@
               <div class="list-card-pax-num">${w.pax}</div>
               <div class="list-card-pax-label">Pax</div>
             </div>
+          </div>
+          <div class="waiting-duration" role="timer" aria-live="off">
+            <span class="material-icons-round" aria-hidden="true">timer</span>
+            <span data-waiting-start="${clock.start == null ? '' : clock.start}"
+              data-waiting-reservation="${clock.reservation}">${waitingDurationText(clock.start, clock.reservation, Date.now())}</span>
           </div>
           <div class="list-card-meta">
             <div class="list-card-meta-row">
@@ -9193,7 +9265,7 @@
                     ${escapeHtml(w.time)}
                   </div>
                 ` : `
-                  <div class="list-card-timestamp">Ditambahkan ${timeAgo(w.createdAt)}</div>
+                  <div class="list-card-timestamp">Ditambahkan ${parseWaitingTimestamp(w.createdAt) ? timeAgo(parseWaitingTimestamp(w.createdAt)) : '- waktu tidak tersedia'}</div>
                 `}
               </div>
             </div>
