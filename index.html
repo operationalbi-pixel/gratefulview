@@ -9167,7 +9167,7 @@
       if (!container) return;
 
       const today = isoToday();
-      let items = mergePendingWaiting(ListState.waiting);
+      let items = mergePendingWaiting(ListState.waiting).filter(entry => !isPastReservation(entry));
 
       // Apply date filter
       if (ListState.waitingFilter === 'today') {
@@ -9908,7 +9908,8 @@
       const x = _normalizeServerEntry(e);
       const rawStatus = (x.status || '').toString().toLowerCase();
       let normalizedStatus = rawStatus;
-      if (rawStatus === 'seated') normalizedStatus = 'seated';
+      if (rawStatus === 'expired') normalizedStatus = 'expired';
+      else if (rawStatus === 'seated') normalizedStatus = 'seated';
       else if (rawStatus === 'cancelled' || rawStatus === 'canceled') normalizedStatus = 'cancelled';
       else if (rawStatus === 'completed') normalizedStatus = 'completed';
       else if (x.status === 'Seated') normalizedStatus = 'seated';
