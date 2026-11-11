@@ -2910,6 +2910,15 @@
       border: 1px solid var(--border-color);
       border-radius: var(--radius-sm);
     }
+    /* Waiting List: show Pax seamlessly, without a bordered badge. */
+    #waiting-list .list-card-pax {
+      min-width: 0;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+    }
     .list-card-pax-num {
       font-size: 1.25rem;
       font-weight: 800;
@@ -9221,10 +9230,11 @@
                 ${fromRes ? '<span class="source-tag"><span class="material-icons-round">event_available</span>Reservasi</span>' : ''}
                 ${w._syncFailed ? '<span class="source-tag" style="color:#b45309">Belum tersinkron</span>' : ''}
               </div>
+              ${String(w.phone || '').trim() ? `
               <div class="list-card-phone list-card-phone-stacked">
                 <span class="material-icons-round">phone</span>
                 ${highlightMatch(formatPhoneDisplay(w.phone), term)}
-              </div>
+              </div>` : ''}
             </div>
             <div class="list-card-pax">
               <div class="list-card-pax-num">${w.pax}</div>
