@@ -6317,7 +6317,7 @@
             <input type="text" id="entry-name" placeholder="Nama customer" autocomplete="off">
           </div>
           <div class="form-field">
-            <label for="entry-phone" id="entry-phone-label">No Telp (opsional)</label>
+            <label for="entry-phone" id="entry-phone-label">No Telp</label>
             <input type="tel" id="entry-phone" placeholder="081234567890" inputmode="tel" autocomplete="off">
           </div>
           <div class="form-field">
@@ -6326,7 +6326,7 @@
           </div>
           <div class="form-field">
             <label for="entry-note">Note</label>
-            <textarea id="entry-note" rows="2" placeholder="Catatan internal staf"></textarea>
+            <textarea id="entry-note" rows="2" placeholder="Catatan"></textarea>
           </div>
           <div class="form-field" id="entry-date-row">
             <label for="entry-date">Tanggal<span class="req">*</span></label>
@@ -9002,7 +9002,6 @@
             <div class="list-card-identity">
               <div class="list-card-name">
                 ${highlightMatch(r.name, term)}
-                ${r.member ? '<span class="source-tag"><span class="material-icons-round">verified</span>Member</span>' : ''}
               </div>
               <div class="list-card-phone list-card-phone-stacked">
                 <span class="material-icons-round">phone</span>
@@ -9244,15 +9243,6 @@
               <div class="list-card-meta-label">Note</div>
               <div class="list-card-meta-value ${w.note ? '' : 'muted'}">${w.note ? highlightMatch(w.note, term) : '—'}</div>
             </div>
-          </div>
-          <div class="list-card-member-row">
-            <label>
-              <div class="custom-checkbox">
-                <input type="checkbox" ${w.member ? 'checked' : ''} onchange="toggleWaitingMember('${w.id}', this.checked)">
-                <span class="checkmark"></span>
-              </div>
-              Member Bakerzin
-            </label>
           </div>
           <div class="list-card-actions">
             <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
@@ -9529,7 +9519,7 @@
 
       const isWaiting = mode === 'waiting';
       document.getElementById('entry-phone-label').innerHTML = isWaiting
-        ? 'No Telp (opsional)' : 'No Telp<span class="req">*</span>';
+        ? 'No Telp' : 'No Telp<span class="req">*</span>';
       document.getElementById('entry-phone').required = !isWaiting;
       document.getElementById('entry-more-details').hidden = isWaiting;
       const detailsButton = document.getElementById('entry-more-toggle');
