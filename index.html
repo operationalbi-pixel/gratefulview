@@ -8929,7 +8929,7 @@
     const EXPIRED_RESERVATION_STORE = 'grateful_expired_reservations_v1';
     const expirySyncAttempted = new Set();
     function isPastReservation(entry) {
-      return !!(entry && entry.date && /^\\d{4}-\\d{2}-\\d{2}$/.test(String(entry.date)) && entry.date < isoToday()
+      return !!(entry && entry.date && /^\d{4}-\d{2}-\d{2}$/.test(String(entry.date)) && entry.date < isoToday()
         && (entry.type === 'RESERVASI' || entry.fromReservation));
     }
     function expiredReservationKey(entry) {
