@@ -9518,9 +9518,8 @@
       timeInput.value = '';
 
       const isWaiting = mode === 'waiting';
-      document.getElementById('entry-phone-label').innerHTML = isWaiting
-        ? 'No Telp' : 'No Telp<span class="req">*</span>';
-      document.getElementById('entry-phone').required = !isWaiting;
+      document.getElementById('entry-phone-label').textContent = 'No Telp';
+      document.getElementById('entry-phone').required = false;
       document.getElementById('entry-more-details').hidden = isWaiting;
       const detailsButton = document.getElementById('entry-more-toggle');
       detailsButton.hidden = !isWaiting;
@@ -9553,7 +9552,7 @@
       const member = false;
 
       if (!name) { showToast('Nama wajib diisi.', 'error'); return; }
-      if ((mode !== 'waiting' || rawPhone) && (!phone || phone.replace(/\D/g, '').length < 8)) {
+      if (rawPhone && (!phone || phone.replace(/\D/g, '').length < 8)) {
         showToast('No telp tidak valid (min 8 digit).', 'error'); return;
       }
       if (!pax || pax < 1) { showToast('Pax harus minimal 1.', 'error'); return; }
