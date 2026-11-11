@@ -9717,9 +9717,12 @@
       const byId = new Map(items.map(item => [String(item.id), item]));
       Object.values(readPendingWaiting()).forEach(record => {
         if (!record || !record.entry || !record.entry.id) return;
-        if (!byId.has(String(record.entry.id))) byId.set(String(record.entry.id), {
-          ...record.entry, _syncPending: record.state !== 'failed', _syncFailed: record.state === 'failed'
-        });
+        if (!byId.has(String(record.entry.id))) {
+          const inFlight = record.state === 'pending' && inFlightWaitingSaves.has(String(record.entry.id));
+          byId.set(String(record.entry.id), {
+            ...record.entry, _syncPending: inFlight, _syncFailed: !inFlight
+          });
+        }
       });
       return [...byId.values()];
     }
@@ -9727,27 +9730,44 @@
     function retryWaitingSync(id) {
       const pending = readPendingWaiting();
       const record = pending[id];
-      if (!record || !record.entry || !hasBackend() || record.state === 'pending') return;
+      if (!record || !record.entry || !hasBackend() ||
+          (record.state === 'pending' && inFlightWaitingSaves.has(String(id)))) return;
       updatePendingWaiting(record.entry, 'pending');
-      const local = ListState.waiting.find(item => item.id === id);
-      if (local) { local._syncPending = true; delete local._syncFailed; }
+      inFlightWaitingSaves.add(String(id));
+      let local = ListState.waiting.find(item => String(item.id) === String(id));
+      if (!local) {
+        local = { ...record.entry };
+        ListState.waiting.push(local);
+      }
+      local._syncPending = true;
+      delete local._syncFailed;
       pendingListWrites++;
       listMutationVersion++;
       renderWaitingList();
       const done = function(ok, message) {
         pendingListWrites = Math.max(0, pendingListWrites - 1);
         listMutationVersion++;
-        const item = ListState.waiting.find(x => x.id === id);
+        inFlightWaitingSaves.delete(String(id));
+        const queued = deferredWaitingStatuses.get(String(id));
+        if (queued) deferredWaitingStatuses.delete(String(id));
+        const item = ListState.waiting.find(x => String(x.id) === String(id));
         if (ok) {
           updatePendingWaiting(record.entry, null);
           if (item) { delete item._syncPending; delete item._syncFailed; }
-          showToast('Waiting List berhasil tersinkron.', 'success');
-          refreshFromBackend(true);
+          if (queued) queued.onSaved();
+          else {
+            showToast('Waiting List berhasil tersinkron.', 'success');
+            refreshFromBackend(true);
+          }
         } else {
           updatePendingWaiting(record.entry, 'failed');
           if (item) { delete item._syncPending; item._syncFailed = true; }
-          showToast('Sinkronisasi masih gagal: ' + (message || 'Periksa koneksi.'), 'error');
-          renderWaitingList();
+          if (queued) queued.onFailed(message);
+          else {
+            waitingRenderSignature = '';
+            showToast('Sinkronisasi masih gagal: ' + (message || 'Periksa koneksi.'), 'error');
+            renderWaitingList();
+          }
         }
       };
       try {
