@@ -9251,6 +9251,7 @@
               ` : ''}
             </div>
             ` : ''}
+            ${w._syncFailed ? `<button class="action-btn" onclick="retryWaitingSync('${escapeAttr(w.id)}')"><span class="material-icons-round">sync</span> Coba Sinkronkan</button>` : ''}
             <button class="action-btn data-available-btn history-availability-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
@@ -9559,6 +9560,40 @@
         });
       });
       return [...byId.values()];
+    }
+
+    function retryWaitingSync(id) {
+      const pending = readPendingWaiting();
+      const record = pending[id];
+      if (!record || !record.entry || !hasBackend() || record.state === 'pending') return;
+      updatePendingWaiting(record.entry, 'pending');
+      const local = ListState.waiting.find(item => item.id === id);
+      if (local) { local._syncPending = true; delete local._syncFailed; }
+      pendingListWrites++;
+      listMutationVersion++;
+      renderWaitingList();
+      const done = function(ok, message) {
+        pendingListWrites = Math.max(0, pendingListWrites - 1);
+        listMutationVersion++;
+        const item = ListState.waiting.find(x => x.id === id);
+        if (ok) {
+          updatePendingWaiting(record.entry, null);
+          if (item) { delete item._syncPending; delete item._syncFailed; }
+          showToast('Waiting List berhasil tersinkron.', 'success');
+          refreshFromBackend(true);
+        } else {
+          updatePendingWaiting(record.entry, 'failed');
+          if (item) { delete item._syncPending; item._syncFailed = true; }
+          showToast('Sinkronisasi masih gagal: ' + (message || 'Periksa koneksi.'), 'error');
+          renderWaitingList();
+        }
+      };
+      try {
+        google.script.run
+          .withSuccessHandler(function(res) { done(!!(res && res.success), res && res.message); })
+          .withFailureHandler(function(err) { done(false, err && err.message); })
+          .saveReservationOrWaiting(record.entry);
+      } catch (err) { done(false, err && err.message); }
     }
 
     function saveEntry() {
