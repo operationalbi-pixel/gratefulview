@@ -9212,7 +9212,6 @@
 
     function renderWaitingCard(w, i, term) {
       const fromRes = w.fromReservation;
-      const clock = waitingClockInfo(w);
       return `
         <div class="list-card ${fromRes ? 'from-reservation' : ''}" style="animation-delay:${i * 0.04}s">
           <div class="list-card-top">
@@ -9231,20 +9230,9 @@
               <div class="list-card-pax-label">Pax</div>
             </div>
           </div>
-          <div class="waiting-duration" role="timer" aria-live="off">
-            <span class="material-icons-round" aria-hidden="true">timer</span>
-            <span data-waiting-start="${clock.start == null ? '' : clock.start}"
-              data-waiting-reservation="${clock.reservation}">${waitingDurationText(clock.start, clock.reservation, Date.now())}</span>
-          </div>
           <div class="list-card-meta">
-            <div class="list-card-meta-row">
-              <div class="list-card-meta-label">Special</div>
-              <div class="list-card-meta-value ${w.special ? '' : 'muted'}">${w.special ? highlightMatch(w.special, term) : '—'}</div>
-            </div>
-            <div class="list-card-meta-row">
-              <div class="list-card-meta-label">Note</div>
-              <div class="list-card-meta-value ${w.note ? '' : 'muted'}">${w.note ? highlightMatch(w.note, term) : '—'}</div>
-            </div>
+            ${String(w.special || '').trim() ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Special</div><div class="list-card-meta-value">${highlightMatch(w.special, term)}</div></div>` : ''}
+            ${String(w.note || '').trim() ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Note</div><div class="list-card-meta-value">${highlightMatch(w.note, term)}</div></div>` : ''}
           </div>
           <div class="list-card-actions">
             ${AppState.isBIHQ || w.time ? `
@@ -9367,6 +9355,8 @@
         : '<span class="material-icons-round">visibility_off</span>' + (isHistoryStatus ? 'DATA HISTORY TIDAK TERSEDIA' : 'Data Tidak Tersedia');
       btn.classList.remove('data-available', 'data-unavailable');
       btn.classList.add(exists ? 'data-available' : 'data-unavailable');
+      // Hide the unavailable History action entirely on Waiting List cards.
+      if (isHistoryStatus) btn.style.display = exists ? '' : 'none';
       btn.dataset.available = exists ? 'true' : 'false';
       btn.title = exists
         ? 'Klik untuk buka dashboard customer. Jika sudah pernah dicari, dashboard dibuka dari cache localStorage.'
