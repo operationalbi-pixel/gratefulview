@@ -9090,7 +9090,7 @@
       // Apply universal search
       const totalCount = items.length;
       if (term) items = items.filter(r => matchesSearch(r, term));
-      const signature = JSON.stringify([today, term, items]);
+      const signature = JSON.stringify([today, term, items, [...hiddenCompletedEntryIds].sort()]);
       if (signature === reservasiRenderSignature) return;
       reservasiRenderSignature = signature;
 
@@ -9290,7 +9290,7 @@
 
       // Oldest waiting start first within each date group.
       items.sort(compareWaitingEntries);
-      const signature = JSON.stringify([today, term, items]);
+      const signature = JSON.stringify([today, term, items, [...hiddenCompletedEntryIds].sort()]);
       if (signature === waitingRenderSignature) { updateWaitingClocks(); return; }
       waitingRenderSignature = signature;
 
@@ -9335,7 +9335,7 @@
       const clock = waitingClockInfo(w);
       const elapsed = waitingMinutesText(clock.start, Date.now());
       return `
-        <div class="list-card ${fromRes ? 'from-reservation' : ''}" style="animation-delay:${i * 0.04}s">
+        <div class="list-card ${fromRes ? 'from-reservation' : ''}" data-entry-id="${escapeAttr(w.id)}" style="animation-delay:${i * 0.04}s">
           <div class="list-card-top">
             <div class="list-card-identity">
               <div class="list-card-name">
@@ -9374,11 +9374,11 @@
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
             </button>
-            <button class="action-btn action-confirm" ${w._syncPending || w._syncFailed ? 'disabled title="Tunggu sinkronisasi ke server"' : ''} onclick="confirmEntry('waiting','${w.id}','seated')">
+            <button class="action-btn action-confirm" ${w._syncPending || w._syncFailed ? 'disabled title="Tunggu sinkronisasi ke server"' : ''} onclick="confirmEntry('waiting','${w.id}','seated',this)">
               <span class="material-icons-round">check_circle</span>
               Sudah Masuk
             </button>
-            <button class="action-btn action-cancel" ${w._syncPending || w._syncFailed ? 'disabled title="Tunggu sinkronisasi ke server"' : ''} onclick="confirmEntry('waiting','${w.id}','cancelled')">
+            <button class="action-btn action-cancel" ${w._syncPending || w._syncFailed ? 'disabled title="Tunggu sinkronisasi ke server"' : ''} onclick="confirmEntry('waiting','${w.id}','cancelled',this)">
               <span class="material-icons-round">cancel</span>
               Cancel
             </button>
@@ -9904,15 +9904,29 @@
     /* ============================================================
        CONFIRM ENTRY (SUDAH MASUK / CANCEL → HISTORY)
        ============================================================ */
-    function confirmEntry(source, id, status) {
+    function confirmEntry(source, id, status, buttonEl) {
       if (pendingEntryStatuses.has(id)) return;
       const items = source === 'reservasi' ? ListState.reservasi : ListState.waiting;
-      const selected = items.find(x => x.id === id);
-      if (!selected) return;
-      if (selected._syncPending || selected._syncFailed || readPendingWaiting()[id]) {
-        showToast('Entri belum tersinkron ke server.', 'error');
+      const selected = items.find(x => String(x.id) === String(id))
+        || (source === 'waiting' ? mergePendingWaiting(ListState.waiting).find(x => String(x.id) === String(id)) : null);
+      if (!selected) {
+        showToast('Entri tidak ditemukan. Silakan refresh daftar.', 'error');
         return;
       }
+      if (selected._syncPending || selected._syncFailed) {
+        showToast('Entri masih sinkronisasi. Tunggu hingga tersimpan di server.', 'error');
+        return;
+      }
+      // An old pending-cache record must not prevent an already-synced entry from being handled.
+      if (readPendingWaiting()[id]) updatePendingWaiting(selected, null);
+      // Immediate visual removal, independently of slow network / render signature caching.
+      const card = buttonEl && buttonEl.closest ? buttonEl.closest('.list-card') : null;
+      if (card) card.remove();
+      const sourceIdForHide = String(selected.sourceId || id);
+      hiddenCompletedEntryIds.add(String(id));
+      hiddenCompletedEntryIds.add(sourceIdForHide);
+      reservasiRenderSignature = '';
+      waitingRenderSignature = '';
       const finish = function() {
       let entry = null;
 
@@ -9948,6 +9962,8 @@
       const label = status === 'seated' ? 'Sudah Masuk' : 'Dibatalkan';
       showToast(`${entry.name} · ${label}`, status === 'seated' ? 'success' : 'info');
 
+      reservasiRenderSignature = '';
+      waitingRenderSignature = '';
       renderReservasiList();
       renderWaitingList();
       updateTabBadges();
@@ -9961,10 +9977,8 @@
       // UI diselesaikan lebih dulu agar tombol terasa instan.
       // Database disinkronkan di background. Jika gagal, refresh backend
       // akan mengembalikan kondisi server terbaru.
-      const sourceId = String(selected.sourceId || id);
+      const sourceId = sourceIdForHide;
       pendingEntryStatuses.add(id);
-      hiddenCompletedEntryIds.add(String(id));
-      hiddenCompletedEntryIds.add(sourceId);
       pendingListWrites++;
       listMutationVersion++;
 
@@ -9981,6 +9995,8 @@
         } else {
           hiddenCompletedEntryIds.delete(String(id));
           hiddenCompletedEntryIds.delete(sourceId);
+          reservasiRenderSignature = '';
+          waitingRenderSignature = '';
           ListState.history = ListState.history.filter(h => !(String(h.id) === String(id) && h.completedAt));
           showToast((res && res.message) || (error && error.message) || 'Gagal menyimpan status. Entri dikembalikan ke daftar.', 'error');
           if (source === 'reservasi') {
