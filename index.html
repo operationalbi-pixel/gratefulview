@@ -5610,6 +5610,9 @@
       border-radius: 16px !important;
     }
 
+    /* Three visible navigation tabs and collapsible entry details. */
+    .bottom-tabs[data-tab-bar] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    #entry-more-details[hidden], #entry-more-toggle[hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -5854,11 +5857,6 @@
         <span>Waiting List</span>
         <span class="tab-badge" id="tab-badge-waiting" style="display:none">0</span>
       </button>
-      <button class="tab-btn" data-tab="page-pemesanan" onclick="switchTab('page-pemesanan')">
-        <span class="material-icons-round">shopping_bag</span>
-        <span>Pemesanan</span>
-        <span class="tab-badge" id="tab-badge-pemesanan" style="display:none">0</span>
-      </button>
     </nav>
   </div>
 
@@ -5972,11 +5970,6 @@
         <span class="material-icons-round">hourglass_top</span>
         <span>Waiting List</span>
       </button>
-      <button class="tab-btn" data-tab="page-pemesanan" onclick="switchTab('page-pemesanan')">
-        <span class="material-icons-round">shopping_bag</span>
-        <span>Pemesanan</span>
-        <span class="tab-badge" id="tab-badge-pemesanan" style="display:none">0</span>
-      </button>
     </nav>
   </div>
 
@@ -6068,11 +6061,6 @@
         <span class="material-icons-round">hourglass_top</span>
         <span>Waiting List</span>
       </button>
-      <button class="tab-btn" data-tab="page-pemesanan" onclick="switchTab('page-pemesanan')">
-        <span class="material-icons-round">shopping_bag</span>
-        <span>Pemesanan</span>
-        <span class="tab-badge" id="tab-badge-pemesanan" style="display:none">0</span>
-      </button>
     </nav>
   </div>
 
@@ -6151,10 +6139,6 @@
       <button class="tab-btn" data-tab="page-waiting" onclick="switchTab('page-waiting')">
         <span class="material-icons-round">hourglass_top</span>
         <span>Waiting List</span>
-      </button>
-      <button class="tab-btn active" data-tab="page-pemesanan" onclick="switchTab('page-pemesanan')">
-        <span class="material-icons-round">shopping_bag</span>
-        <span>Pemesanan</span>
       </button>
     </nav>
   </div>
@@ -6314,56 +6298,39 @@
       </div>
       <div class="modal-body" style="flex:1;overflow-y:auto">
         <div class="form-grid">
-          <div class="form-row two-col">
-            <div class="form-field">
-              <label>Nama<span class="req">*</span></label>
-              <input type="text" id="entry-name" placeholder="Nama customer" autocomplete="off">
-            </div>
-            <div class="form-field">
-              <label>No Telp<span class="req">*</span></label>
-              <input type="tel" id="entry-phone" placeholder="081234567890" inputmode="tel" autocomplete="off">
-            </div>
+          <div class="form-field">
+            <label for="entry-name">Nama<span class="req">*</span></label>
+            <input type="text" id="entry-name" placeholder="Nama customer" autocomplete="off">
           </div>
-
-          <div class="form-row two-col" id="entry-date-row">
+          <div class="form-field">
+            <label for="entry-phone" id="entry-phone-label">No Telp (opsional)</label>
+            <input type="tel" id="entry-phone" placeholder="081234567890" inputmode="tel" autocomplete="off">
+          </div>
+          <div class="form-field">
+            <label for="entry-pax">Pax<span class="req">*</span></label>
+            <input type="number" id="entry-pax" placeholder="2" min="1" max="50" inputmode="numeric">
+          </div>
+          <div class="form-field">
+            <label for="entry-note">Note</label>
+            <textarea id="entry-note" rows="2" placeholder="Catatan internal staf"></textarea>
+          </div>
+          <div class="form-field" id="entry-date-row">
+            <label for="entry-date">Tanggal<span class="req">*</span></label>
+            <input type="date" id="entry-date">
+          </div>
+          <button type="button" class="btn btn-secondary" id="entry-more-toggle"
+            aria-expanded="false" aria-controls="entry-more-details" onclick="toggleEntryDetails()">
+            More Detail
+          </button>
+          <div class="form-grid" id="entry-more-details" hidden>
             <div class="form-field">
-              <label>Tanggal<span class="req">*</span></label>
-              <input type="date" id="entry-date">
-            </div>
-            <div class="form-field">
-              <label>Jam</label>
+              <label for="entry-time">Jam</label>
               <input type="time" id="entry-time">
             </div>
-          </div>
-
-          <div class="form-row two-col">
             <div class="form-field">
-              <label>Pax<span class="req">*</span></label>
-              <input type="number" id="entry-pax" placeholder="2" min="1" max="50" inputmode="numeric">
+              <label for="entry-special">Special Request</label>
+              <textarea id="entry-special" rows="2" placeholder="Mis. meja dekat jendela, kue ulang tahun, dsb."></textarea>
             </div>
-            <div class="form-field" id="entry-member-field" style="display:none">
-              <label>Status Member</label>
-              <label class="form-toggle" for="entry-member-input" style="margin-top:0">
-                <div class="custom-checkbox">
-                  <input type="checkbox" id="entry-member-input">
-                  <span class="checkmark"></span>
-                </div>
-                <div class="form-toggle-text">
-                  <strong>Member Bakerzin</strong>
-                  <span>Customer terdaftar di program member</span>
-                </div>
-              </label>
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label>Special Request</label>
-            <textarea id="entry-special" rows="2" placeholder="Mis. meja dekat jendela, kue ulang tahun, dsb."></textarea>
-          </div>
-
-          <div class="form-field">
-            <label>Note</label>
-            <textarea id="entry-note" rows="2" placeholder="Catatan internal staf"></textarea>
           </div>
         </div>
       </div>
@@ -8714,7 +8681,7 @@
        ============================================================ */
     function isoToday() {
       const d = new Date();
-      return d.toISOString().slice(0,10);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
 
     function formatHumanDate(isoStr) {
@@ -9460,6 +9427,14 @@
     /* ============================================================
        ADD ENTRY MODAL
        ============================================================ */
+    function toggleEntryDetails() {
+      const details = document.getElementById('entry-more-details');
+      const button = document.getElementById('entry-more-toggle');
+      details.hidden = !details.hidden;
+      button.setAttribute('aria-expanded', String(!details.hidden));
+      button.textContent = details.hidden ? 'More Detail' : 'Less Detail';
+    }
+
     function openAddModal(mode) {
       if (entrySaveInProgress) return;
       entryDraftId = uid();
@@ -9480,16 +9455,15 @@
       dateInput.value = isoToday();
       timeInput.value = '';
 
-      // Member field visibility
-      const memberField = document.getElementById('entry-member-field');
-      const memberInput = document.getElementById('entry-member-input');
-      if (mode === 'waiting') {
-        memberField.style.display = '';
-        memberInput.checked = false;
-      } else {
-        memberField.style.display = 'none';
-        memberInput.checked = false;
-      }
+      const isWaiting = mode === 'waiting';
+      document.getElementById('entry-phone-label').innerHTML = isWaiting
+        ? 'No Telp (opsional)' : 'No Telp<span class="req">*</span>';
+      document.getElementById('entry-phone').required = !isWaiting;
+      document.getElementById('entry-more-details').hidden = isWaiting;
+      const detailsButton = document.getElementById('entry-more-toggle');
+      detailsButton.hidden = !isWaiting;
+      detailsButton.setAttribute('aria-expanded', String(!isWaiting));
+      detailsButton.textContent = isWaiting ? 'More Detail' : 'Less Detail';
 
       // For reservasi: date is required (it'll appear in waiting on that date too)
       // For waiting: date defaults to today
@@ -9507,16 +9481,17 @@
       if (entrySaveInProgress || !ListState.addMode) return;
       const mode = ListState.addMode;
       const name = document.getElementById('entry-name').value.trim();
-      const phone = normalizePhone(document.getElementById('entry-phone').value.trim());
+      const rawPhone = document.getElementById('entry-phone').value.trim();
+      const phone = normalizePhone(rawPhone);
       const pax = parseInt(document.getElementById('entry-pax').value, 10) || 0;
       const date = document.getElementById('entry-date').value;
       const time = document.getElementById('entry-time').value;
       const special = document.getElementById('entry-special').value.trim();
       const note = document.getElementById('entry-note').value.trim();
-      const member = document.getElementById('entry-member-input').checked;
+      const member = false;
 
       if (!name) { showToast('Nama wajib diisi.', 'error'); return; }
-      if (!phone || phone.replace(/\D/g, '').length < 8) {
+      if ((mode !== 'waiting' || rawPhone) && (!phone || phone.replace(/\D/g, '').length < 8)) {
         showToast('No telp tidak valid (min 8 digit).', 'error'); return;
       }
       if (!pax || pax < 1) { showToast('Pax harus minimal 1.', 'error'); return; }
