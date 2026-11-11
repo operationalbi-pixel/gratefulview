@@ -5627,6 +5627,8 @@
       font-variant-numeric: tabular-nums;
     }
     .waiting-duration .material-icons-round { font-size: 18px; flex-shrink: 0; }
+    /* Only show customer history after availability is confirmed. */
+    .history-availability-btn:not([data-available="true"]) { display: none !important; }
   </style>
 </head>
 <body>
@@ -9109,7 +9111,7 @@
       const hours = Math.floor(total / 3600);
       const minutes = Math.floor((total % 3600) / 60);
       const seconds = total % 60;
-      return (reservation ? 'Lewat jadwal ' : 'Menunggu ')
+      return (reservation ? 'Lewat jadwal ' : '')
         + (hours ? hours + ' jam ' : '') + minutes + ' menit ' + seconds + ' detik';
     }
 
@@ -9245,20 +9247,20 @@
             </div>
           </div>
           <div class="list-card-actions">
+            ${AppState.isBIHQ || w.time ? `
             <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
               ${renderBIHQOutlet(w.outlet)}
+              ${w.time ? `
               <div class="list-card-context-time">
                 ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
-                ${w.time ? `
-                  <div class="list-card-reservation-time">
-                    <span class="material-icons-round">schedule</span>
-                    ${escapeHtml(w.time)}
-                  </div>
-                ` : `
-                  <div class="list-card-timestamp">Ditambahkan ${parseWaitingTimestamp(w.createdAt) ? timeAgo(parseWaitingTimestamp(w.createdAt)) : '- waktu tidak tersedia'}</div>
-                `}
+                <div class="list-card-reservation-time">
+                  <span class="material-icons-round">schedule</span>
+                  ${escapeHtml(w.time)}
+                </div>
               </div>
+              ` : ''}
             </div>
+            ` : ''}
             <button class="action-btn data-available-btn history-availability-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
