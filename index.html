@@ -9133,7 +9133,7 @@
       if (!container) return;
 
       const today = isoToday();
-      let items = [...ListState.waiting];
+      let items = mergePendingWaiting(ListState.waiting);
 
       // Apply date filter
       if (ListState.waitingFilter === 'today') {
@@ -9219,6 +9219,7 @@
               <div class="list-card-name">
                 ${highlightMatch(w.name, term)}
                 ${fromRes ? '<span class="source-tag"><span class="material-icons-round">event_available</span>Reservasi</span>' : ''}
+                ${w._syncFailed ? '<span class="source-tag" style="color:#b45309">Belum tersinkron</span>' : ''}
               </div>
               <div class="list-card-phone list-card-phone-stacked">
                 <span class="material-icons-round">phone</span>
@@ -9254,11 +9255,11 @@
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
             </button>
-            <button class="action-btn action-confirm" onclick="confirmEntry('waiting','${w.id}','seated')">
+            <button class="action-btn action-confirm" ${w._syncPending || w._syncFailed ? 'disabled title="Tunggu sinkronisasi ke server"' : ''} onclick="confirmEntry('waiting','${w.id}','seated')">
               <span class="material-icons-round">check_circle</span>
               Sudah Masuk
             </button>
-            <button class="action-btn action-cancel" onclick="confirmEntry('waiting','${w.id}','cancelled')">
+            <button class="action-btn action-cancel" ${w._syncPending || w._syncFailed ? 'disabled title="Tunggu sinkronisasi ke server"' : ''} onclick="confirmEntry('waiting','${w.id}','cancelled')">
               <span class="material-icons-round">cancel</span>
               Cancel
             </button>
@@ -9531,6 +9532,35 @@
       ListState.addMode = null;
     }
 
+    // Pending Waiting List entries are cached locally until the server confirms them.
+    const WAITING_PENDING_KEY = 'grateful_waiting_pending_v1';
+    function readPendingWaiting() {
+      try {
+        const data = JSON.parse(localStorage.getItem(WAITING_PENDING_KEY) || '{}');
+        return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+      } catch (_) { return {}; }
+    }
+    function writePendingWaiting(entries) {
+      try { localStorage.setItem(WAITING_PENDING_KEY, JSON.stringify(entries)); }
+      catch (_) { showToast('Penyimpanan sementara browser tidak tersedia.', 'error'); }
+    }
+    function updatePendingWaiting(entry, state) {
+      const entries = readPendingWaiting();
+      if (state === null) delete entries[entry.id];
+      else entries[entry.id] = { entry, state };
+      writePendingWaiting(entries);
+    }
+    function mergePendingWaiting(items) {
+      const byId = new Map(items.map(item => [String(item.id), item]));
+      Object.values(readPendingWaiting()).forEach(record => {
+        if (!record || !record.entry || !record.entry.id) return;
+        if (!byId.has(String(record.entry.id))) byId.set(String(record.entry.id), {
+          ...record.entry, _syncPending: record.state !== 'failed', _syncFailed: record.state === 'failed'
+        });
+      });
+      return [...byId.values()];
+    }
+
     function saveEntry() {
       if (entrySaveInProgress || !ListState.addMode) return;
       const mode = ListState.addMode;
@@ -9560,6 +9590,49 @@
         status: 'Active',
         createdAt: Date.now()
       };
+
+      if (mode === 'waiting') {
+        // Optimistic UI: never block the form on the Google Apps Script round trip.
+        entry.fromReservation = false;
+        updatePendingWaiting(entry, 'pending');
+        ListState.waiting.push({ ...entry, _syncPending: hasBackend() });
+        document.getElementById('modal-add').classList.remove('visible');
+        ListState.addMode = null;
+        entryDraftId = null;
+        saveLists();
+        renderWaitingList();
+        showToast('Ditambahkan ke antrean. Sinkronisasi berjalan.', 'info');
+
+        if (!hasBackend()) {
+          updatePendingWaiting(entry, null);
+          return;
+        }
+        pendingListWrites++;
+        listMutationVersion++;
+        const settleWaiting = function(success, message) {
+          pendingListWrites = Math.max(0, pendingListWrites - 1);
+          listMutationVersion++;
+          const local = ListState.waiting.find(item => item.id === entry.id);
+          if (success) {
+            updatePendingWaiting(entry, null);
+            if (local) { delete local._syncPending; delete local._syncFailed; }
+            showToast('Waiting List berhasil tersimpan.', 'success');
+            refreshFromBackend(true);
+          } else {
+            updatePendingWaiting(entry, 'failed');
+            if (local) { delete local._syncPending; local._syncFailed = true; }
+            renderWaitingList();
+            showToast('Gagal sinkronisasi: ' + (message || 'Periksa koneksi.') + ' Data masih tersimpan di browser.', 'error');
+          }
+        };
+        try {
+          google.script.run
+            .withSuccessHandler(function(res) { settleWaiting(!!(res && res.success), res && res.message); })
+            .withFailureHandler(function(err) { settleWaiting(false, err && err.message); })
+            .saveReservationOrWaiting(entry);
+        } catch (err) { settleWaiting(false, err && err.message); }
+        return;
+      }
 
       entrySaveInProgress = true;
       pendingListWrites++;
@@ -9627,6 +9700,10 @@
       const items = source === 'reservasi' ? ListState.reservasi : ListState.waiting;
       const selected = items.find(x => x.id === id);
       if (!selected) return;
+      if (selected._syncPending || selected._syncFailed || readPendingWaiting()[id]) {
+        showToast('Entri belum tersinkron ke server.', 'error');
+        return;
+      }
       const finish = function() {
       let entry = null;
 
