@@ -2898,6 +2898,47 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+    /* Waiting List: outlet and elapsed minutes together, without nested boxes. */
+    #waiting-list .waiting-inline-context {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      height: auto;
+      min-height: 40px;
+      padding: 8px 10px;
+    }
+    #waiting-list .waiting-inline-context .list-card-outlet {
+      width: auto;
+      max-width: 100%;
+      min-width: 0;
+      flex: 0 1 auto;
+      gap: 5px;
+    }
+    #waiting-list .waiting-inline-duration,
+    #waiting-list .waiting-inline-context .list-card-context-time {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-width: 0;
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    #waiting-list .waiting-inline-duration[hidden] { display: none !important; }
+    #waiting-list .waiting-inline-duration .material-icons-round,
+    #waiting-list .waiting-inline-context .list-card-context-time .material-icons-round {
+      font-size: 15px;
+      color: var(--cyan-400);
+    }
+    #waiting-list .waiting-inline-divider {
+      margin: 0 3px;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
     .list-card-pax {
       flex-shrink: 0;
       display: flex;
@@ -9148,12 +9189,20 @@
         + (hours ? hours + ' jam ' : '') + minutes + ' menit ' + seconds + ' detik';
     }
 
+    function waitingMinutesText(start, now) {
+      if (start == null || !Number.isFinite(start) || start > now) return '';
+      return Math.floor((now - start) / 60000) + ' Menit';
+    }
+
     function updateWaitingClocks() {
       if (document.hidden || getActivePageId() !== 'page-waiting') return;
       const now = Date.now();
       document.querySelectorAll('#waiting-list [data-waiting-start]').forEach(function(el) {
         const start = el.dataset.waitingStart ? Number(el.dataset.waitingStart) : null;
-        el.textContent = waitingDurationText(start, el.dataset.waitingReservation === 'true', now);
+        const text = waitingMinutesText(start, now);
+        el.textContent = text;
+        const wrapper = el.closest('.waiting-inline-duration');
+        if (wrapper) wrapper.hidden = !text;
       });
     }
 
@@ -9246,6 +9295,8 @@
 
     function renderWaitingCard(w, i, term) {
       const fromRes = w.fromReservation;
+      const clock = waitingClockInfo(w);
+      const elapsed = waitingMinutesText(clock.start, Date.now());
       return `
         <div class="list-card ${fromRes ? 'from-reservation' : ''}" style="animation-delay:${i * 0.04}s">
           <div class="list-card-top">
@@ -9272,20 +9323,15 @@
             ${String(w.note || '').trim() ? `<div class="list-card-meta-row"><div class="list-card-meta-label">Note</div><div class="list-card-meta-value">${highlightMatch(w.note, term)}</div></div>` : ''}
           </div>` : ''}
           <div class="list-card-actions">
-            ${AppState.isBIHQ || w.time ? `
-            <div class="list-card-context-row ${AppState.isBIHQ ? 'has-outlet' : ''}">
-              ${renderBIHQOutlet(w.outlet)}
-              ${w.time ? `
-              <div class="list-card-context-time">
-                ${AppState.isBIHQ ? '<span class="list-card-context-separator" aria-hidden="true">|</span>' : ''}
-                <div class="list-card-reservation-time">
-                  <span class="material-icons-round">schedule</span>
-                  ${escapeHtml(w.time)}
-                </div>
+            <div class="list-card-context-row waiting-inline-context">
+              ${renderWaitingOutlet(w.outlet)}
+              <div class="waiting-inline-duration" ${elapsed ? '' : 'hidden'}>
+                <span class="waiting-inline-divider" aria-hidden="true">|</span>
+                <span class="material-icons-round" aria-hidden="true">hourglass_top</span>
+                <span data-waiting-start="${clock.start == null ? '' : clock.start}">${elapsed}</span>
               </div>
-              ` : ''}
+              ${w.time ? `<div class="list-card-context-time"><span class="waiting-inline-divider" aria-hidden="true">|</span><span class="material-icons-round" aria-hidden="true">schedule</span><span>${escapeHtml(w.time)}</span></div>` : ''}
             </div>
-            ` : ''}
             ${w._syncFailed ? `<button class="action-btn" onclick="retryWaitingSync('${escapeAttr(w.id)}')"><span class="material-icons-round">sync</span> Coba Sinkronkan</button>` : ''}
             <button class="action-btn data-available-btn history-availability-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
@@ -9302,6 +9348,14 @@
           </div>
         </div>
       `;
+    }
+
+    function renderWaitingOutlet(outlet) {
+      const name = String(outlet || AppState.outlet || '').trim();
+      return `<div class="list-card-outlet" title="${escapeAttr(name || 'Outlet tidak tersedia')}">
+        <span class="material-icons-round" aria-hidden="true">storefront</span>
+        <span class="list-card-outlet-name">${escapeHtml(name || 'Outlet tidak tersedia')}</span>
+      </div>`;
     }
 
     function renderBIHQOutlet(outlet) {
