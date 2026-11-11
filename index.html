@@ -2769,6 +2769,14 @@
     #waiting-list .list-card,
     #reservasi-list .date-section,
     #waiting-list .date-section { animation: none !important; }
+    /* No duplicate date controls or headings; keep list counters discreet. */
+    #page-reservasi .list-total-summary,
+    #page-waiting .list-total-summary {
+      margin: 0 2px 12px;
+      text-align: right;
+      font-size: 0.72rem;
+      color: var(--text-tertiary);
+    }
     .list-grid { display: flex; flex-direction: column; gap: 10px; }
     .list-card {
       background: var(--bg-card);
@@ -5989,14 +5997,7 @@
 
       </div>
 
-      <div class="filter-bar date-filter-bar">
-        <label class="filter-chip active date-select-chip" id="reservasi-date-chip" for="reservasi-date-input">
-          <span class="material-icons-round">today</span>
-          <span id="reservasi-date-label">Hari Ini</span>
-          <input type="date" id="reservasi-date-input" aria-label="Pilih tanggal reservasi" onchange="setListDate('reservasi', this.value)">
-        </label>
-        <div class="filter-summary" id="reservasi-summary">0 reservasi</div>
-      </div>
+      <div class="filter-summary list-total-summary" id="reservasi-summary">0 reservasi</div>
 
       <div id="reservasi-list">
         <!-- populated by JS -->
@@ -6066,14 +6067,7 @@
 
       </div>
 
-      <div class="filter-bar date-filter-bar">
-        <label class="filter-chip active date-select-chip" id="waiting-date-chip" for="waiting-date-input">
-          <span class="material-icons-round">today</span>
-          <span id="waiting-date-label">Hari Ini</span>
-          <input type="date" id="waiting-date-input" aria-label="Pilih tanggal waiting list" onchange="setListDate('waiting', this.value)">
-        </label>
-        <div class="filter-summary" id="waiting-summary">0 entri</div>
-      </div>
+      <div class="filter-summary list-total-summary" id="waiting-summary">0 entri</div>
 
       <div id="waiting-list">
         <!-- populated by JS -->
@@ -9034,15 +9028,17 @@
 
       const term = ListState.reservasiSearch || '';
 
-      // Sort newest first by createdAt
-      const selectedDate = ListState.reservasiFilterDate || isoToday();
-      syncListDateControls('reservasi', selectedDate);
-      let items = ListState.reservasi.filter(r => !isPastReservation(r) && r.date === selectedDate).sort((a, b) => b.createdAt - a.createdAt);
+      // All active reservations, nearest calendar date first, then earlier reservation time.
+      const today = isoToday();
+      let items = ListState.reservasi.filter(r => !isPastReservation(r) && r.date >= today)
+        .sort((a, b) => String(a.date || '').localeCompare(String(b.date || ''))
+          || String(a.time || '99:99').localeCompare(String(b.time || '99:99'))
+          || Number(a.createdAt || 0) - Number(b.createdAt || 0));
 
       // Apply universal search
       const totalCount = items.length;
       if (term) items = items.filter(r => matchesSearch(r, term));
-      const signature = JSON.stringify([selectedDate, term, items]);
+      const signature = JSON.stringify([today, term, items]);
       if (signature === reservasiRenderSignature) return;
       reservasiRenderSignature = signature;
 
@@ -9225,10 +9221,7 @@
       const today = isoToday();
       let items = mergePendingWaiting(ListState.waiting).filter(entry => !isPastReservation(entry));
 
-      const selectedDate = ListState.waitingFilterDate || today;
-      syncListDateControls('waiting', selectedDate);
-      items = items.filter(i => i.date === selectedDate);
-
+      // No separate date filter: show all active entries in chronological order.
       const totalAfterDate = items.length;
 
       // Apply universal search
@@ -9237,7 +9230,7 @@
 
       // Oldest waiting start first within each date group.
       items.sort(compareWaitingEntries);
-      const signature = JSON.stringify([selectedDate, term, items]);
+      const signature = JSON.stringify([today, term, items]);
       if (signature === waitingRenderSignature) { updateWaitingClocks(); return; }
       waitingRenderSignature = signature;
 
@@ -9253,7 +9246,7 @@
             <div class="list-empty">
               <span class="material-icons-round">search_off</span>
               <h4>Tidak ada hasil</h4>
-              <p>Tidak ada antrian yang cocok dengan "${escapeHtml(term)}". Coba kata kunci lain atau ubah filter tanggal.</p>
+              <p>Tidak ada antrian yang cocok dengan "${escapeHtml(term)}". Coba kata kunci lain.</p>
             </div>
           `;
         } else {
@@ -9268,33 +9261,10 @@
         return;
       }
 
-      // Group by date
-      const groups = {};
-      items.forEach(it => {
-        if (!groups[it.date]) groups[it.date] = [];
-        groups[it.date].push(it);
-      });
-
-      let html = '';
-      Object.keys(groups).sort().forEach(function(date) {
-        const isT = date === today;
-        html += `
-          <div class="date-section">
-            <div class="date-section-header">
-              <div class="date-section-pill ${isT ? 'today' : ''}">
-                <span class="material-icons-round">${isT ? 'today' : 'event'}</span>
-                ${isT ? 'Hari Ini · ' : ''}${formatHumanDate(date)}
-              </div>
-              <div class="date-section-count">${groups[date].length} entri</div>
-            </div>
-            <div class="list-grid">
-              ${groups[date].map((it, i) => renderWaitingCard(it, i, term)).join('')}
-            </div>
-          </div>
-        `;
-      });
-
-      container.innerHTML = html;
+      // A single seamless list; no duplicate "Hari Ini" date banners.
+      container.innerHTML = '<div class="list-grid">' +
+        items.map((it, i) => renderWaitingCard(it, i, term)).join('') +
+        '</div>';
       attachDataAvailableHandlers(container);
     }
 
@@ -9335,7 +9305,7 @@
                 <span class="material-icons-round" aria-hidden="true">hourglass_top</span>
                 <span data-waiting-start="${clock.start == null ? '' : clock.start}">${elapsed}</span>
               </div>
-              ${w.time ? `<div class="list-card-context-time"><span class="waiting-inline-divider" aria-hidden="true">|</span><span class="material-icons-round" aria-hidden="true">schedule</span><span>${escapeHtml(w.time)}</span></div>` : ''}
+              ${w.date ? `<div class="list-card-context-time"><span class="waiting-inline-divider" aria-hidden="true">|</span><span class="material-icons-round" aria-hidden="true">event</span><span>${formatHumanDate(w.date)}${w.time ? ' · ' + escapeHtml(w.time) : ''}</span></div>` : ''}
             </div>
             ${w._syncFailed ? `<button class="action-btn" onclick="retryWaitingSync('${escapeAttr(w.id)}')"><span class="material-icons-round">sync</span> Coba Sinkronkan</button>` : ''}
             <button class="action-btn data-available-btn history-availability-btn" data-phone="${escapeAttr(w.phone)}" data-name="${escapeAttr(w.name)}">
