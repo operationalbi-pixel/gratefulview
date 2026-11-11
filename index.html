@@ -8047,6 +8047,8 @@
     const pendingEntryStatuses = new Set();
     // Hide completed rows immediately; keep them hidden during stale backend refreshes.
     const hiddenCompletedEntryIds = new Set();
+    const inFlightWaitingSaves = new Set();
+    const deferredWaitingStatuses = new Map();
     function entryIsCompletedLocally(entry) {
       return !!entry && (hiddenCompletedEntryIds.has(String(entry.id || ''))
         || hiddenCompletedEntryIds.has(String(entry.sourceId || '')));
@@ -9374,11 +9376,11 @@
               <span class="spinner spinner-dark" style="width:14px;height:14px;border-width:2px"></span>
               Mengecek...
             </button>
-            <button class="action-btn action-confirm" ${w._syncPending || w._syncFailed ? 'disabled title="Tunggu sinkronisasi ke server"' : ''} onclick="confirmEntry('waiting','${w.id}','seated',this)">
+            <button class="action-btn action-confirm" ${w._syncFailed || (w._syncPending && !inFlightWaitingSaves.has(String(w.id))) ? 'disabled title="Klik Coba Sinkronkan dahulu"' : ''} onclick="confirmEntry('waiting','${w.id}','seated',this)">
               <span class="material-icons-round">check_circle</span>
               Sudah Masuk
             </button>
-            <button class="action-btn action-cancel" ${w._syncPending || w._syncFailed ? 'disabled title="Tunggu sinkronisasi ke server"' : ''} onclick="confirmEntry('waiting','${w.id}','cancelled',this)">
+            <button class="action-btn action-cancel" ${w._syncFailed || (w._syncPending && !inFlightWaitingSaves.has(String(w.id))) ? 'disabled title="Klik Coba Sinkronkan dahulu"' : ''} onclick="confirmEntry('waiting','${w.id}','cancelled',this)">
               <span class="material-icons-round">cancel</span>
               Cancel
             </button>
@@ -9800,6 +9802,7 @@
         entry.fromReservation = false;
         updatePendingWaiting(entry, 'pending');
         ListState.waiting.push({ ...entry, _syncPending: hasBackend() });
+        if (hasBackend()) inFlightWaitingSaves.add(String(entry.id));
         document.getElementById('modal-add').classList.remove('visible');
         ListState.addMode = null;
         entryDraftId = null;
@@ -9816,17 +9819,27 @@
         const settleWaiting = function(success, message) {
           pendingListWrites = Math.max(0, pendingListWrites - 1);
           listMutationVersion++;
+          inFlightWaitingSaves.delete(String(entry.id));
+          const queued = deferredWaitingStatuses.get(String(entry.id));
+          if (queued) deferredWaitingStatuses.delete(String(entry.id));
           const local = ListState.waiting.find(item => item.id === entry.id);
           if (success) {
             updatePendingWaiting(entry, null);
             if (local) { delete local._syncPending; delete local._syncFailed; }
-            showToast('Waiting List berhasil tersimpan.', 'success');
-            refreshFromBackend(true);
+            if (queued) queued.onSaved();
+            else {
+              showToast('Waiting List berhasil tersimpan.', 'success');
+              refreshFromBackend(true);
+            }
           } else {
             updatePendingWaiting(entry, 'failed');
             if (local) { delete local._syncPending; local._syncFailed = true; }
-            renderWaitingList();
-            showToast('Gagal sinkronisasi: ' + (message || 'Periksa koneksi.') + ' Data masih tersimpan di browser.', 'error');
+            if (queued) queued.onFailed(message);
+            else {
+              waitingRenderSignature = '';
+              renderWaitingList();
+              showToast('Gagal sinkronisasi: ' + (message || 'Periksa koneksi.') + ' Data masih tersimpan di browser.', 'error');
+            }
           }
         };
         try {
@@ -9913,12 +9926,13 @@
         showToast('Entri tidak ditemukan. Silakan refresh daftar.', 'error');
         return;
       }
-      if (selected._syncPending || selected._syncFailed) {
-        showToast('Entri masih sinkronisasi. Tunggu hingga tersimpan di server.', 'error');
+      const pendingWaitingSave = source === 'waiting' && !!selected._syncPending && inFlightWaitingSaves.has(String(id));
+      if (selected._syncFailed || (selected._syncPending && !pendingWaitingSave)) {
+        showToast('Data belum tersinkron. Pilih Coba Sinkronkan terlebih dahulu.', 'error');
         return;
       }
-      // An old pending-cache record must not prevent an already-synced entry from being handled.
-      if (readPendingWaiting()[id]) updatePendingWaiting(selected, null);
+      // A stale pending-cache record must not block a confirmed server entry.
+      if (!pendingWaitingSave && readPendingWaiting()[id]) updatePendingWaiting(selected, null);
       // Immediate visual removal, independently of slow network / render signature caching.
       const card = buttonEl && buttonEl.closest ? buttonEl.closest('.list-card') : null;
       if (card) card.remove();
@@ -9999,12 +10013,15 @@
           waitingRenderSignature = '';
           ListState.history = ListState.history.filter(h => !(String(h.id) === String(id) && h.completedAt));
           showToast((res && res.message) || (error && error.message) || 'Gagal menyimpan status. Entri dikembalikan ke daftar.', 'error');
+          const restored = { ...selected };
+          delete restored._syncPending;
+          restored._syncFailed = !!readPendingWaiting()[id] && readPendingWaiting()[id].state === 'failed';
           if (source === 'reservasi') {
-            if (!ListState.reservasi.some(r => String(r.id) === String(selected.id))) ListState.reservasi.push(selected);
+            if (!ListState.reservasi.some(r => String(r.id) === String(selected.id))) ListState.reservasi.push(restored);
             if (!ListState.waiting.some(w => String(w.id) === String(selected.id)))
               ListState.waiting.push({ ...selected, fromReservation: true, sourceId: selected.id });
           } else {
-            if (!ListState.waiting.some(w => String(w.id) === String(selected.id))) ListState.waiting.push(selected);
+            if (!ListState.waiting.some(w => String(w.id) === String(selected.id))) ListState.waiting.push(restored);
             if (selected.fromReservation && !ListState.reservasi.some(r => String(r.id) === sourceId))
               ListState.reservasi.push({ ...selected, id: sourceId });
           }
@@ -10015,14 +10032,26 @@
         }
       };
 
-      try {
-        google.script.run
-          .withSuccessHandler(function(res) { settle(res); })
-          .withFailureHandler(function(err) { settle(null, err); })
-          .markEntryStatus({ id: selected.sourceId || id, status: status === 'seated' ? 'Seated' : 'Cancelled' });
-      } catch (err) {
-        settle(null, err);
+      const sendCompletion = function() {
+        try {
+          google.script.run
+            .withSuccessHandler(function(res) { settle(res); })
+            .withFailureHandler(function(err) { settle(null, err); })
+            .markEntryStatus({ id: selected.sourceId || id, status: status === 'seated' ? 'Seated' : 'Cancelled' });
+        } catch (err) {
+          settle(null, err);
+        }
+      };
+      if (pendingWaitingSave) {
+        // If clicked immediately after adding a customer, wait for INSERT first.
+        // The card is already gone; only the backend request is deferred.
+        deferredWaitingStatuses.set(String(id), {
+          onSaved: sendCompletion,
+          onFailed: function(message) { settle(null, { message: message || 'Gagal menyimpan antrean.' }); }
+        });
+        return;
       }
+      sendCompletion();
     }
 
 
