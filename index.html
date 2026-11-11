@@ -9122,6 +9122,14 @@
               <span class="material-icons-round">receipt_long</span>
               Detail Pesanan
             </button>` : ''}
+            <button class="action-btn action-confirm" onclick="editReservation('${escapeAttr(r.id)}')">
+              <span class="material-icons-round">edit</span>
+              Edit
+            </button>
+            <button class="action-btn action-cancel" onclick="confirmReservationCancel('${escapeAttr(r.id)}')">
+              <span class="material-icons-round">cancel</span>
+              Cancel
+            </button>
           </div>
         </div>
       `;
@@ -9219,7 +9227,7 @@
       if (!container) return;
 
       const today = isoToday();
-      let items = mergePendingWaiting(ListState.waiting).filter(entry => !isPastReservation(entry));
+      let items = mergePendingWaiting(ListState.waiting).filter(entry => entry.date === today && !isPastReservation(entry));
 
       // No separate date filter: show all active entries in chronological order.
       const totalAfterDate = items.length;
@@ -9556,8 +9564,11 @@
       button.textContent = details.hidden ? 'More Detail' : 'Less Detail';
     }
 
+    let editingReservationId = null;
+
     function openAddModal(mode) {
       if (entrySaveInProgress) return;
+      editingReservationId = null;
       entryDraftId = uid();
       ListState.addMode = mode;
       document.getElementById('modal-add-title').textContent =
@@ -9596,6 +9607,36 @@
       if (entrySaveInProgress) return;
       document.getElementById('modal-add').classList.remove('visible');
       ListState.addMode = null;
+      editingReservationId = null;
+      entryDraftId = null;
+    }
+
+    function editReservation(id) {
+      if (entrySaveInProgress || pendingEntryStatuses.has(id)) return;
+      const entry = ListState.reservasi.find(item => String(item.id) === String(id));
+      if (!entry) { showToast('Reservasi tidak ditemukan. Silakan refresh.', 'error'); return; }
+      openAddModal('reservasi');
+      editingReservationId = String(id);
+      entryDraftId = String(id);
+      document.getElementById('modal-add-title').textContent = 'Edit Reservasi';
+      document.getElementById('entry-name').value = entry.name || '';
+      document.getElementById('entry-phone').value = entry.phone || '';
+      document.getElementById('entry-pax').value = entry.pax || 1;
+      document.getElementById('entry-date').value = entry.date || isoToday();
+      document.getElementById('entry-time').value = entry.time || '';
+      document.getElementById('entry-special').value = entry.special || '';
+      document.getElementById('entry-note').value = entry.note || '';
+      document.getElementById('entry-more-details').hidden = false;
+      const more = document.getElementById('entry-more-toggle');
+      more.setAttribute('aria-expanded', 'true');
+      more.textContent = 'Less Detail';
+    }
+
+    function confirmReservationCancel(id) {
+      const entry = ListState.reservasi.find(item => String(item.id) === String(id));
+      if (!entry || pendingEntryStatuses.has(id)) return;
+      if (!confirm('Batalkan reservasi atas nama ' + entry.name + '?')) return;
+      confirmEntry('reservasi', id, 'cancelled');
     }
 
     // Pending Waiting List entries are cached locally until the server confirms them.
@@ -9682,14 +9723,22 @@
       if (!date) { showToast('Tanggal wajib diisi.', 'error'); return; }
       if (mode === 'reservasi' && date < isoToday()) { showToast('Tanggal reservasi tidak boleh di masa lalu.', 'error'); return; }
 
-      const id = entryDraftId || (entryDraftId = uid());
+      const isEditingReservation = mode === 'reservasi' && !!editingReservationId;
+      const original = isEditingReservation
+        ? ListState.reservasi.find(item => String(item.id) === editingReservationId) : null;
+      if (isEditingReservation && !original) {
+        showToast('Reservasi tidak ditemukan. Muat ulang daftar.', 'error');
+        return;
+      }
+      const id = isEditingReservation ? editingReservationId : (entryDraftId || (entryDraftId = uid()));
       const entry = {
+        ...(original || {}),
         id: id,
         type: mode === 'reservasi' ? 'RESERVASI' : 'WAITING',
-        name, phone, pax, date, time, special, note, member,
-        outlet: AppState.outlet || '',
+        name, phone, pax, date, time, special, note, member: original ? !!original.member : member,
+        outlet: original?.outlet || AppState.outlet || '',
         status: 'Active',
-        createdAt: Date.now()
+        createdAt: original?.createdAt || Date.now()
       };
 
       if (mode === 'waiting') {
@@ -9753,17 +9802,22 @@
           showToast(message || 'Gagal menyimpan.', 'error');
           return;
         }
-        showToast(message || (mode === 'reservasi'
+        showToast(message || (isEditingReservation ? 'Reservasi berhasil diperbarui.' : mode === 'reservasi'
           ? 'Reservasi berhasil ditambahkan.'
           : 'Customer ditambahkan ke waiting list.'), 'success');
         closeAddModal();
 
         if (mode === 'reservasi') {
-          ListState.reservasi.push({ ...entry });
-          // Mirror onto waiting list locally for instant feedback
-          ListState.waiting.push({
-            ...entry, fromReservation: true, sourceId: entry.id
-          });
+          if (isEditingReservation) {
+            ListState.reservasi = ListState.reservasi.map(item =>
+              String(item.id) === String(entry.id) ? { ...entry } : item);
+            ListState.waiting = ListState.waiting.map(item =>
+              item.fromReservation && String(item.sourceId || item.id) === String(entry.id)
+                ? { ...entry, fromReservation: true, sourceId: entry.id } : item);
+          } else {
+            ListState.reservasi.push({ ...entry });
+            ListState.waiting.push({ ...entry, fromReservation: true, sourceId: entry.id });
+          }
         } else {
           entry.fromReservation = false;
           ListState.waiting.push(entry);
