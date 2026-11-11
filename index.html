@@ -2777,6 +2777,31 @@
       font-size: 0.72rem;
       color: var(--text-tertiary);
     }
+    /* Waiting List only: elegant date and count, aligned without a pill. */
+    #page-waiting .waiting-date-summary {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 2px 2px 13px;
+      min-width: 0;
+    }
+    #page-waiting .waiting-date-title {
+      color: var(--text-primary);
+      font-size: 0.83rem;
+      line-height: 1.4;
+      font-weight: 750;
+      letter-spacing: -0.01em;
+    }
+    #page-waiting .waiting-count-title {
+      flex-shrink: 0;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      line-height: 1.4;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
     .list-grid { display: flex; flex-direction: column; gap: 10px; }
     .list-card {
       background: var(--bg-card);
@@ -6067,7 +6092,10 @@
 
       </div>
 
-      <div class="filter-summary list-total-summary" id="waiting-summary">0 entri</div>
+      <div class="waiting-date-summary" aria-label="Tanggal dan jumlah antrean">
+        <span class="waiting-date-title" id="waiting-date-title"></span>
+        <span class="waiting-count-title" id="waiting-summary">0 entri</span>
+      </div>
 
       <div id="waiting-list">
         <!-- populated by JS -->
@@ -8726,6 +8754,15 @@
       } catch (e) { return isoStr; }
     }
 
+    function formatHumanDateFull(isoStr) {
+      if (!isoStr) return '-';
+      const date = new Date(isoStr + 'T00:00:00');
+      if (Number.isNaN(date.getTime())) return isoStr;
+      const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+      const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+      return days[date.getDay()] + ', ' + date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
+    }
+
     function isToday(isoStr) {
       return isoStr === isoToday();
     }
@@ -9242,6 +9279,8 @@
       if (signature === waitingRenderSignature) { updateWaitingClocks(); return; }
       waitingRenderSignature = signature;
 
+      const dateEl = document.getElementById('waiting-date-title');
+      if (dateEl) dateEl.textContent = formatHumanDateFull(today);
       const summaryEl = document.getElementById('waiting-summary');
       summaryEl.textContent = term
         ? `${items.length} dari ${totalAfterDate} entri · "${term}"`
